@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>gwself&#39;s blog</title>
+    <title>fengstack&#39;s blog</title>
     <link>/</link>
-    <description>Recent content on gwself&#39;s blog</description>
+    <description>Recent content on fengstack&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
@@ -12,7 +12,7 @@
       <link>/readme/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>/readme/</guid>
-      <description>Hi there, I&amp;rsquo;m gwself! 👋 Welcome to my GitHub profile! I&amp;rsquo;m passionate about gwself. Here are some of the projects I&amp;rsquo;m currently working on:&#xA;Projects small-rpc 🔥基于netty和hessian的一个轻量级RPC调用框架&#xA;simple-seata Forked from archbobo/simple-seata&#xA;简化版seata，seata是阿里开源的分布式事务框架&#xA;small-spring Forked from fuzhengwei/small-spring&#xA;🌱《 Spring 手撸专栏》，本专栏以 Spring 源码学习为目的，通过手写简化版 Spring 框架，了解 Spring 核心原理。在手写的过程中会简化 Spring 源码，摘取整体框架中的核心逻辑，简化代码实现过程，保留核心功能，例如：IOC、AOP、Bean生命周期、上下文、作用域、资源处理等内容实现。&#xA;tiny-spring Forked from code4craft/tiny-spring&#xA;A tiny IoC container refer to Spring.&#xA;📈 GitHub Stats Thanks for stopping by! 😊</description>
+      <description>Hi there, I&amp;rsquo;m fengstack! 👋 Welcome to my GitHub profile! I&amp;rsquo;m passionate about fengstack. Here are some of the projects I&amp;rsquo;m currently working on:&#xA;Projects small-rpc 🔥基于netty和hessian的一个轻量级RPC调用框架&#xA;simple-seata Forked from archbobo/simple-seata&#xA;简化版seata，seata是阿里开源的分布式事务框架&#xA;small-spring Forked from fuzhengwei/small-spring&#xA;🌱《 Spring 手撸专栏》，本专栏以 Spring 源码学习为目的，通过手写简化版 Spring 框架，了解 Spring 核心原理。在手写的过程中会简化 Spring 源码，摘取整体框架中的核心逻辑，简化代码实现过程，保留核心功能，例如：IOC、AOP、Bean生命周期、上下文、作用域、资源处理等内容实现。&#xA;tiny-spring Forked from code4craft/tiny-spring&#xA;A tiny IoC container refer to Spring.&#xA;📈 GitHub Stats Thanks for stopping by! 😊</description>
     </item>
   </channel>
 </rss>
