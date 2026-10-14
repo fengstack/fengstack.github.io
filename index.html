@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>高云峰 — Java 后端工程师</title>
-  <meta name="description" content="高云峰的个人主页与博客:Java 后端工程师,专注 RPC 框架、jOOQ/PostGIS,使用 Go、Python、Node.js,正在学习 Rust。分享开源项目 small-rpc、jooq-postgis 与给 openobserve、glogcenter 提 PR 的实战记录。" />
-  <meta name="keywords" content="高云峰,Java,RPC,Netty,jOOQ,PostGIS,Go,Python,Rust,开源,openobserve,glogcenter,博客" />
+  <title>高云峰 — Java 后端工程师个人主页与技术博客</title>
+  <meta name="description" content="高云峰（fengstack）的个人主页与技术博客：Java 后端工程师，专注 RPC 框架、jOOQ/PostGIS，使用 Go、Python、Node.js，正在学习 Rust。分享开源项目 small-rpc、jooq-postgis 与给 openobserve、glogcenter 提 PR 的实战记录。" />
+  <meta name="keywords" content="高云峰, 高云峰博客, 高云峰个人主页, 高云峰 Java, fengstack, RPC, Netty, jOOQ, PostGIS, Go, Python, Rust, 开源, openobserve, glogcenter" />
   <meta name="robots" content="index,follow" />
   <meta name="author" content="高云峰" />
   <link rel="canonical" href="https://blog.yunitytech.top/" />
@@ -13,16 +13,22 @@
   <link rel="icon" href="images/github.png">
   <link rel="alternate" type="application/rss+xml" title="高云峰的文章" href="https://blog.yunitytech.top/post/index.xml" />
 
+  <!-- Search Engine Verification Tags (Replace content with your tokens once registered) -->
+  <meta name="google-site-verification" content="google-site-verification-token" />
+  <meta name="msvalidate.01" content="msvalidate-bing-token" />
+  <meta name="baidu-site-verification" content="baidu-site-verification-token" />
+  <meta name="360-site-verification" content="360-site-verification-token" />
+
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="高云峰的博客" />
-  <meta property="og:title" content="高云峰 — Java 后端工程师" />
-  <meta property="og:description" content="Java 后端工程师,专注 RPC 框架、jOOQ/PostGIS。分享开源项目与开源 PR 实战记录。" />
+  <meta property="og:title" content="高云峰 — Java 后端工程师个人主页与技术博客" />
+  <meta property="og:description" content="高云峰的个人主页与技术博客：Java 后端工程师，专注 RPC 框架、jOOQ/PostGIS。分享开源项目与开源 PR 实战记录。" />
   <meta property="og:url" content="https://blog.yunitytech.top/" />
   <meta property="og:image" content="https://blog.yunitytech.top/images/avatar.png" />
   <meta property="og:locale" content="zh_CN" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="高云峰 — Java 后端工程师" />
-  <meta name="twitter:description" content="Java 后端工程师,专注 RPC 框架、jOOQ/PostGIS。分享开源项目与开源 PR 实战记录。" />
+  <meta name="twitter:description" content="高云峰的个人主页与技术博客：Java 后端工程师，专注 RPC 框架、jOOQ/PostGIS。" />
   <meta name="twitter:image" content="https://blog.yunitytech.top/images/avatar.png" />
 
   <script type="application/ld+json">
@@ -31,20 +37,27 @@
     "@graph": [
       {
         "@type": "Person",
+        "@id": "https://blog.yunitytech.top/#person",
         "name": "高云峰",
-        "alternateName": "fengstack",
+        "alternateName": ["fengstack", "upowerman"],
         "url": "https://blog.yunitytech.top/",
         "email": "mailto:gyf718@hotmail.com",
         "jobTitle": "Java 后端工程师",
-        "sameAs": ["https://github.com/fengstack", "https://github.com/upowerman"],
+        "description": "高云峰，Java 后端工程师，开源项目 small-rpc、jooq-postgis 作者，关注分布式 RPC、开源数据库与可观测性。",
+        "sameAs": [
+          "https://github.com/fengstack",
+          "https://github.com/upowerman"
+        ],
         "knowsAbout": ["Java", "RPC", "Netty", "jOOQ", "PostGIS", "Go", "Python", "Node.js", "TypeScript", "Vue", "Rust"]
       },
       {
         "@type": "WebSite",
+        "@id": "https://blog.yunitytech.top/#website",
         "name": "高云峰的博客",
+        "alternateName": "高云峰个人主页",
         "url": "https://blog.yunitytech.top/",
         "inLanguage": "zh-CN",
-        "author": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" }
+        "author": { "@id": "https://blog.yunitytech.top/#person" }
       }
     ]
   }
@@ -70,9 +83,9 @@
 
   <nav class="site-nav">
     <div class="wrap">
-      <a class="nav-me" href="https://github.com/fengstack" target="_blank" rel="noopener" title="me → github.com/fengstack">
+      <a class="nav-me" href="https://blog.yunitytech.top/" title="高云峰的个人主页">
         <svg height="17" width="17" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        me
+        高云峰
       </a>
       <nav class="nav-links" id="navLinks">
         <a href="#skills">技术栈</a>
@@ -93,8 +106,8 @@
 
   <section class="hero">
     <div class="wrap">
-      <div class="eyebrow">高云峰</div>
-      <h1 class="hero-title">Java 后端工程师</h1>
+      <div class="eyebrow">高云峰 · FENGSTACK</div>
+      <h1 class="hero-title">高云峰 <span style="font-weight:500;font-size:.82em;color:var(--muted)">· Java 后端工程师</span></h1>
       <p class="hero-sub">写 Java,也会一点 Go 与 Python,正在学 Rust;乐于造轮子、啃源码、给开源项目提 PR。</p>
       <div class="actions">
         <a class="btn primary" href="#projects">查看项目 →</a>
