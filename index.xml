@@ -1,18 +1,46 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>fengstack&#39;s blog</title>
-    <link>/</link>
-    <description>Recent content on fengstack&#39;s blog</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <title>高云峰的技术博客</title>
+    <link>https://blog.yunitytech.top/</link>
+    <description>高云峰（fengstack）的技术博客与开源主页</description>
     <language>zh-cn</language>
-    <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 14 Oct 2026 12:00:00 +0800</lastBuildDate>
+    <atom:link href="https://blog.yunitytech.top/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title></title>
-      <link>/readme/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>/readme/</guid>
-      <description>Hi there, I&amp;rsquo;m fengstack! 👋 Welcome to my GitHub profile! I&amp;rsquo;m passionate about fengstack. Here are some of the projects I&amp;rsquo;m currently working on:&#xA;Projects small-rpc 🔥基于netty和hessian的一个轻量级RPC调用框架&#xA;simple-seata Forked from archbobo/simple-seata&#xA;简化版seata，seata是阿里开源的分布式事务框架&#xA;small-spring Forked from fuzhengwei/small-spring&#xA;🌱《 Spring 手撸专栏》，本专栏以 Spring 源码学习为目的，通过手写简化版 Spring 框架，了解 Spring 核心原理。在手写的过程中会简化 Spring 源码，摘取整体框架中的核心逻辑，简化代码实现过程，保留核心功能，例如：IOC、AOP、Bean生命周期、上下文、作用域、资源处理等内容实现。&#xA;tiny-spring Forked from code4craft/tiny-spring&#xA;A tiny IoC container refer to Spring.&#xA;📈 GitHub Stats Thanks for stopping by! 😊</description>
+      <title>给 openobserve 提的三个 PR:都是边界条件惹的祸</title>
+      <link>https://blog.yunitytech.top/post/openobserve-three-prs/</link>
+      <pubDate>Tue, 06 Oct 2026 21:30:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/openobserve-three-prs/</guid>
+      <description>使用 openobserve 时先后遇到 Grafana 直方图不渲染、_around 接口 size=1 返回 2000 行、quantile 遇 +Inf 返回 NaN 三个问题,读 Rust 源码定位后各提交一个 PR,记录完整过程与心得。</description>
+    </item>
+    <item>
+      <title>排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR</title>
+      <link>https://blog.yunitytech.top/post/glogcenter-two-prs/</link>
+      <pubDate>Tue, 06 Oct 2026 21:00:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/glogcenter-two-prs/</guid>
+      <description>使用 glogcenter 时先后遇到内存持续增长与集群模式用户管理失效两个问题,读源码定位根因后提交了两个 PR(#92、#93),均已合并。记录排查过程与心得。</description>
+    </item>
+    <item>
+      <title>当 jOOQ 遇上 PostGIS:jooq-postgis 诞生记</title>
+      <link>https://blog.yunitytech.top/post/jooq-postgis-intro/</link>
+      <pubDate>Tue, 06 Oct 2026 20:30:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/jooq-postgis-intro/</guid>
+      <description>工作中需要在 jOOQ 里映射 PostGIS 地理位置字段,于是写了 jooq-postgis:纯 JTS、零 GeoTools 的类型安全空间绑定。记录问题、方案与用法。</description>
+    </item>
+    <item>
+      <title>small-rpc 2.0:基于 Netty + Hessian 的轻量级 RPC 框架</title>
+      <link>https://blog.yunitytech.top/post/small-rpc-intro/</link>
+      <pubDate>Tue, 06 Oct 2026 20:00:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/small-rpc-intro/</guid>
+      <description>介绍我写的轻量级 Java RPC 框架 small-rpc:微内核架构、自研 SPI、注册中心订阅推送与缓存降级,以及快速上手示例。</description>
+    </item>
+    <item>
+      <title>你好,我是高云峰(fengstack)</title>
+      <link>https://blog.yunitytech.top/post/title_of_the_post/</link>
+      <pubDate>Tue, 06 Oct 2026 12:00:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/title_of_the_post/</guid>
+      <description>个人介绍:Java 后端工程师,关注 small-rpc、jooq-postgis,也学 Go / Python / Rust,乐于提开源 PR。</description>
     </item>
   </channel>
 </rss>
