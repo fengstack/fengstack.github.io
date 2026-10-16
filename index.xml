@@ -35,12 +35,5 @@
       <guid>https://blog.yunitytech.top/post/small-rpc-intro/</guid>
       <description>介绍我写的轻量级 Java RPC 框架 small-rpc:微内核架构、自研 SPI、注册中心订阅推送与缓存降级,以及快速上手示例。</description>
     </item>
-    <item>
-      <title>你好,我是高云峰(fengstack)</title>
-      <link>https://blog.yunitytech.top/post/title_of_the_post/</link>
-      <pubDate>Tue, 06 Oct 2026 12:00:00 +0800</pubDate>
-      <guid>https://blog.yunitytech.top/post/title_of_the_post/</guid>
-      <description>个人介绍:Java 后端工程师,关注 small-rpc、jooq-postgis,也学 Go / Python / Rust,乐于提开源 PR。</description>
-    </item>
   </channel>
 </rss>

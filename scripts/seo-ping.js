@@ -15,12 +15,12 @@ const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
 const URL_LIST = [
   `https://${HOST}/`,
+  `https://${HOST}/about/`,
   `https://${HOST}/post/`,
   `https://${HOST}/post/small-rpc-intro/`,
   `https://${HOST}/post/openobserve-three-prs/`,
   `https://${HOST}/post/glogcenter-two-prs/`,
   `https://${HOST}/post/jooq-postgis-intro/`,
-  `https://${HOST}/post/title_of_the_post/`,
   `https://${HOST}/tags/`,
   `https://${HOST}/categories/`
 ];
