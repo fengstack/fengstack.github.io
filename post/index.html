@@ -85,7 +85,29 @@
   <main class="wrap" style="padding-block:24px 48px;">
     <ul class="timeline" id="postList">
       <li class="tl-item">
-        <div class="tt empty">还没有文章,敬请期待。</div>
+        <time>2026-10</time>
+        <div class="tt"><a href="openobserve-three-prs/">给 openobserve 提的三个 PR:都是边界条件惹的祸</a></div>
+        <p>使用 openobserve 时先后遇到 Grafana 直方图不渲染、_around 接口 size=1 返回 2000 行、quantile 遇 +Inf 返回 NaN 三个问题,读 Rust 源码定位后各提交一个 PR,记录完整过程与心得。</p>
+      </li>
+      <li class="tl-item">
+        <time>2026-10</time>
+        <div class="tt"><a href="glogcenter-two-prs/">排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR</a></div>
+        <p>使用 glogcenter 时先后遇到内存持续增长与集群模式用户管理失效两个问题,读源码定位根因后提交了两个 PR(#92、#93),均已合并。记录排查过程与心得。</p>
+      </li>
+      <li class="tl-item">
+        <time>2026-10</time>
+        <div class="tt"><a href="jooq-postgis-intro/">当 jOOQ 遇上 PostGIS:jooq-postgis 诞生记</a></div>
+        <p>工作中需要在 jOOQ 里映射 PostGIS 地理位置字段,于是写了 jooq-postgis:纯 JTS、零 GeoTools 的类型安全空间绑定。记录问题、方案与用法。</p>
+      </li>
+      <li class="tl-item">
+        <time>2026-10</time>
+        <div class="tt"><a href="small-rpc-intro/">small-rpc 2.0:基于 Netty + Hessian 的轻量级 RPC 框架</a></div>
+        <p>介绍我写的轻量级 Java RPC 框架 small-rpc:微内核架构、自研 SPI、注册中心订阅推送与缓存降级,以及快速上手示例。</p>
+      </li>
+      <li class="tl-item">
+        <time>2026-10</time>
+        <div class="tt"><a href="title_of_the_post/">你好,我是高云峰(fengstack)</a></div>
+        <p>个人介绍:Java 后端工程师,关注 small-rpc、jooq-postgis,也学 Go / Python / Rust,乐于提开源 PR。</p>
       </li>
     </ul>
   </main>

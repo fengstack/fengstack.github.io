@@ -1,0 +1,23 @@
+name: SEO Search Engine Push
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  seo-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Broadcast URLs to IndexNow & Search Engines
+        env:
+          BAIDU_TOKEN: ${{ secrets.BAIDU_TOKEN }}
+        run: |
+          node scripts/seo-ping.js
