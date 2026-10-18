@@ -3,11 +3,90 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>页面不存在 · 高云峰</title>
-  <meta name="robots" content="noindex">
-  <link rel="icon" href="images/github.png">
+  <title>404 - 页面未找到 · 高云峰的博客</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="icon" href="/images/github.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    /* Critical inline fallback styles to ensure 404 is always beautifully rendered */
+    :root {
+      --font-display: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --fg: #161a21;
+      --muted: #4f5764;
+      --line: #e3e7ee;
+      --accent: #4a5cf7;
+      --accent-ink: #ffffff;
+      --accent-soft: #eaecff;
+      --radius: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0e1217;
+        --surface: #141a22;
+        --fg: #e7ebf2;
+        --muted: #a3adbc;
+        --line: #232d3a;
+        --accent: #7c8aff;
+        --accent-ink: #0e1217;
+        --accent-soft: #1d2440;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0e1217;
+      --surface: #141a22;
+      --fg: #e7ebf2;
+      --muted: #a3adbc;
+      --line: #232d3a;
+      --accent: #7c8aff;
+      --accent-ink: #0e1217;
+      --accent-soft: #1d2440;
+    }
+    .error-hero {
+      padding-block: 64px 48px;
+    }
+    .error-code {
+      font-family: var(--font-mono);
+      font-size: clamp(64px, 12vw, 110px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin: 12px 0 16px;
+      background: linear-gradient(135deg, var(--fg) 35%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .quick-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .quick-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+    .quick-card h4 {
+      margin: 0;
+      font-size: 15px;
+      color: var(--fg);
+      font-weight: 600;
+    }
+    .quick-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
   <script>
     (function(){
       var T = function(d){ if(d){ document.documentElement.setAttribute('data-theme', d); } };
@@ -26,16 +105,16 @@
 
   <nav class="site-nav">
     <div class="wrap">
-      <a class="nav-me" href="index.html" title="高云峰的个人主页">
+      <a class="nav-me" href="/" title="高云峰的个人主页">
         <svg height="17" width="17" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         高云峰
       </a>
       <nav class="nav-links" id="navLinks">
-        <a href="about/">关于我</a>
-        <a href="index.html#skills">技术栈</a>
-        <a href="index.html#projects">项目</a>
-        <a href="index.html#contribs">开源贡献</a>
-        <a href="post/">文章</a>
+        <a href="/about/">关于我</a>
+        <a href="/#skills">技术栈</a>
+        <a href="/#projects">项目</a>
+        <a href="/#contribs">开源贡献</a>
+        <a href="/post/">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -48,13 +127,54 @@
     </div>
   </nav>
 
-  <div class="page-head wrap" style="padding-block:100px 20px;">
-    <h1 style="font-size:clamp(40px,8vw,72px);margin-bottom:8px">404</h1>
-    <p class="hero-sub">这个页面不存在,或者已经被搬走了。</p>
-    <div class="actions" style="margin-top:24px">
-      <a class="btn primary" href="index.html">回到首页</a>
+  <main class="wrap error-hero">
+    <div style="display:inline-block; margin-bottom: 4px;">
+      <span class="badge review" style="font-size:12px; padding:4px 10px; font-weight:600;">STATUS 404 · PAGE NOT FOUND</span>
     </div>
-  </div>
+
+    <div class="error-code">404</div>
+
+    <h1 style="font-size:clamp(22px, 4vw, 32px); margin:0 0 12px; font-weight:700;">抱歉，您访问的页面不存在或正在同步中</h1>
+    <p class="hero-sub" style="font-size:16px; line-height:1.65; max-width:62ch; margin:0 0 28px;">
+      该页面可能已被移动、更名，或者刚发布的文章正在全球 CDN 边缘节点构建部署中。您可以返回主页，或通过下方精选入口继续浏览。
+    </p>
+
+    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+      <a class="btn primary" href="/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        返回首页
+      </a>
+      <a class="btn" href="/post/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        浏览全部文章
+      </a>
+      <a class="btn" href="/about/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        关于作者
+      </a>
+    </div>
+
+    <div style="margin-top:56px; padding-top:36px; border-top:1px solid var(--line);">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <h2 style="font-size:16px; margin:0; font-weight:600;">也许你在寻找这些内容：</h2>
+        <span class="mono">quick navigation</span>
+      </div>
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px;">
+        <a class="quick-card" href="/post/maven-central-publish-guide/">
+          <h4>发布 Java 包到 Maven 中央仓库</h4>
+          <p>基于 small-rpc 实操 Central Portal 最新规范、GPG 签名与多模块避坑指南</p>
+        </a>
+        <a class="quick-card" href="/post/small-rpc-intro/">
+          <h4>small-rpc 2.0 架构与微内核</h4>
+          <p>自研 SPI、Netty 二进制协议、注册中心订阅推送与缓存无损降级</p>
+        </a>
+        <a class="quick-card" href="/#contribs">
+          <h4>开源贡献与实战复盘</h4>
+          <p>面向 openobserve、glogcenter 等开源项目的 PR 排查与合并记录</p>
+        </a>
+      </div>
+    </div>
+  </main>
 
   <footer class="site-footer">
     <div class="wrap">
@@ -64,6 +184,6 @@
   </footer>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
-  <script src="js/nav.js" defer></script>
+  <script src="/js/nav.js" defer></script>
 </body>
 </html>
