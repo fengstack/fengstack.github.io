@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范） · 高云峰的博客</title>
+  <meta name="description" content="告别繁琐的 Jira 工单与老旧插件，本文结合 high-performance RPC 框架 small-rpc 的实战经验，详解 2024~2026 年 Sonatype Central Portal 全新规范：Namespace 认证、GPG 签名分发、POM 合规配置，以及多模块排除与发布避坑全流程。" />
+  <meta name="robots" content="index,follow" />
+  <meta name="keywords" content="高云峰, Maven Central, Central Portal, small-rpc, 发布到中央仓库, central-publishing-maven-plugin, GPG, Sonatype, Java 开源" />
+  <link rel="canonical" href="https://blog.yunitytech.top/post/maven-central-publish-guide/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="高云峰的博客" />
+  <meta property="og:title" content="从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范） · 高云峰的博客" />
+  <meta property="og:description" content="详解 Sonatype Central Portal 全新规范：Namespace 认证、GPG 签名分发、POM 合规配置，以及基于 small-rpc 的多模块排除与发布避坑实战。" />
+  <meta property="og:url" content="https://blog.yunitytech.top/post/maven-central-publish-guide/" />
+  <meta property="og:image" content="https://blog.yunitytech.top/images/avatar.png" />
+  <meta property="og:locale" content="zh_CN" />
+  <meta property="article:published_time" content="2026-10-18" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）",
+    "url": "https://blog.yunitytech.top/post/maven-central-publish-guide/",
+    "datePublished": "2026-10-18",
+    "dateModified": "2026-10-18",
+    "inLanguage": "zh-CN",
+    "author": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" },
+    "publisher": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" },
+    "mainEntityOfPage": "https://blog.yunitytech.top/post/maven-central-publish-guide/"
+  }
+  </script>
+  <link rel="icon" href="../../images/github.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="../../css/main.css">
+  <script>
+    (function(){
+      var T = function(d){ if(d){ document.documentElement.setAttribute('data-theme', d); } };
+      try { var s = localStorage.getItem('gw-theme'); if (s) T(s); } catch(e){}
+      window.__toggleTheme = function(){
+        var cur = document.documentElement.getAttribute('data-theme');
+        var dark = cur === 'dark' || (!cur && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var next = dark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('gw-theme', next); } catch(e){}
+      };
+    })();
+  </script>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="wrap">
+      <a class="nav-me" href="../../index.html" title="高云峰的个人主页">
+        <svg height="17" width="17" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        高云峰
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="../../about/">关于我</a>
+        <a href="../../index.html#skills">技术栈</a>
+        <a href="../../index.html#projects">项目</a>
+        <a href="../../index.html#contribs">开源贡献</a>
+        <a href="../index.html" style="color:var(--fg)">文章</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
+        <button class="nav-toggle" id="navToggle" aria-label="展开导航菜单" aria-expanded="false">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="article-head wrap">
+    <p class="crumbs"><a href="../../index.html">首页</a> · <a href="../index.html">文章</a></p>
+    <h1>从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）</h1>
+    <p class="meta">2026-10 · 由 me 发布 · 聚焦工程规范与发包实战 · <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">参考工程: small-rpc</a></p>
+  </div>
+
+  <article class="article-body wrap">
+    <p>对于 Java 开发者而言，把自研的基础库、工具包或者微服务框架发布到 <strong>Maven 中央仓库（Maven Central Repository）</strong>，让全球开发者只需在 <code>pom.xml</code> 里添加一段 <code>&lt;dependency&gt;</code> 就能开箱即用，是开源项目走向工业级成熟的重要里程碑。</p>
+
+    <p>我在开发轻量级微内核 RPC 框架 <strong><a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">small-rpc</a></strong> 2.0 时，全仓多个子模块（如 <code>small-rpc-spring-boot-starter</code>）均正式通过了 Maven Central 发布。然而，网上的大部分教程还停留在多年前的<strong>老旧方案</strong>（去 Sonatype Jira 提工单等待管理员人工审核、配置已被弃用的 <code>nexus-staging-maven-plugin</code> 等）。</p>
+
+    <p>如今，Sonatype 官方已全面升级为现代化的 <strong>Central Portal（中央发布门户）</strong>。本文将基于 <code>small-rpc</code> 项目的实操经验，手把手带你用<strong>最新的官方发布链路与自动化插件</strong>，避开多模块工程、版本兼容等所有暗坑，顺畅完成全流程发布。</p>
+
+    <h2>一、为什么采用 Central Portal 新规范？</h2>
+    <p>在旧规范时代，发布流程非常冗长：你需要在 <code>issues.sonatype.org</code> 注册 Jira 账号，建 Issue 申请 GroupId，等待人工审核确认；发包时还要使用配置极其繁杂的 <code>nexus-staging-maven-plugin</code>，一旦有签名或 Javadoc 格式微小瑕疵，只能在 Nexus 控制台抓瞎排查。</p>
+    <p>而在新的 <strong>Sonatype Central Portal</strong> 体系下：</p>
+    <ul>
+      <li><strong>自主秒级认证</strong>：通过 GitHub 临时仓库或 DNS TXT 记录，系统自动校验域名/账号所有权，无需等待人工审查；</li>
+      <li><strong>现代化官方插件</strong>：官方推出专用的 <code>central-publishing-maven-plugin</code>，原生接入 Central Portal API；</li>
+      <li><strong>可视化校验控制台</strong>：包上传后，Portal 会在网页端给出明确的逐项校验反馈（POM 合规、签名、Javadoc、源码完整性等），一目了然。</li>
+    </ul>
+
+    <h2>二、第一步：注册 Central Portal 与验证命名空间（Namespace）</h2>
+    <p>首先访问中央仓库官方发布门户：<a href="https://central.sonatype.com/" target="_blank" rel="noopener">https://central.sonatype.com/</a>。</p>
+
+    <h3>1. 注册与登录</h3>
+    <p>推荐直接使用 <strong>Sign in with GitHub</strong> 授权登录。这不仅方便后续账号管理，还能简化基于 GitHub 的 Namespace 认证流程。</p>
+
+    <h3>2. 申请并验证 Namespace（GroupId）</h3>
+    <p>Namespace 对应 Maven 依赖坐标中的 <code>groupId</code>。通常有两种形式：</p>
+    <ul>
+      <li><strong>自主顶级域名</strong>：如 <code>top.yunitytech</code>、<code>com.yourdomain</code>，需要在域名解析控制台添加一条 TXT 记录完成所有权验证；</li>
+      <li><strong>GitHub 账号命名空间</strong>：格式固定为 <code>io.github.&lt;你的GitHub用户名&gt;</code>。例如我的 GitHub 用户名是 <code>upowerman</code>，则申请的命名空间为 <code>io.github.upowerman</code>。</li>
+    </ul>
+
+    <p>以 <code>io.github.upowerman</code> 为例，点击 <strong>Add Namespace</strong> 后，平台会给出一个唯一的 Verification Key（例如 <code>verification-key-1a2b3c...</code>）。验证步骤极其简单：</p>
+    <ol>
+      <li>登录你的 GitHub，新建一个<strong>公开仓库（Public Repository）</strong>，仓库名称直接命名为该 Verification Key；</li>
+      <li>回到 Central Portal，点击 <strong>Verify Namespace</strong> 按钮；</li>
+      <li>后台机器人会自动请求 <code>https://github.com/upowerman/&lt;Verification-Key&gt;</code>，只要检测到该公开仓库存在，几秒钟内便会显示已验证通过；</li>
+      <li>验证成功后，即可放心地把 GitHub 上的那个临时验证仓库彻底删除。</li>
+    </ol>
+
+    <h3>3. 生成 User Token</h3>
+    <p>出于安全性考虑，中央仓库禁止在本地构建脚本中使用明文登录密码，必须生成专用的 Token：</p>
+    <ol>
+      <li>点击右上角用户头像进入 <strong>Account</strong> 页面；</li>
+      <li>在 <strong>User Token</strong> 区域点击 <strong>Generate User Token</strong>；</li>
+      <li>系统会生成一对 <strong>Username</strong> 与 <strong>Password</strong>（形式类似一串长哈希字符），务必立即复制保存，关闭窗口后将无法再次查看密码。</li>
+    </ol>
+
+    <h2>三、第二步：生成 GPG 秘钥并分发至公钥服务器</h2>
+    <p>Maven Central 强制规定：<strong>所有发布的构建产物（包括 <code>.jar</code>、<code>.pom</code>、<code>-sources.jar</code>、<code>-javadoc.jar</code>）都必须附带 GPG 数字签名（<code>.asc</code> 文件）</strong>，以防传输途中文件被篡改或仿冒。</p>
+
+    <h3>1. 本地安装 GPG</h3>
+    <pre><code># macOS (Homebrew)
+brew install gnupg pinentry-mac
+
+# Ubuntu / Debian
+sudo apt-get install gnupg
+
+# Windows (推荐安装 Gpg4win)</code></pre>
+
+    <h3>2. 生成密钥对</h3>
+    <p>运行生成命令：</p>
+    <pre><code>gpg --full-generate-key</code></pre>
+    <p>根据提示进行选择：</p>
+    <ul>
+      <li>加密算法：默认选择 <code>(1) RSA and RSA</code>；</li>
+      <li>密钥长度：输入 <code>4096</code>（推荐 4096 位高安全性）；</li>
+      <li>有效期：建议选择永久有效（输入 <code>0</code>）或者按年设定；</li>
+      <li>姓名、邮箱：建议与 GitHub 账号邮箱保持一致；</li>
+      <li>设置 Passphrase（密码）：<strong>请牢记此密码</strong>，后续 Maven 执行打包签名时需要输入。</li>
+    </ul>
+
+    <h3>3. 查看公钥 ID 并分发</h3>
+    <p>执行以下命令列出本地的公钥信息：</p>
+    <pre><code>gpg --list-keys --keyid-format LONG</code></pre>
+    <p>输出示例：</p>
+    <pre><code>sec   rsa4096/A1B2C3D4E5F67890 2026-10-18 [SC]
+      E28F10234567890ABCDEF1234567890ABCDEF123
+uid                 [ultimate] upowerman &lt;your_email@example.com&gt;
+ssb   rsa4096/0987654F3E2D1CBA 2026-10-18 [E]</code></pre>
+    <p>其中 <code>rsa4096/</code> 后面的 16 位字符（如 <code>A1B2C3D4E5F67890</code>）就是你的 <strong>Key ID</strong>。</p>
+
+    <p>中央仓库在校验签名时，会自动到主流公钥服务器检索该 ID 的公钥。因此必须将公钥分发出去：</p>
+    <pre><code># 上传到 Ubuntu 官方密钥服务器（推荐，同步范围最广）
+gpg --keyserver keyserver.ubuntu.com --send-keys A1B2C3D4E5F67890
+
+# 若网络不稳定，可备选上传至 keys.openpgp.org
+gpg --keyserver hkps://keys.openpgp.org --send-keys A1B2C3D4E5F67890</code></pre>
+
+    <h2>四、第三步：配置 Maven 本地认证 (settings.xml)</h2>
+    <p>打开本地 Maven 的用户配置文件 <code>~/.m2/settings.xml</code>（若不存在可新建一个），在 <code>&lt;servers&gt;</code> 节点内配置我们在第一步生成的 User Token：</p>
+
+    <pre><code>&lt;settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd"&gt;
+    &lt;servers&gt;
+        &lt;server&gt;
+            &lt;id&gt;central&lt;/id&gt;
+            &lt;username&gt;你的_CENTRAL_USER_TOKEN_NAME&lt;/username&gt;
+            &lt;password&gt;你的_CENTRAL_USER_TOKEN_PASSWORD&lt;/password&gt;
+        &lt;/server&gt;
+    &lt;/servers&gt;
+&lt;/settings&gt;</code></pre>
+
+    <p><strong>注意</strong>：这里的 <code>&lt;id&gt;central&lt;/id&gt;</code> 必须与项目中 POM 插件的 <code>&lt;publishingServerId&gt;</code> 完全一致。</p>
+
+    <h2>五、第四步：项目 POM 开源合规与插件配置（small-rpc 实战）</h2>
+    <p>接下来是核心实操。我们以 <strong>small-rpc</strong> 的真实根 <code>pom.xml</code> 为蓝本，逐一剖析必须具备的合规配置与插件链。</p>
+
+    <h3>1. 必填开源元数据</h3>
+    <p>Central 严禁匿名或缺失版权信息的依赖发布。顶级 <code>pom.xml</code> 中必须包含项目描述、开源协议、开发者信息以及 SCM 源码仓库地址：</p>
+
+    <pre><code>&lt;groupId&gt;io.github.upowerman&lt;/groupId&gt;
+&lt;artifactId&gt;small-rpc&lt;/artifactId&gt;
+&lt;version&gt;2.1.1&lt;/version&gt;
+&lt;packaging&gt;pom&lt;/packaging&gt;
+
+&lt;name&gt;Small RPC&lt;/name&gt;
+&lt;description&gt;A lightweight, extensible, high-performance Java RPC framework.&lt;/description&gt;
+&lt;url&gt;https://github.com/upowerman/small-rpc&lt;/url&gt;
+
+&lt;licenses&gt;
+    &lt;license&gt;
+        &lt;name&gt;Apache License, Version 2.0&lt;/name&gt;
+        &lt;url&gt;https://www.apache.org/licenses/LICENSE-2.0.txt&lt;/url&gt;
+        &lt;distribution&gt;repo&lt;/distribution&gt;
+    &lt;/license&gt;
+&lt;/licenses&gt;
+
+&lt;developers&gt;
+    &lt;developer&gt;
+        &lt;id&gt;upowerman&lt;/id&gt;
+        &lt;name&gt;upowerman&lt;/name&gt;
+        &lt;url&gt;https://github.com/upowerman&lt;/url&gt;
+    &lt;/developer&gt;
+&lt;/developers&gt;
+
+&lt;scm&gt;
+    &lt;connection&gt;scm:git:https://github.com/upowerman/small-rpc.git&lt;/connection&gt;
+    &lt;developerConnection&gt;scm:git:git@github.com:upowerman/small-rpc.git&lt;/developerConnection&gt;
+    &lt;url&gt;https://github.com/upowerman/small-rpc&lt;/url&gt;
+&lt;/scm&gt;</code></pre>
+
+    <h3>2. 打包 Profile 与发布插件组</h3>
+    <p>为了避免日常本地构建（如 <code>mvn test</code> 或 <code>mvn compile</code>）每次都重复执行漫长的 Javadoc 生成与签名，我们将发布插件统一封装在 <code>&lt;profile id="release"&gt;</code> 中，仅在发包时激活：</p>
+
+    <pre><code>&lt;profiles&gt;
+    &lt;profile&gt;
+        &lt;id&gt;release&lt;/id&gt;
+        &lt;build&gt;
+            &lt;plugins&gt;
+                &lt;!-- 1. 官方 Central 发布插件（替代旧的 nexus-staging） --&gt;
+                &lt;plugin&gt;
+                    &lt;groupId&gt;org.sonatype.central&lt;/groupId&gt;
+                    &lt;artifactId&gt;central-publishing-maven-plugin&lt;/artifactId&gt;
+                    &lt;version&gt;0.11.0&lt;/version&gt;
+                    &lt;extensions&gt;true&lt;/extensions&gt;
+                    &lt;configuration&gt;
+                        &lt;publishingServerId&gt;central&lt;/publishingServerId&gt;
+                        &lt;autoPublish&gt;true&lt;/autoPublish&gt;
+                        &lt;waitUntil&gt;published&lt;/waitUntil&gt;
+                        &lt;excludeArtifacts&gt;
+                            &lt;excludeArtifact&gt;rpc-examples&lt;/excludeArtifact&gt;
+                            &lt;excludeArtifact&gt;rpc-example-api&lt;/excludeArtifact&gt;
+                            &lt;excludeArtifact&gt;rpc-example-client&lt;/excludeArtifact&gt;
+                            &lt;excludeArtifact&gt;rpc-example-server&lt;/excludeArtifact&gt;
+                        &lt;/excludeArtifacts&gt;
+                    &lt;/configuration&gt;
+                &lt;/plugin&gt;
+
+                &lt;!-- 2. 源码打包插件（生成 -sources.jar） --&gt;
+                &lt;plugin&gt;
+                    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                    &lt;artifactId&gt;maven-source-plugin&lt;/artifactId&gt;
+                    &lt;version&gt;3.3.0&lt;/version&gt;
+                    &lt;executions&gt;
+                        &lt;execution&gt;
+                            &lt;phase&gt;package&lt;/phase&gt;
+                            &lt;goals&gt;
+                                &lt;goal&gt;jar-no-fork&lt;/goal&gt;
+                            &lt;/goals&gt;
+                        &lt;/execution&gt;
+                    &lt;/executions&gt;
+                &lt;/plugin&gt;
+
+                &lt;!-- 3. Javadoc 打包插件（生成 -javadoc.jar） --&gt;
+                &lt;plugin&gt;
+                    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                    &lt;artifactId&gt;maven-javadoc-plugin&lt;/artifactId&gt;
+                    &lt;version&gt;3.6.3&lt;/version&gt;
+                    &lt;configuration&gt;
+                        &lt;!-- 避坑：关闭严格语法检查，避免因缺少 @param 或 HTML 标签轻微不规范导致打包崩溃 --&gt;
+                        &lt;doclint&gt;none&lt;/doclint&gt;
+                    &lt;/configuration&gt;
+                    &lt;executions&gt;
+                        &lt;execution&gt;
+                            &lt;phase&gt;package&lt;/phase&gt;
+                            &lt;goals&gt;
+                                &lt;goal&gt;jar&lt;/goal&gt;
+                            &lt;/goals&gt;
+                        &lt;/execution&gt;
+                    &lt;/executions&gt;
+                &lt;/plugin&gt;
+
+                &lt;!-- 4. GPG 签名插件（生成 .asc 签名） --&gt;
+                &lt;plugin&gt;
+                    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                    &lt;artifactId&gt;maven-gpg-plugin&lt;/artifactId&gt;
+                    &lt;version&gt;3.1.0&lt;/version&gt;
+                    &lt;executions&gt;
+                        &lt;execution&gt;
+                            &lt;phase&gt;verify&lt;/phase&gt;
+                            &lt;goals&gt;
+                                &lt;goal&gt;sign&lt;/goal&gt;
+                            &lt;/goals&gt;
+                        &lt;/execution&gt;
+                    &lt;/executions&gt;
+                &lt;/plugin&gt;
+            &lt;/plugins&gt;
+        &lt;/build&gt;
+    &lt;/profile&gt;
+&lt;/profiles&gt;</code></pre>
+
+    <h2>六、关键实战避坑指南（small-rpc 踩坑真实复盘）</h2>
+    <p>在 <code>small-rpc</code> 的实际发布过程中，我们遇到了两个非常典型、且在现有搜索引擎中极难找到答案的问题，在此重点记录：</p>
+
+    <h3>避坑点 1：插件版本千万别用 0.7.0！务必升级至 0.11.0+</h3>
+    <p>在 small-rpc 历史提交记录中，有一条明确的修复日志：</p>
+    <blockquote>
+      <code>build(release): central-publishing-maven-plugin 0.7.0 -> 0.11.0（修复 waitUntil=published 轮询解析服务端新增 warnings 字段崩溃）</code>
+    </blockquote>
+    <p><strong>原因复盘</strong>：我们在配置中开启了 <code>&lt;waitUntil&gt;published&lt;/waitUntil&gt;</code>，期望 Maven 命令在终端自动阻塞轮询 Central Portal 的发布状态，直到全部模块完成校验与上架。然而，Sonatype 官方在 2024 年下半年对 Central Portal 后端 API 进行了一次升级，在轮询返回的 JSON 中新增了 <code>warnings</code> 字段。老版本 <code>0.7.0</code> 内部依赖的 Jackson 反序列化策略未忽略未知字段，导致轮询到第二阶段时直接抛出 <code>UnrecognizedPropertyException</code> 异常崩溃！升级到 <strong><code>0.11.0</code></strong> 即可完美支持新版 API。</p>
+
+    <h3>避坑点 2：多模块项目中如何优雅排除 example/demo 模块？</h3>
+    <p>许多开源框架（如 small-rpc、Netty、Dubbo）都会在工程里包含一个或多个 <code>example</code> 模块供使用者参考。这些模块绝不能发布到 Maven 中央仓库污染公共命名空间。</p>
+    <p>如果仅仅在子模块 POM 中配置 <code>&lt;maven.deploy.skip&gt;true&lt;/maven.deploy.skip&gt;</code>，你会发现 <code>central-publishing-maven-plugin</code> 在汇总分析构件签名时，依然可能会尝试校验或打包这几个子模块，最终提示签名或 Javadoc 缺失异常。</p>
+    <p>在 small-rpc 提交 <code>d850126</code> 中，我们给出了标准解法——<strong>父子 POM 双保险策略</strong>：</p>
+    <ol>
+      <li><strong>父 POM 显式排除</strong>：在 <code>central-publishing-maven-plugin</code> 配置中使用 <code>&lt;excludeArtifacts&gt;</code>：
+        <pre><code>&lt;excludeArtifacts&gt;
+    &lt;excludeArtifact&gt;rpc-examples&lt;/excludeArtifact&gt;
+    &lt;excludeArtifact&gt;rpc-example-api&lt;/excludeArtifact&gt;
+    &lt;excludeArtifact&gt;rpc-example-client&lt;/excludeArtifact&gt;
+    &lt;excludeArtifact&gt;rpc-example-server&lt;/excludeArtifact&gt;
+&lt;/excludeArtifacts&gt;</code></pre>
+      </li>
+      <li><strong>子模块 POM 跳过全套发布生命周期</strong>：在 <code>rpc-examples/pom.xml</code> 的 <code>&lt;properties&gt;</code> 中增加如下属性：
+        <pre><code>&lt;properties&gt;
+    &lt;maven.deploy.skip&gt;true&lt;/maven.deploy.skip&gt;
+    &lt;gpg.skip&gt;true&lt;/gpg.skip&gt;
+    &lt;maven.javadoc.skip&gt;true&lt;/maven.javadoc.skip&gt;
+    &lt;maven.source.skip&gt;true&lt;/maven.source.skip&gt;
+&lt;/properties&gt;</code></pre>
+      </li>
+    </ol>
+    <p>这样既保证了父工程 <code>mvn clean test</code> 时 demo 参与自动化测试，又杜绝了发包时 demo 构件泄露或产生校验干扰。</p>
+
+    <h2>七、第五步：一键打包发布与验证</h2>
+    <p>全部配置就绪后，发布变得极其简单。只需要在项目根目录下执行一行命令：</p>
+
+    <pre><code>mvn clean deploy -Prelease</code></pre>
+
+    <p>此时 Maven 会全自动执行以下流程：</p>
+    <ol>
+      <li><strong>编译与打包</strong>：编译 Java 源码并生成标准的 <code>.jar</code>；</li>
+      <li><strong>源码与 Javadoc</strong>：自动生成对应的 <code>-sources.jar</code> 与 <code>-javadoc.jar</code>；</li>
+      <li><strong>GPG 签名</strong>：调用本地 GPG 工具对所有产物生成 <code>.asc</code> 签名文件（若未在守护进程缓存密码，终端会弹出密码输入提示）；</li>
+      <li><strong>打包 Bundle 并上传</strong>：<code>central-publishing-maven-plugin</code> 将所有模块产物打包成 Zip，自动调用 Central Portal API 进行分块上传；</li>
+      <li><strong>自动校验与发布</strong>：因为配置了 <code>&lt;autoPublish&gt;true&lt;/autoPublish&gt;</code>，Portal 校验（Namespace 正确性、PGP 签名合法性、Checksum 比对、POM 完整性）全绿通过后，将自动变更为 <code>PUBLISHED</code> 状态。</li>
+    </ol>
+
+    <h3>如何验证包已上线？</h3>
+    <ul>
+      <li><strong>Central Portal 控制台</strong>：访问 <a href="https://central.sonatype.com/publishing/deployments" target="_blank" rel="noopener">Publishing Deployments</a> 查看部署状态与执行详情；</li>
+      <li><strong>中央仓库索引同步</strong>：发布成功后约 <strong>15~30 分钟</strong>，全球 Maven 镜像源即会完成同步，任何项目即可通过坐标直接引入：
+        <pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;io.github.upowerman&lt;/groupId&gt;
+    &lt;artifactId&gt;small-rpc-spring-boot-starter&lt;/artifactId&gt;
+    &lt;version&gt;2.1.1&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+      </li>
+      <li><strong>mvnrepository 检索</strong>：通常在 <strong>2~4 小时</strong> 内，<a href="https://mvnrepository.com/" target="_blank" rel="noopener">mvnrepository.com</a> 的爬虫就会抓取到最新版本并呈现完整的依赖树信息。</li>
+    </ul>
+
+    <h2>八、写在最后</h2>
+    <p>将自己的开源框架发布到 Maven 中央仓库，不仅是对自身代码工程化规范的一次全面洗礼（严格的开源协议、SCM、完整 Javadoc 和源码包保证），也是让技术成果能够真正服务于社区开发者的关键一步。</p>
+    <p>如果你正在构建自己的 Java 工具或开源框架，欢迎参考 <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">small-rpc</a> 的完整工程结构与 <code>pom.xml</code> 配置，也欢迎来仓库提 issue 或进行交流探讨！</p>
+  </article>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> · 高云峰</span>
+      <a href="https://github.com/fengstack" target="_blank" rel="noopener" class="mono">me → github.com/fengstack</a>
+    </div>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script src="../../js/nav.js" defer></script>
+</body>
+</html>

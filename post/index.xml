@@ -6,8 +6,15 @@
     <description>Recent content in Posts on fengstack&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 06 Oct 2026 21:30:00 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 18 Oct 2026 09:45:00 +0800</lastBuildDate>
     <atom:link href="https://blog.yunitytech.top/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）</title>
+      <link>https://blog.yunitytech.top/post/maven-central-publish-guide/</link>
+      <pubDate>Sun, 18 Oct 2026 09:45:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/maven-central-publish-guide/</guid>
+      <description>详解 Sonatype Central Portal 全新规范：Namespace 认证、GPG 签名分发、POM 合规配置，以及基于 small-rpc 的多模块排除与发布避坑实战。</description>
+    </item>
     <item>
       <title>给 openobserve 提的三个 PR:都是边界条件惹的祸</title>
       <link>https://blog.yunitytech.top/post/openobserve-three-prs/</link>
