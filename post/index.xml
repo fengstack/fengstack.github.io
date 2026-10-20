@@ -6,8 +6,15 @@
     <description>Recent content in Posts on fengstack&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 18 Oct 2026 09:45:00 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 20 Oct 2026 10:00:00 +0800</lastBuildDate>
     <atom:link href="https://blog.yunitytech.top/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</title>
+      <link>https://blog.yunitytech.top/post/small-rpc-v3-governance/</link>
+      <pubDate>Tue, 20 Oct 2026 10:00:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/small-rpc-v3-governance/</guid>
+      <description>兑现 2.0 埋下的伏笔：以 Filter 链形式手写熔断器（滑动窗口+双条件三态状态机）、令牌桶限流、降级 Fallback 与在途背压，全部 opt-in 默认关闭。逐一拆解实现源码，并给出熔断快速失败与半开自愈的完整验证命令。</description>
+    </item>
     <item>
       <title>从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）</title>
       <link>https://blog.yunitytech.top/post/maven-central-publish-guide/</link>
