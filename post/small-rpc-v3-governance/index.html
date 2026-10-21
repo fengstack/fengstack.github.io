@@ -375,7 +375,7 @@ snap.rejections();   // 按原因归因的拒绝计数：
 
     <h2>九、写在最后</h2>
     <p>3.0 的所有治理能力都是 opt-in 的：不写一行配置，升级后行为零变化；写了配置，每个机制也都<strong>可单独阅读、单独 Debug、单独关掉</strong>——熔断器和限流器同时是两个新的 SPI 扩展点（<code>CircuitBreaker</code> / <code>RateLimiter</code>），默认实现不满意可以直接替换。这延续了我写这个框架一贯的立场：每一层机制都小到能装进脑子里，出问题知道去哪看。</p>
-    <p>至此，small-rpc 走完了「1.0 极简原型 → 2.0 微内核架构 → 3.0 治理闭环」的完整演进。如果你对 RPC 内核、服务治理的实现细节感兴趣，欢迎阅读系列前篇《<a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a>》与《<a href="../maven-central-publish-guide/">基于 small-rpc 实战发布到 Maven 中央仓库</a>》，也欢迎来 <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">GitHub 仓库</a> 提 issue 交流——全部源码带注释，支持单步 Debug。</p>
+    <p>至此，small-rpc 走完了「1.0 极简原型 → 2.0 微内核架构 → 3.0 治理闭环」的完整演进。如果你对 RPC 内核、服务治理的实现细节感兴趣，欢迎阅读系列前篇《<a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a>》与《<a href="../maven-central-publish-guide/">基于 small-rpc 实战发布到 Maven 中央仓库</a>》，以及方法论总结《<a href="../agent-programming-sdd-tdd/">从 Vibe Coding 到双轨 SDD：现代 Agent 编程工程化实践</a>》，也欢迎来 <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">GitHub 仓库</a> 提 issue 交流——全部源码带注释，支持单步 Debug。</p>
   </article>
 
   <footer class="site-footer">

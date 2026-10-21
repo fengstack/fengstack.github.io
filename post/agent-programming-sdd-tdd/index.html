@@ -16,18 +16,50 @@
   <meta property="og:image" content="https://blog.yunitytech.top/images/avatar.png" />
   <meta property="og:locale" content="zh_CN" />
   <meta property="article:published_time" content="2026-10-21" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践 · 高云峰的博客" />
+  <meta name="twitter:description" content="系统复盘 AI 编程方法论演进：基于复杂度路由的双轨制，以 SDD 规范为灵魂、TDD 为机器裁判的工业级交付体系。" />
+  <meta name="twitter:image" content="https://blog.yunitytech.top/images/avatar.png" />
+  <link rel="alternate" type="application/rss+xml" title="高云峰的技术博客" href="../../index.xml" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": "从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践",
-    "url": "https://blog.yunitytech.top/post/agent-programming-sdd-tdd/",
-    "datePublished": "2026-10-21",
-    "dateModified": "2026-10-21",
-    "inLanguage": "zh-CN",
-    "author": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" },
-    "publisher": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" },
-    "mainEntityOfPage": "https://blog.yunitytech.top/post/agent-programming-sdd-tdd/"
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "headline": "从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践",
+        "url": "https://blog.yunitytech.top/post/agent-programming-sdd-tdd/",
+        "datePublished": "2026-10-21",
+        "dateModified": "2026-10-21",
+        "inLanguage": "zh-CN",
+        "author": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" },
+        "publisher": { "@type": "Person", "name": "高云峰", "url": "https://blog.yunitytech.top/" },
+        "mainEntityOfPage": "https://blog.yunitytech.top/post/agent-programming-sdd-tdd/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "首页",
+            "item": "https://blog.yunitytech.top/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "文章",
+            "item": "https://blog.yunitytech.top/post/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践",
+            "item": "https://blog.yunitytech.top/post/agent-programming-sdd-tdd/"
+          }
+        ]
+      }
+    ]
   }
   </script>
   <link rel="icon" href="../../images/github.png">
@@ -293,6 +325,21 @@ Subagent-Driven 执行 (主代理做 Tech Lead，派生子代理隔离编码与�
     </ul>
 
     <p>现代 Agent 编程的终极心法，不是学会多少精巧的 Prompt，而是把软件工程中被验证了几十年的常识——<strong>规范先行、计划明确、测试驱动</strong>——通过新的交互介质重新贯彻到底。模型越来越聪明，而我们要做的，就是给这个拥有无尽算力与知识的超级外脑，配上一张精确的施工图（SDD），以及一道不可逾越的安全护栏（TDD）。</p>
+
+    <h2>七、延伸阅读与相关工程实践</h2>
+    <p>本文介绍的规范驱动（Spec-Driven）与测试护栏（TDD）思想，在工业级中间件与开源架构设计中均有深度体现。欢迎阅读系列相关文章：</p>
+    <ul>
+      <li><a href="../small-rpc-v3-governance/">small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</a> —— 复杂工程契约与三态状态机落地实战；</li>
+      <li><a href="../maven-central-publish-guide/">从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库</a> —— 生产级开源规范与合规发布闭环；</li>
+      <li><a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a> —— 微内核架构与自研 SPI 扩展机制；</li>
+      <li><a href="../jooq-postgis-intro/">当 jOOQ 遇上 PostGIS：jooq-postgis 诞生记</a> —— 严苛类型系统与规范扩展。</li>
+    </ul>
+
+    <div style="margin-top: 36px; padding: 18px 22px; border-radius: 8px; border: 1px dashed var(--border, #30363d); background: var(--bg-soft, rgba(255,255,255,0.02));">
+      <p style="margin: 0; font-size: 0.92rem; color: var(--fg-muted, #8b949e);">
+        <strong>版权与引用声明</strong>：本文为高云峰原创技术文章，首发于个人技术博客 <a href="https://blog.yunitytech.top/post/agent-programming-sdd-tdd/">https://blog.yunitytech.top/</a>。欢迎技术交流与转载，转载请保留原文出处与完整链接。
+      </p>
+    </div>
   </article>
 
   <footer class="site-footer">

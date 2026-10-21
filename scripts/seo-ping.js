@@ -7,26 +7,41 @@
  */
 
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 const HOST = 'blog.yunitytech.top';
 const KEY = '9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b';
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
-const URL_LIST = [
-  `https://${HOST}/`,
-  `https://${HOST}/about/`,
-  `https://${HOST}/post/`,
-  `https://${HOST}/post/agent-programming-sdd-tdd/`,
-  `https://${HOST}/post/small-rpc-v3-governance/`,
-  `https://${HOST}/post/maven-central-publish-guide/`,
-  `https://${HOST}/post/small-rpc-intro/`,
-  `https://${HOST}/post/openobserve-three-prs/`,
-  `https://${HOST}/post/glogcenter-two-prs/`,
-  `https://${HOST}/post/jooq-postgis-intro/`,
-  `https://${HOST}/tags/`,
-  `https://${HOST}/categories/`
-];
+// Extract all URLs dynamically from sitemap.xml to always stay 100% in sync
+function getUrlList() {
+  const sitemapPath = path.resolve(__dirname, '../sitemap.xml');
+  try {
+    const content = fs.readFileSync(sitemapPath, 'utf8');
+    const matches = [...content.matchAll(/<loc>(https:\/\/[^<]+)<\/loc>/g)].map(m => m[1].trim());
+    if (matches && matches.length > 0) {
+      return [...new Set(matches)];
+    }
+  } catch (err) {
+    console.warn(`[SEO Ping] Could not read sitemap.xml dynamically (${err.message}). Using fallback list.`);
+  }
+
+  return [
+    `https://${HOST}/`,
+    `https://${HOST}/about/`,
+    `https://${HOST}/post/`,
+    `https://${HOST}/post/agent-programming-sdd-tdd/`,
+    `https://${HOST}/post/small-rpc-v3-governance/`,
+    `https://${HOST}/post/maven-central-publish-guide/`,
+    `https://${HOST}/post/small-rpc-intro/`,
+    `https://${HOST}/tags/`,
+    `https://${HOST}/categories/`
+  ];
+}
+
+const URL_LIST = getUrlList();
 
 // 1. Submit to IndexNow (Bing / Yandex / Naver)
 function submitIndexNow() {
