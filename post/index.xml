@@ -6,8 +6,15 @@
     <description>Recent content in Posts on fengstack&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 20 Oct 2026 10:00:00 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 21 Oct 2026 08:30:00 +0800</lastBuildDate>
     <atom:link href="https://blog.yunitytech.top/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</title>
+      <link>https://blog.yunitytech.top/post/agent-programming-sdd-tdd/</link>
+      <pubDate>Wed, 21 Oct 2026 08:30:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/agent-programming-sdd-tdd/</guid>
+      <description>系统复盘 AI 编程方法论演进：从早期的 OpenSpec + Superpowers 重型防御，到基座模型智力跃升后的双轨制（复杂需求重装 vs 日常需求 Plan 模式），深入拆解以 SDD 规范为灵魂、TDD 为机器裁判的工业级交付体系。</description>
+    </item>
     <item>
       <title>small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</title>
       <link>https://blog.yunitytech.top/post/small-rpc-v3-governance/</link>
