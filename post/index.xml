@@ -6,8 +6,15 @@
     <description>Recent content in Posts on fengstack&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 21 Oct 2026 08:30:00 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 22 Oct 2026 08:35:00 +0800</lastBuildDate>
     <atom:link href="https://blog.yunitytech.top/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？</title>
+      <link>https://blog.yunitytech.top/post/agent-programming-language-benchmark/</link>
+      <pubDate>Thu, 22 Oct 2026 08:35:00 +0800</pubDate>
+      <guid>https://blog.yunitytech.top/post/agent-programming-language-benchmark/</guid>
+      <description>打破“越啰嗦越耗 Token”的传统直觉，深入拆解上下文膨胀、自愈循环乘数与分词损耗，结合静态检查对 Agent 幻觉的降维打击，全方位量化对比 Go、TypeScript、Java、Rust、Python 在性能、Token 经济性、AI 易写度与长期反工率上的综合表现。</description>
+    </item>
     <item>
       <title>从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</title>
       <link>https://blog.yunitytech.top/post/agent-programming-sdd-tdd/</link>

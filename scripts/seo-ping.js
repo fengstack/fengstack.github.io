@@ -32,6 +32,7 @@ function getUrlList() {
     `https://${HOST}/`,
     `https://${HOST}/about/`,
     `https://${HOST}/post/`,
+    `https://${HOST}/post/agent-programming-language-benchmark/`,
     `https://${HOST}/post/agent-programming-sdd-tdd/`,
     `https://${HOST}/post/small-rpc-v3-governance/`,
     `https://${HOST}/post/maven-central-publish-guide/`,
