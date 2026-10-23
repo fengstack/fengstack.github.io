@@ -43,8 +43,8 @@
 | 项目 | 说明 | 仓库地址 |
 | :--- | :--- | :--- |
 | **`small-rpc`** | 基于 Netty 与 Hessian 的轻量级 RPC 治理框架，微内核架构、支持服务治理闭环（熔断、限流、降级、背压）与 Maven Central 发布。 | [GitHub](https://github.com/upowerman/small-rpc) |
-| **`simple-seata`** | 轻量级教学分布式事务框架，提炼 Seata 精髓，补全内嵌 TC 协调器、全局行锁、防脏写核验与双物理库可观察 AT 模式闭环。 | [GitHub](https://github.com/upowerman/simple-seata) |
 | **`jooq-postgis`** | jOOQ 与 PostGIS 的集成库，纯 JTS、零 GeoTools 依赖，实现类型安全的空间数据库 SQL 查询映射。 | [GitHub](https://github.com/upowerman/jooq-postgis) |
+| **`simple-seata`** | 轻量级教学分布式事务框架，提炼 Seata 精髓，补全内嵌 TC 协调器、全局行锁、防脏写核验与双物理库可观察 AT 模式闭环。 | [GitHub](https://github.com/fengstack/simple-seata) |
 
 ### 🌟 开源社区贡献
 
