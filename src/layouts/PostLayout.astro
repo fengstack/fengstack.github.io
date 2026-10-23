@@ -26,7 +26,7 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
   publishDate={publishDate}
   articleTags={tags}
 >
-  <div class="wrap-container py-8 sm:py-12">
+  <div class="w-full max-w-[1240px] mx-auto px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
     <!-- Breadcrumbs -->
     <nav class="mb-6 flex items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
       <a href="/" class="hover:text-fg transition-colors">首页</a>
@@ -36,7 +36,7 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
 
     <!-- Article Header -->
     <header class="border-b border-line pb-8 mb-10">
-      <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl font-bold leading-tight tracking-tight text-fg">
+      <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl font-bold leading-tight tracking-tight text-fg max-w-4xl">
         {title}
       </h1>
 
@@ -81,7 +81,7 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
     </header>
 
     <!-- Content Grid: Article Prose + Sticky TOC -->
-    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_240px] gap-12 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-12 xl:gap-16 items-start">
       <!-- Article Content -->
       <article class="editorial-prose max-w-none min-w-0" id="articleBody">
         {series && <SeriesBox seriesName={series.name} currentSlug={post.slug} />}

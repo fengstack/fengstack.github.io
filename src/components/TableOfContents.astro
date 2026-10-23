@@ -21,7 +21,7 @@ const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
         <li class={`transition-colors ${h.depth === 3 ? 'pl-3.5 text-[11px]' : 'font-medium'}`}>
           <a
             href={`#${h.slug}`}
-            class="toc-link block py-0.5 hover:text-fg transition-colors line-clamp-1"
+            class="toc-link block py-1 hover:text-fg transition-colors line-clamp-2 leading-snug"
             data-slug={h.slug}
           >
             {h.text}
