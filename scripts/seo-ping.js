@@ -2,8 +2,10 @@
 
 /**
  * Instant SEO Ping Script for blog.yunitytech.top
- * Pushes all URLs to IndexNow (Microsoft Bing, Yandex, Seznam, Naver)
- * Pings Bing Sitemap endpoint, and optionally Baidu Active Push API.
+ * - Microsoft Bing: Pushes all URLs directly via IndexNow protocol (api.indexnow.org)
+ * - Google: Crawls sitemap.xml automatically via Google Search Console & robots.txt
+ *   (Note: Google deprecated and closed its public sitemap ping endpoint in late 2023)
+ * - Baidu: Optional active push if BAIDU_TOKEN environment variable is set
  */
 
 const https = require('https');
@@ -38,6 +40,9 @@ function getUrlList() {
     `https://${HOST}/post/small-rpc-v3-governance/`,
     `https://${HOST}/post/maven-central-publish-guide/`,
     `https://${HOST}/post/small-rpc-intro/`,
+    `https://${HOST}/post/openobserve-three-prs/`,
+    `https://${HOST}/post/glogcenter-two-prs/`,
+    `https://${HOST}/post/jooq-postgis-intro/`,
     `https://${HOST}/tags/`,
     `https://${HOST}/categories/`
   ];
