@@ -21,7 +21,7 @@
 
   function fmt(d) {
     if (!d) return '';
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
   function itemsFromRss2(xml) {
@@ -89,6 +89,16 @@
       }
     }
 
+    // Feed 不含标签/阅读时长,重渲染时按链接从现有静态条目继承 meta,避免展示降级
+    var metaMap = {};
+    existingItems.forEach(function (li) {
+      var a = li.querySelector('a');
+      var m = li.querySelector('.tl-meta');
+      if (!a || !m) return;
+      var key = relative(a.getAttribute('href') || '').replace(/^\/+|\/+$/g, '');
+      metaMap[key] = m.outerHTML;
+    });
+
     var frag = document.createDocumentFragment();
     items.forEach(function (it) {
       if (!it.title) return;
@@ -98,6 +108,8 @@
       if (it.date) t += '<time>' + fmt(it.date) + '</time>';
       t += '<div class="tt"><a href="' + relative(it.link) + '">' + it.title + '</a></div>';
       if (it.desc) t += '<p>' + it.desc + '</p>';
+      var key = relative(it.link).replace(/^\/+|\/+$/g, '');
+      t += metaMap[key] || '';
       li.innerHTML = t;
       frag.appendChild(li);
     });
