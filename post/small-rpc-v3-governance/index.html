@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
   <title>small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环 · 高云峰的博客</title>
   <meta name="description" content="small-rpc 3.0 兑现 2.0 源码里埋下的伏笔：以 Filter 链形式手写熔断器（滑动窗口 + 错误率/慢调用双条件 + 三态状态机）、令牌桶限流、并发信号量、降级 Fallback 与在途背压，全部 opt-in 默认关闭。本文逐一拆解实现原理与核心源码，并用示例工程验证熔断快速失败与半开自愈全流程。" />
   <meta name="robots" content="index,follow" />
@@ -31,7 +33,7 @@
   }
   </script>
   <link rel="icon" href="../../images/bear.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../css/fonts.css">
   <link rel="stylesheet" href="../../css/main.css">
   <script>
     (function(){
@@ -49,18 +51,18 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="../../index.html" title="高云峰的个人主页">
         <img class="nav-bear" src="../../images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="../../about/">关于我</a>
         <a href="../../index.html#skills">技术栈</a>
         <a href="../../index.html#projects">项目</a>
         <a href="../../index.html#contribs">开源贡献</a>
-        <a href="../index.html" style="color:var(--fg)">文章</a>
+        <a href="../index.html" class="active">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -71,15 +73,23 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <div class="article-head wrap">
     <p class="crumbs"><a href="../../index.html">首页</a> · <a href="../index.html">文章</a></p>
     <h1>small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</h1>
-    <p class="meta">2026-10 · 由 me 发布 · RPC 消费端治理三件套实现拆解 · <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">参考工程: small-rpc</a></p>
+    <p class="meta">2026-10-20 · 约 13 分钟 · RPC / Java · <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">参考工程：small-rpc</a></p>
   </div>
 
   <article class="article-body wrap">
+    <aside class="series-box">
+      <div class="series-name">SERIES · SMALL-RPC 从零到治理闭环</div>
+      <ol>
+        <li><a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a></li>
+        <li class="current">small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</li>
+        <li><a href="../maven-central-publish-guide/">从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库</a></li>
+      </ol>
+    </aside>
     <p>在上一篇《<a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a>》里，我把这个从零手写的 RPC 框架重构成了「微内核 + SPI 扩展」的架构。但当时有一块能力被刻意留白了：<strong>容错治理</strong>。2.0 的 Failover 能在调用失败时换实例重试，可如果下游是持续性故障，重试只会放大流量、拖垮还在挣扎的实例——那正是熔断器要解决的问题。</p>
 
     <p>2.0 收尾时，我在 <code>FailoverClusterInvoker</code> 的状态码模型上留了一句注释：「熔断留给 3.0——状态码模型已为其预留决策依据」。<strong>3.0 的全部工作，就是兑现这句承诺</strong>：以 Filter 形式手写熔断器、客户端限流、降级 Fallback，加上传输层的在途背压和按原因归因的调用指标，构成完整的消费端治理闭环。本文逐一拆解每个机制的实现思路与核心源码，文末给出可复现的验证命令。</p>
@@ -378,6 +388,12 @@ snap.rejections();   // 按原因归因的拒绝计数：
     <p>至此，small-rpc 走完了「1.0 极简原型 → 2.0 微内核架构 → 3.0 治理闭环」的完整演进。如果你对 RPC 内核、服务治理的实现细节感兴趣，欢迎阅读系列前篇《<a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a>》与《<a href="../maven-central-publish-guide/">基于 small-rpc 实战发布到 Maven 中央仓库</a>》，以及方法论总结《<a href="../agent-programming-sdd-tdd/">从 Vibe Coding 到双轨 SDD：现代 Agent 编程工程化实践</a>》，也欢迎来 <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">GitHub 仓库</a> 提 issue 交流——全部源码带注释，支持单步 Debug。</p>
   </article>
 
+  <nav class="post-nav wrap" aria-label="文章导航">
+    <a class="pn-item" href="../agent-programming-sdd-tdd/"><span class="pn-dir">← 上一篇</span><span class="pn-title">从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</span></a>
+    <a class="pn-item next" href="../maven-central-publish-guide/"><span class="pn-dir">下一篇 →</span><span class="pn-title">从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）</span></a>
+    <a class="pn-all" href="../index.html">全部文章 →</a>
+  </nav>
+
   <footer class="site-footer">
     <div class="wrap">
       <span>© <span id="year">2026</span> · 高云峰</span>
@@ -387,7 +403,7 @@ snap.rejections();   // 按原因归因的拒绝计数：
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="../../js/nav.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" defer></script>
+  <script src="../../js/highlight.min.js" defer></script>
   <script src="../../js/article.js" defer></script>
 </body>
 </html>

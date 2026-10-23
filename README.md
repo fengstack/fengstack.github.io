@@ -49,7 +49,7 @@
 ### 🌟 开源社区贡献
 
 - **[apache/dolphinscheduler](https://github.com/apache/dolphinscheduler)**：Apache 顶级分布式工作流任务调度平台
-  - [PR #18726](https://github.com/apache/dolphinscheduler/pull/18726) · `Support month and week boundary placeholders with date offset`（为任务插件月/周边界占位符增加日期偏移量解析支持，精确计算跨月/周基准边界，评审中）
+  - [PR #18726](https://github.com/apache/dolphinscheduler/pull/18726) · `Support month and week boundary placeholders with date offset`（为任务插件月/周边界占位符增加日期偏移量解析支持，精确计算跨月/周基准边界，已合并）
 - **[openobserve/openobserve](https://github.com/openobserve/openobserve)**：云原生可观测性平台
   - [PR #15142](https://github.com/openobserve/openobserve/pull/15142) · `fix(promql): quantile interpolation keeps infinite bounds like Prometheus`（已合并）
   - [PR #15143](https://github.com/openobserve/openobserve/pull/15143) · `fix(search): clamp _around page size so small or invalid sizes stop expanding to the default limit`（已合并）
@@ -64,7 +64,7 @@
 2. [从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践](post/agent-programming-sdd-tdd/)
 3. [small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环](post/small-rpc-v3-governance/)
 4. [从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库](post/maven-central-publish-guide/)
-5. [当 jOOQ 遇上 PostGIS: jooq-postgis 诞生记](post/jooq-postgis-intro/)
+5. [当 jOOQ 遇上 PostGIS：jooq-postgis 诞生记](post/jooq-postgis-intro/)
 
 ---
 

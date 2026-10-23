@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
   <title>从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践 · 高云峰的博客</title>
   <meta name="description" content="系统复盘与总结大模型时代的现代 Agent 编程方法论演进：从早期的 OpenSpec + Superpowers 重型防御体系，到模型智力跃升后演进出的基于复杂度路由的双轨制（复杂需求重装 vs 日常需求 Plan 模式），深入拆解以 SDD（规范驱动开发）为灵魂、TDD 为确定性机器裁判的工业级软件工程交付体系。" />
   <meta name="robots" content="index,follow" />
@@ -63,7 +65,7 @@
   }
   </script>
   <link rel="icon" href="../../images/bear.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../css/fonts.css">
   <link rel="stylesheet" href="../../css/main.css">
   <script>
     (function(){
@@ -81,18 +83,18 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="../../index.html" title="高云峰的个人主页">
         <img class="nav-bear" src="../../images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="../../about/">关于我</a>
         <a href="../../index.html#skills">技术栈</a>
         <a href="../../index.html#projects">项目</a>
         <a href="../../index.html#contribs">开源贡献</a>
-        <a href="../index.html" style="color:var(--fg)">文章</a>
+        <a href="../index.html" class="active">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -103,15 +105,22 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <div class="article-head wrap">
     <p class="crumbs"><a href="../../index.html">首页</a> · <a href="../index.html">文章</a></p>
     <h1>从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</h1>
-    <p class="meta">2026-10 · 由 me 发布 · Agent 编程架构范式与实战复盘 · <span class="mono">Spec-Driven & TDD</span></p>
+    <p class="meta">2026-10-21 · 约 11 分钟 · AI 编程 / 工程实践 · <span class="mono">Spec-Driven & TDD</span></p>
   </div>
 
   <article class="article-body wrap">
+    <aside class="series-box">
+      <div class="series-name">SERIES · AI AGENT 编程实践</div>
+      <ol>
+        <li class="current">从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</li>
+        <li><a href="../agent-programming-language-benchmark/">AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？</a></li>
+      </ol>
+    </aside>
     <p>近年来，随着各类 Coding Agent（Cursor、Windsurf、Claude Code、Aider 等）的普及，以 Andrej Karpathy 为代表提倡的 <strong>“Vibe Coding（凭感觉编程）”</strong> 风靡技术社区——“不需要看代码细节，甚至不需要严密设计，只要向 AI 描述你的大致意图，让模型自主写码狂奔即可”。</p>
 
     <p>对于个人玩具项目、一次性 Demo 或绿色脚手架探索，Vibe Coding 确实带来了颠覆性的爽感。然而，一旦踏入<strong>真实严肃的生产级工程（Brownfield Codebase，已有复杂系统）</strong>，纯粹靠聊天驱动的 Agent 编程迅速露出了破绽：</p>
@@ -342,6 +351,12 @@ Subagent-Driven 执行 (主代理做 Tech Lead，派生子代理隔离编码与�
     </div>
   </article>
 
+  <nav class="post-nav wrap" aria-label="文章导航">
+    <a class="pn-item" href="../agent-programming-language-benchmark/"><span class="pn-dir">← 上一篇</span><span class="pn-title">AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？</span></a>
+    <a class="pn-item next" href="../small-rpc-v3-governance/"><span class="pn-dir">下一篇 →</span><span class="pn-title">small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</span></a>
+    <a class="pn-all" href="../index.html">全部文章 →</a>
+  </nav>
+
   <footer class="site-footer">
     <div class="wrap">
       <span>© <span id="year">2026</span> · 高云峰</span>
@@ -351,7 +366,7 @@ Subagent-Driven 执行 (主代理做 Tech Lead，派生子代理隔离编码与�
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="../../js/nav.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" defer></script>
+  <script src="../../js/highlight.min.js" defer></script>
   <script src="../../js/article.js" defer></script>
 </body>
 </html>

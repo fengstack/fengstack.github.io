@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
   <title>AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？ · 高云峰的博客</title>
   <meta name="description" content="系统复盘与深度剖析 AI Agent 编程范式下的语言选型与成本模型：打破“越啰嗦越耗 Token”的传统直觉，深入拆解上下文膨胀、自愈循环乘数与分词损耗，结合静态检查对 Agent 幻觉的降维打击，全方位量化对比 Go、TypeScript、Java、Rust、Python 在性能、Token 经济性、AI 易写度与长期反工率上的综合表现。" />
   <meta name="robots" content="index,follow" />
@@ -63,7 +65,7 @@
   }
   </script>
   <link rel="icon" href="../../images/bear.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../css/fonts.css">
   <link rel="stylesheet" href="../../css/main.css">
   <script>
     (function(){
@@ -81,18 +83,18 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="../../index.html" title="高云峰的个人主页">
         <img class="nav-bear" src="../../images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="../../about/">关于我</a>
         <a href="../../index.html#skills">技术栈</a>
         <a href="../../index.html#projects">项目</a>
         <a href="../../index.html#contribs">开源贡献</a>
-        <a href="../index.html" style="color:var(--fg)">文章</a>
+        <a href="../index.html" class="active">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -103,15 +105,22 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <div class="article-head wrap">
     <p class="crumbs"><a href="../../index.html">首页</a> · <a href="../index.html">文章</a></p>
     <h1>AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？</h1>
-    <p class="meta">2026-10 · 由 me 发布 · Agent 编程语言选型与成本模型 · <span class="mono">Tokens, Types &amp; Architecture</span></p>
+    <p class="meta">2026-10-22 · 约 11 分钟 · AI 编程 / 编程语言 · <span class="mono">Tokens, Types &amp; Architecture</span></p>
   </div>
 
   <article class="article-body wrap">
+    <aside class="series-box">
+      <div class="series-name">SERIES · AI AGENT 编程实践</div>
+      <ol>
+        <li><a href="../agent-programming-sdd-tdd/">从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</a></li>
+        <li class="current">AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？</li>
+      </ol>
+    </aside>
     <p>在传统软件工程中，评价一门编程语言的好坏通常围绕着“人脑感受”展开：表达力是否优雅、敲键盘时是否顺手、语法糖是否甜腻。开发者往往为了少敲几十个字符的大括号和分号，对动态、精炼的语法趋之若鹜。</p>
 
     <p>然而，当软件工程从<strong>“人类手指敲打键盘”</strong>演进到<strong>“人类设定规范、AI Agent 闭环开发”</strong>时，原有的评价标尺彻底失效了。在 Agent 的视角下，代码不再是供肉眼欣赏的散文，而是<strong>上下文窗口中的分词序列、状态机中的推理节点、以及编译器反馈环中的博弈对象</strong>。</p>
@@ -337,6 +346,12 @@
     </div>
   </article>
 
+  <nav class="post-nav wrap" aria-label="文章导航">
+    <a class="pn-item" href="../simple-seata-at-mode/"><span class="pn-dir">← 上一篇</span><span class="pn-title">从半成品到完整闭环：重拾波波老师的 simple-seata，我手写了 TC、防脏写与可观察 AT 模式</span></a>
+    <a class="pn-item next" href="../agent-programming-sdd-tdd/"><span class="pn-dir">下一篇 →</span><span class="pn-title">从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</span></a>
+    <a class="pn-all" href="../index.html">全部文章 →</a>
+  </nav>
+
   <footer class="site-footer">
     <div class="wrap">
       <span>© <span id="year">2026</span> · 高云峰</span>
@@ -346,7 +361,7 @@
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="../../js/nav.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" defer></script>
+  <script src="../../js/highlight.min.js" defer></script>
   <script src="../../js/article.js" defer></script>
 </body>
 </html>

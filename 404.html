@@ -3,48 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
   <title>404 - 页面未找到 · 高云峰的博客</title>
   <meta name="robots" content="noindex,follow">
   <link rel="icon" href="/images/bear.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="/css/main.css">
   <style>
-    /* Critical inline fallback styles to ensure 404 is always beautifully rendered */
-    :root {
-      --font-display: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
-      --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
-      --bg: #f6f7f9;
-      --surface: #ffffff;
-      --fg: #161a21;
-      --muted: #4f5764;
-      --line: #e3e7ee;
-      --accent: #4a5cf7;
-      --accent-ink: #ffffff;
-      --accent-soft: #eaecff;
-      --radius: 12px;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg: #0e1217;
-        --surface: #141a22;
-        --fg: #e7ebf2;
-        --muted: #a3adbc;
-        --line: #232d3a;
-        --accent: #7c8aff;
-        --accent-ink: #0e1217;
-        --accent-soft: #1d2440;
-      }
-    }
-    :root[data-theme="dark"] {
-      --bg: #0e1217;
-      --surface: #141a22;
-      --fg: #e7ebf2;
-      --muted: #a3adbc;
-      --line: #232d3a;
-      --accent: #7c8aff;
-      --accent-ink: #0e1217;
-      --accent-soft: #1d2440;
-    }
+    /* 页面专属布局样式；颜色、字体全部继承 main.css 设计变量 */
     .error-hero {
       padding-block: 64px 48px;
     }
@@ -103,13 +70,13 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="/" title="高云峰的个人主页">
         <img class="nav-bear" src="images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="/about/">关于我</a>
         <a href="/#skills">技术栈</a>
         <a href="/#projects">项目</a>
@@ -125,7 +92,7 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <main class="wrap error-hero">
     <div style="display:inline-block; margin-bottom: 4px;">

@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
   <title>技术文章与开源博客 · 高云峰</title>
   <meta name="description" content="高云峰的技术文章与开源博客列表：专注 Java RPC 框架、jOOQ/PostGIS、Rust、Go、开源贡献实战等原创技术分享。" />
   <meta name="keywords" content="高云峰, 高云峰文章, 高云峰博客, RPC, jOOQ, PostGIS, 开源贡献, Java, Rust, OpenObserve, glogcenter" />
@@ -36,7 +38,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../css/fonts.css">
   <link rel="stylesheet" href="../css/main.css">
   <script>
     (function(){
@@ -54,18 +56,18 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="../index.html" title="高云峰的个人主页">
         <img class="nav-bear" src="../images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="../about/">关于我</a>
         <a href="../index.html#skills">技术栈</a>
         <a href="../index.html#projects">项目</a>
         <a href="../index.html#contribs">开源贡献</a>
-        <a href="index.html" style="color:var(--fg)">文章</a>
+        <a href="index.html" class="active">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -76,7 +78,7 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <div class="page-head wrap">
     <h1>技术文章 · 高云峰</h1>
@@ -84,51 +86,64 @@
   </div>
 
   <main class="wrap" style="padding-block:24px 48px;">
+    <div class="search-box">
+      <input id="searchInput" type="search" placeholder="搜索文章标题或摘要…" aria-label="搜索文章" autocomplete="off">
+      <span class="search-count mono" aria-live="polite"></span>
+    </div>
     <ul class="timeline" id="postList">
       <li class="tl-item">
-        <time>2026-10</time>
+        <time>2026-10-22</time>
         <div class="tt"><a href="simple-seata-at-mode/">从半成品到完整闭环：重拾波波老师的 simple-seata，我手写了 TC、防脏写与可观察 AT 模式</a></div>
         <p>重拾当年在极客时间跟随波波老师学习时 fork 的 simple-seata，从零手写 seata-server（内嵌 TC 协调器与全局行锁）、seata-tm 事务模板，修复防脏写后镜像校验与锁重试缺陷，构建双独立 H2 物理库与每步打印前后镜像 JSON 的可观察 AT 模式闭环。</p>
+        <div class="tl-meta"><span class="tl-tag">分布式事务</span><span class="tl-tag">Java</span><span class="tl-tag">开源实战</span><span class="tl-read">约 12 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
+        <time>2026-10-22</time>
         <div class="tt"><a href="agent-programming-language-benchmark/">AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？</a></div>
         <p>打破“越啰嗦越耗 Token”的传统直觉，深入拆解上下文膨胀、自愈循环乘数与分词损耗，结合静态检查对 Agent 幻觉的降维打击，全方位量化对比 Go、TypeScript、Java、Rust、Python 在性能、Token 经济性、AI 易写度与长期反工率上的综合表现。</p>
+        <div class="tl-meta"><span class="tl-tag">AI 编程</span><span class="tl-tag">编程语言</span><span class="tl-read">约 11 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
+        <time>2026-10-21</time>
         <div class="tt"><a href="agent-programming-sdd-tdd/">从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践</a></div>
         <p>系统复盘 AI 编程方法论演进：从早期的 OpenSpec + Superpowers 重型防御，到基座模型智力跃升后的双轨制（复杂需求重装 vs 日常需求 Plan 模式），深入拆解以 SDD 规范为灵魂、TDD 为机器裁判的工业级交付体系。</p>
+        <div class="tl-meta"><span class="tl-tag">AI 编程</span><span class="tl-tag">工程实践</span><span class="tl-read">约 11 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
+        <time>2026-10-20</time>
         <div class="tt"><a href="small-rpc-v3-governance/">small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</a></div>
         <p>兑现 2.0 埋下的伏笔：以 Filter 链形式手写熔断器（滑动窗口+双条件三态状态机）、令牌桶限流、降级 Fallback 与在途背压，全部 opt-in 默认关闭。逐一拆解实现源码，并给出熔断快速失败与半开自愈的完整验证命令。</p>
+        <div class="tl-meta"><span class="tl-tag">RPC</span><span class="tl-tag">Java</span><span class="tl-read">约 13 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
+        <time>2026-10-18</time>
         <div class="tt"><a href="maven-central-publish-guide/">从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）</a></div>
         <p>详解 Sonatype Central Portal 全新规范：Namespace 认证、GPG 签名分发、POM 合规配置，以及基于 small-rpc 的多模块排除与发布避坑实战。</p>
+        <div class="tl-meta"><span class="tl-tag">Maven</span><span class="tl-tag">开源实战</span><span class="tl-read">约 9 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
-        <div class="tt"><a href="openobserve-three-prs/">给 openobserve 提的三个 PR:都是边界条件惹的祸</a></div>
-        <p>使用 openobserve 时先后遇到 Grafana 直方图不渲染、_around 接口 size=1 返回 2000 行、quantile 遇 +Inf 返回 NaN 三个问题,读 Rust 源码定位后各提交一个 PR,记录完整过程与心得。</p>
+        <time>2026-10-06</time>
+        <div class="tt"><a href="openobserve-three-prs/">给 openobserve 提的三个 PR：都是边界条件惹的祸</a></div>
+        <p>使用 openobserve 时先后遇到 Grafana 直方图不渲染、_around 接口 size=1 返回 2000 行、quantile 遇 +Inf 返回 NaN 三个问题，读 Rust 源码定位后各提交一个 PR，记录完整过程与心得。</p>
+        <div class="tl-meta"><span class="tl-tag">开源实战</span><span class="tl-tag">可观测性</span><span class="tl-read">约 5 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
-        <div class="tt"><a href="glogcenter-two-prs/">排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR</a></div>
-        <p>使用 glogcenter 时先后遇到内存持续增长与集群模式用户管理失效两个问题,读源码定位根因后提交了两个 PR(#92、#93),均已合并。记录排查过程与心得。</p>
+        <time>2026-10-06</time>
+        <div class="tt"><a href="glogcenter-two-prs/">排查 goroutine 泄漏与集群转发失效：给 glogcenter 提的两个 PR</a></div>
+        <p>使用 glogcenter 时先后遇到内存持续增长与集群模式用户管理失效两个问题，读源码定位根因后提交了两个 PR（#92、#93），均已合并。记录排查过程与心得。</p>
+        <div class="tl-meta"><span class="tl-tag">开源实战</span><span class="tl-tag">Go</span><span class="tl-read">约 5 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
-        <div class="tt"><a href="jooq-postgis-intro/">当 jOOQ 遇上 PostGIS:jooq-postgis 诞生记</a></div>
-        <p>工作中需要在 jOOQ 里映射 PostGIS 地理位置字段,于是写了 jooq-postgis:纯 JTS、零 GeoTools 的类型安全空间绑定。记录问题、方案与用法。</p>
+        <time>2026-10-06</time>
+        <div class="tt"><a href="jooq-postgis-intro/">当 jOOQ 遇上 PostGIS：jooq-postgis 诞生记</a></div>
+        <p>工作中需要在 jOOQ 里映射 PostGIS 地理位置字段，于是写了 jooq-postgis：纯 JTS、零 GeoTools 的类型安全空间绑定。记录问题、方案与用法。</p>
+        <div class="tl-meta"><span class="tl-tag">数据库</span><span class="tl-tag">Java</span><span class="tl-read">约 4 分钟</span></div>
       </li>
       <li class="tl-item">
-        <time>2026-10</time>
-        <div class="tt"><a href="small-rpc-intro/">small-rpc 2.0:基于 Netty + Hessian 的轻量级 RPC 框架</a></div>
-        <p>介绍我写的轻量级 Java RPC 框架 small-rpc:微内核架构、自研 SPI、注册中心订阅推送与缓存降级,以及快速上手示例。</p>
+        <time>2026-10-06</time>
+        <div class="tt"><a href="small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a></div>
+        <p>介绍我写的轻量级 Java RPC 框架 small-rpc：微内核架构、自研 SPI、注册中心订阅推送与缓存降级，以及快速上手示例。</p>
+        <div class="tl-meta"><span class="tl-tag">RPC</span><span class="tl-tag">Java</span><span class="tl-read">约 4 分钟</span></div>
       </li>
     </ul>
   </main>
@@ -143,5 +158,6 @@
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="../js/nav.js" defer></script>
   <script src="../js/posts.js"></script>
+  <script src="../js/search.js" defer></script>
 </body>
 </html>

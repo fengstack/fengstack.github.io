@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
   <title>从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范） · 高云峰的博客</title>
   <meta name="description" content="告别繁琐的 Jira 工单与老旧插件，本文结合 high-performance RPC 框架 small-rpc 的实战经验，详解 2024~2026 年 Sonatype Central Portal 全新规范：Namespace 认证、GPG 签名分发、POM 合规配置，以及多模块排除与发布避坑全流程。" />
   <meta name="robots" content="index,follow" />
@@ -31,7 +33,7 @@
   }
   </script>
   <link rel="icon" href="../../images/bear.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../css/fonts.css">
   <link rel="stylesheet" href="../../css/main.css">
   <script>
     (function(){
@@ -49,18 +51,18 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="../../index.html" title="高云峰的个人主页">
         <img class="nav-bear" src="../../images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="../../about/">关于我</a>
         <a href="../../index.html#skills">技术栈</a>
         <a href="../../index.html#projects">项目</a>
         <a href="../../index.html#contribs">开源贡献</a>
-        <a href="../index.html" style="color:var(--fg)">文章</a>
+        <a href="../index.html" class="active">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -71,15 +73,23 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <div class="article-head wrap">
     <p class="crumbs"><a href="../../index.html">首页</a> · <a href="../index.html">文章</a></p>
     <h1>从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库（Central Portal 最新规范）</h1>
-    <p class="meta">2026-10 · 由 me 发布 · 聚焦工程规范与发包实战 · <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">参考工程: small-rpc</a></p>
+    <p class="meta">2026-10-18 · 约 9 分钟 · Maven / 开源实战 · <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">参考工程：small-rpc</a></p>
   </div>
 
   <article class="article-body wrap">
+    <aside class="series-box">
+      <div class="series-name">SERIES · SMALL-RPC 从零到治理闭环</div>
+      <ol>
+        <li><a href="../small-rpc-intro/">small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架</a></li>
+        <li><a href="../small-rpc-v3-governance/">small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</a></li>
+        <li class="current">从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库</li>
+      </ol>
+    </aside>
     <p>对于 Java 开发者而言，把自研的基础库、工具包或者微服务框架发布到 <strong>Maven 中央仓库（Maven Central Repository）</strong>，让全球开发者只需在 <code>pom.xml</code> 里添加一段 <code>&lt;dependency&gt;</code> 就能开箱即用，是开源项目走向工业级成熟的重要里程碑。</p>
 
     <p>我在开发轻量级微内核 RPC 框架 <strong><a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">small-rpc</a></strong> 2.0 时，全仓多个子模块（如 <code>small-rpc-spring-boot-starter</code>）均正式通过了 Maven Central 发布。然而，网上的大部分教程还停留在多年前的<strong>老旧方案</strong>（去 Sonatype Jira 提工单等待管理员人工审核、配置已被弃用的 <code>nexus-staging-maven-plugin</code> 等）。</p>
@@ -365,6 +375,12 @@ gpg --keyserver hkps://keys.openpgp.org --send-keys A1B2C3D4E5F67890</code></pre
     <p>如果你正在构建自己的 Java 工具或开源框架，欢迎参考 <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener">small-rpc</a> 的完整工程结构与 <code>pom.xml</code> 配置，也欢迎来仓库提 issue 或进行交流探讨！</p>
   </article>
 
+  <nav class="post-nav wrap" aria-label="文章导航">
+    <a class="pn-item" href="../small-rpc-v3-governance/"><span class="pn-dir">← 上一篇</span><span class="pn-title">small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环</span></a>
+    <a class="pn-item next" href="../openobserve-three-prs/"><span class="pn-dir">下一篇 →</span><span class="pn-title">给 openobserve 提的三个 PR：都是边界条件惹的祸</span></a>
+    <a class="pn-all" href="../index.html">全部文章 →</a>
+  </nav>
+
   <footer class="site-footer">
     <div class="wrap">
       <span>© <span id="year">2026</span> · 高云峰</span>
@@ -374,7 +390,7 @@ gpg --keyserver hkps://keys.openpgp.org --send-keys A1B2C3D4E5F67890</code></pre
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="../../js/nav.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" defer></script>
+  <script src="../../js/highlight.min.js" defer></script>
   <script src="../../js/article.js" defer></script>
 </body>
 </html>

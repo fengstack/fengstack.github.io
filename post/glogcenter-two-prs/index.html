@@ -3,14 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR · 高云峰的博客</title>
-  <meta name="description" content="使用 glogcenter 时先后遇到内存持续增长与集群模式用户管理失效两个问题，高云峰读源码定位根因后提交了两个 PR(#92、#93),均已合并。记录排查过程与心得。" />
+  <meta name="theme-color" content="#f8f8f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
+  <title>排查 goroutine 泄漏与集群转发失效：给 glogcenter 提的两个 PR · 高云峰的博客</title>
+  <meta name="description" content="使用 glogcenter 时先后遇到内存持续增长与集群模式用户管理失效两个问题，高云峰读源码定位根因后提交了两个 PR（#92、#93），均已合并。记录排查过程与心得。" />
   <meta name="robots" content="index,follow" />
   <meta name="keywords" content="高云峰, Go, golang, goroutine 泄漏, for-select, break, 集群, 开源 PR, glogcenter" />
   <link rel="canonical" href="https://blog.yunitytech.top/post/glogcenter-two-prs/" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="高云峰的博客" />
-  <meta property="og:title" content="排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR · 高云峰的博客" />
+  <meta property="og:title" content="排查 goroutine 泄漏与集群转发失效：给 glogcenter 提的两个 PR · 高云峰的博客" />
   <meta property="og:description" content="两个问题、两次读源码、两个已合并的 PR。高云峰记录完整排查过程与心得。" />
   <meta property="og:url" content="https://blog.yunitytech.top/post/glogcenter-two-prs/" />
   <meta property="og:image" content="https://blog.yunitytech.top/images/avatar.png" />
@@ -20,7 +22,7 @@
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR",
+    "headline": "排查 goroutine 泄漏与集群转发失效：给 glogcenter 提的两个 PR",
     "url": "https://blog.yunitytech.top/post/glogcenter-two-prs/",
     "datePublished": "2026-10-06",
     "dateModified": "2026-10-14",
@@ -31,7 +33,7 @@
   }
   </script>
   <link rel="icon" href="../../images/bear.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+SC:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../css/fonts.css">
   <link rel="stylesheet" href="../../css/main.css">
   <script>
     (function(){
@@ -49,18 +51,18 @@
 </head>
 <body>
 
-  <nav class="site-nav">
+  <header class="site-nav">
     <div class="wrap">
       <a class="nav-me" href="../../index.html" title="高云峰的个人主页">
         <img class="nav-bear" src="../../images/bear.png" alt="" width="20" height="20">
         高云峰
       </a>
-      <nav class="nav-links" id="navLinks">
+      <nav class="nav-links" id="navLinks" aria-label="主导航">
         <a href="../../about/">关于我</a>
         <a href="../../index.html#skills">技术栈</a>
         <a href="../../index.html#projects">项目</a>
         <a href="../../index.html#contribs">开源贡献</a>
-        <a href="../index.html" style="color:var(--fg)">文章</a>
+        <a href="../index.html" class="active">文章</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeBtn" aria-label="切换主题" onclick="__toggleTheme()">◐</button>
@@ -71,12 +73,12 @@
         </button>
       </div>
     </div>
-  </nav>
+  </header>
 
   <div class="article-head wrap">
     <p class="crumbs"><a href="../../index.html">首页</a> · <a href="../index.html">文章</a></p>
-    <h1>排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR</h1>
-    <p class="meta">2026-10 · 由 me 发布 · <a href="https://github.com/gotoeasy/glogcenter" target="_blank" rel="noopener">github.com/gotoeasy/glogcenter</a></p>
+    <h1>排查 goroutine 泄漏与集群转发失效：给 glogcenter 提的两个 PR</h1>
+    <p class="meta">2026-10-06 · 约 5 分钟 · 开源实战 / Go · <a href="https://github.com/gotoeasy/glogcenter" target="_blank" rel="noopener">github.com/gotoeasy/glogcenter</a></p>
   </div>
 
   <article class="article-body wrap">
@@ -147,6 +149,12 @@
     <p>项目地址:<a href="https://github.com/gotoeasy/glogcenter" target="_blank" rel="noopener">github.com/gotoeasy/glogcenter</a></p>
   </article>
 
+  <nav class="post-nav wrap" aria-label="文章导航">
+    <a class="pn-item" href="../openobserve-three-prs/"><span class="pn-dir">← 上一篇</span><span class="pn-title">给 openobserve 提的三个 PR：都是边界条件惹的祸</span></a>
+    <a class="pn-item next" href="../jooq-postgis-intro/"><span class="pn-dir">下一篇 →</span><span class="pn-title">当 jOOQ 遇上 PostGIS：jooq-postgis 诞生记</span></a>
+    <a class="pn-all" href="../index.html">全部文章 →</a>
+  </nav>
+
   <footer class="site-footer">
     <div class="wrap">
       <span>© <span id="year">2026</span> · 高云峰</span>
@@ -156,7 +164,7 @@
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="../../js/nav.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js" defer></script>
+  <script src="../../js/highlight.min.js" defer></script>
   <script src="../../js/article.js" defer></script>
 </body>
 </html>

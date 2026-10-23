@@ -4,6 +4,29 @@
   const body = document.querySelector('.article-body');
   if (!body) return;
 
+  /* ---- 返回顶部按钮(所有文章页,滚动超过一屏后出现) ---- */
+  const topBtn = document.createElement('button');
+  topBtn.type = 'button';
+  topBtn.className = 'back-to-top';
+  topBtn.setAttribute('aria-label', '回到顶部');
+  topBtn.textContent = '↑';
+  topBtn.addEventListener('click', () => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+  document.body.appendChild(topBtn);
+  let topTicking = false;
+  const toggleTop = () => {
+    topBtn.classList.toggle('show', window.scrollY > 600);
+    topTicking = false;
+  };
+  document.addEventListener('scroll', () => {
+    if (topTicking) return;
+    topTicking = true;
+    requestAnimationFrame(toggleTop);
+  }, { passive: true });
+  toggleTop();
+
   const headings = Array.from(body.querySelectorAll('h2, h3'));
   if (!headings.length) return;
 
@@ -36,6 +59,23 @@
       toc.appendChild(a);
     }
     document.body.appendChild(toc);
+
+    /* ---- 移动端可折叠目录(<1366px 由 CSS 显示) ---- */
+    const mtoc = document.createElement('details');
+    mtoc.className = 'toc-mobile';
+    const msummary = document.createElement('summary');
+    msummary.textContent = 'ON THIS PAGE · 目录';
+    const mlist = document.createElement('div');
+    mlist.className = 'toc-mobile-list';
+    for (const h of headings) {
+      const a = document.createElement('a');
+      a.href = `#${h.id}`;
+      a.textContent = h.textContent;
+      if (h.tagName === 'H3') a.classList.add('lvl3');
+      mlist.appendChild(a);
+    }
+    mtoc.append(msummary, mlist);
+    body.prepend(mtoc);
 
     const tocLinks = Array.from(toc.querySelectorAll('a'));
     let ticking = false;
