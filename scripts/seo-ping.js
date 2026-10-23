@@ -19,7 +19,9 @@ const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
 // Extract all URLs dynamically from sitemap.xml to always stay 100% in sync
 function getUrlList() {
-  const sitemapPath = path.resolve(__dirname, '../sitemap.xml');
+  const distSitemap = path.resolve(__dirname, '../dist/sitemap.xml');
+  const rootSitemap = path.resolve(__dirname, '../sitemap.xml');
+  const sitemapPath = fs.existsSync(distSitemap) ? distSitemap : rootSitemap;
   try {
     const content = fs.readFileSync(sitemapPath, 'utf8');
     const matches = [...content.matchAll(/<loc>(https:\/\/[^<]+)<\/loc>/g)].map(m => m[1].trim());

@@ -1,144 +1,188 @@
 # 高云峰的个人主页与技术博客 (fengstack.github.io)
 
 <p align="center">
-  <a href="https://blog.yunitytech.top/"><strong>🌐 在线访问：blog.yunitytech.top</strong></a>
+  <a href="https://blog.yunitytech.top/"><strong>🌐 线上访问：https://blog.yunitytech.top/</strong></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Online-success?style=flat-square" alt="Status">
+  <img src="https://img.shields.io/badge/Framework-Astro_5-BC52EE?style=flat-square&logo=astro" alt="Astro">
+  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6?style=flat-square&logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Styling-Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Syntax-Shiki-000000?style=flat-square" alt="Shiki">
+  <img src="https://img.shields.io/badge/Deployment-GitHub_Pages-222222?style=flat-square&logo=github-pages" alt="GitHub Pages">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
-  <img src="https://img.shields.io/badge/RSS-Feed-orange?style=flat-square&logo=rss" alt="RSS">
-  <img src="https://img.shields.io/badge/Author-高云峰%20(fengstack)-1081c2?style=flat-square" alt="Author">
 </p>
 
 ---
 
 ## 📖 项目简介
 
-本项目是 **高云峰（fengstack / upowerman）** 的个人主页与技术博客站点源码仓库。
+本项目是 **高云峰（fengstack / upowerman）** 的个人技术品牌主页与技术博客仓库。
 
-主站基于 **原生现代 Web 技术（Vanilla HTML5 / CSS3 / ES6）** 构建，托管于 GitHub Pages，绑定独立域名 [blog.yunitytech.top](https://blog.yunitytech.top/)。内容主要围绕 **Java 后端核心技术、分布式 RPC 框架治理、现代 AI Agent 规范驱动编程实践（SDD 与 TDD）、空间数据库与开源实战贡献**。
+网站采用 **Editorial Technology Publication × Minimal Developer Portfolio**（现代技术出版物与极简工程师个人品牌相结合）的设计哲学。主站基于 **Astro 5 + TypeScript + Tailwind CSS** 构建，采用 Astro Content Collections 统一强类型管理博文，部署于 GitHub Pages，绑定独立域名 [blog.yunitytech.top](https://blog.yunitytech.top/)。
 
----
-
-## 🚀 站点架构与技术特色
-
-- **⚡️ 零框架包袱，极致加载**：
-  - 摒弃复杂重型前端框架与构建工具链，采用原生静态语义化 HTML5 与轻量 CSS，首屏毫秒级直出。
-- **🌓 优雅双主题切换**：
-  - 支持随系统偏好（`prefers-color-scheme`）自适应深色/浅色模式，并支持一键手动切换与 `localStorage` 本地状态记忆。
-- **🔍 现代全网 SEO 基础设施**：
-  - **结构化知识图谱**：深度集成 [Schema.org](https://schema.org)（JSON-LD）标准，配置了 `Person`、`WebSite`、`BlogPosting` 与 `BreadcrumbList` 实体关系。
-  - **跨平台元标签**：完整支持 Open Graph 与 Twitter Card 社交分享卡片。
-  - **动态地图与推送**：自动生成 `sitemap.xml`，配合 [IndexNow 协议](https://www.indexnow.org/) 支持将全站更新实时广播推送至微软 Bing、Yandex、Naver 等搜索引擎。
-- **🤖 持续集成与主动收录 (CI/CD)**：
-  - 通过 GitHub Actions 工作流（[`.github/workflows/seo-push.yml`](.github/workflows/seo-push.yml)），每次 push 自动执行 [`scripts/seo-ping.js`](scripts/seo-ping.js) 实现全自动 SEO Ping。
+内容深度聚焦于：
+1. **Java 后端核心与高性能通信**：Netty 二进制私有网络协议、微内核 SPI 架构。
+2. **分布式系统与中间件治理**：RPC 消费端熔断限流降级闭环（`small-rpc`）、分布式事务 AT 模式手写与脏写防线（`simple-seata`）。
+3. **空间数据库与开源工具链**：jOOQ + PostGIS 类型安全空间计算绑定（`jooq-postgis`）、Maven Central 工业级发布实战。
+4. **现代 AI Agent 编程工程化实践**：从 Vibe Coding 到双轨 SDD（规范驱动开发）与 TDD（客观机器评判）交付体系，Token 经济学与编程语言选型重估。
+5. **开源社区贡献实战**：持续向 `apache/dolphinscheduler`、`openobserve/openobserve`、`gotoeasy/glogcenter` 等主流开源项目贡献高质量代码与边界问题修复。
 
 ---
 
-## 📚 核心内容与导航
+## 🚀 架构与技术栈
 
-### 🛠 代表性开源项目
-
-| 项目 | 说明 | 仓库地址 |
-| :--- | :--- | :--- |
-| **`small-rpc`** | 基于 Netty 与 Hessian 的轻量级 RPC 治理框架，微内核架构、支持服务治理闭环（熔断、限流、降级、背压）与 Maven Central 发布。 | [GitHub](https://github.com/upowerman/small-rpc) |
-| **`jooq-postgis`** | jOOQ 与 PostGIS 的集成库，纯 JTS、零 GeoTools 依赖，实现类型安全的空间数据库 SQL 查询映射。 | [GitHub](https://github.com/upowerman/jooq-postgis) |
-| **`simple-seata`** | 轻量级教学分布式事务框架，提炼 Seata 精髓，补全内嵌 TC 协调器、全局行锁、防脏写核验与双物理库可观察 AT 模式闭环。 | [GitHub](https://github.com/fengstack/simple-seata) |
-
-### 🌟 开源社区贡献
-
-- **[apache/dolphinscheduler](https://github.com/apache/dolphinscheduler)**：Apache 顶级分布式工作流任务调度平台
-  - [PR #18726](https://github.com/apache/dolphinscheduler/pull/18726) · `Support month and week boundary placeholders with date offset`（为任务插件月/周边界占位符增加日期偏移量解析支持，精确计算跨月/周基准边界，已合并）
-- **[openobserve/openobserve](https://github.com/openobserve/openobserve)**：云原生可观测性平台
-  - [PR #15142](https://github.com/openobserve/openobserve/pull/15142) · `fix(promql): quantile interpolation keeps infinite bounds like Prometheus`（已合并）
-  - [PR #15143](https://github.com/openobserve/openobserve/pull/15143) · `fix(search): clamp _around page size so small or invalid sizes stop expanding to the default limit`（已合并）
-- **[gotoeasy/glogcenter](https://github.com/gotoeasy/glogcenter)**：轻量日志中心
-  - [PR #92](https://github.com/gotoeasy/glogcenter/pull/92) · 集群模式节点通信与转发失效修复（已合并）
-  - [PR #93](https://github.com/gotoeasy/glogcenter/pull/93) · 修复潜在的 Goroutine 资源泄漏问题（已合并）
-
-### 📝 精选技术博文
-
-1. [从半成品到完整闭环：重拾波波老师的 simple-seata，我手写了 TC、防脏写与可观察 AT 模式](post/simple-seata-at-mode/)
-2. [AI Agent 编程时代的编程语言重估：谁在偷走你的 Token？谁是真正的架构之王？](post/agent-programming-language-benchmark/)
-2. [从 Vibe Coding 到双轨 SDD：大模型时代的现代 Agent 编程工程化实践](post/agent-programming-sdd-tdd/)
-3. [small-rpc 3.0：手写熔断、限流、降级，给 RPC 消费端补上治理闭环](post/small-rpc-v3-governance/)
-4. [从零到一：基于 small-rpc 实战将 Java 开源库发布到 Maven 中央仓库](post/maven-central-publish-guide/)
-5. [当 jOOQ 遇上 PostGIS：jooq-postgis 诞生记](post/jooq-postgis-intro/)
+### 核心技术体系
+- **框架引擎**：[Astro 5.x](https://astro.build/)，极速静态站点生成（SSG），零客户端 JavaScript 包袱，首屏秒开。
+- **类型安全**：TypeScript 严格模式，基于 Zod 的 Content Collections Schema 强类型约束。
+- **样式系统**：Tailwind CSS + CSS Design Tokens，沉淀一套温润纸白（Light）与深邃炭墨（Dark）的双主题技术出版物视觉体系。
+- **排版与代码**：自托管切片 Noto Serif SC 衬线排版，Shiki 语法高亮（双主题自适应），集成一键复制代码块与浮动目录（TOC Scrollspy）。
+- **站内搜索**：基于编译时索引（`/api/search.json`）的轻量客户端模态搜索（快捷键 `⌘K` / `Ctrl+K`），支持键盘极速导航与无结果兜底。
+- **SEO & 知识图谱**：
+  - [Schema.org](https://schema.org)（JSON-LD）标准：`Person`、`WebSite`、`BlogPosting` 实体关系建模。
+  - Open Graph 与 Twitter Card 跨平台社交分享卡片。
+  - 自动生成符合规范的 `sitemap.xml` 与全站 RSS 2.0 订阅源（`/post/index.xml` 和 `/rss.xml`）。
+  - 集成微软 Bing [IndexNow 协议](https://www.indexnow.org/)，构建完成自动将全站 URL 广播至搜索引擎。
+- **自动化 CI/CD**：GitHub Actions（`.github/workflows/deploy.yml`），每次 push 自动执行类型校验、生产编译、发布至 GitHub Pages，并自动触发 IndexNow SEO Ping。
 
 ---
 
-## 📂 仓库目录结构
+## 📂 项目结构规范
 
 ```text
 fengstack.github.io/
 ├── .github/
 │   └── workflows/
-│       └── seo-push.yml        # GitHub Actions：推送更新至搜索引擎 IndexNow
-├── about/
-│   └── index.html              # “关于我” 个人介绍页面与 Profile 知识图谱
-├── css/
-│   ├── main.css                # 博客全局核心样式与主题变量
-│   └── ...                     # 代码语法高亮与组件样式
-├── docs/
-│   └── seo-guide.md            # 搜索引擎收录与站长平台配置实战指南
-├── images/                     # 站点静态资源与头像图片
-├── js/
-│   ├── nav.js                  # 响应式移动端导航脚本
-│   ├── posts.js                # 动态博文列表加载与渲染逻辑
-│   └── theme-mode.js           # 深浅色主题检测与切换
-├── post/                       # 博客文章目录
-│   ├── agent-programming-sdd-tdd/
-│   ├── small-rpc-v3-governance/
-│   ├── index.html              # 文章聚合列表页
-│   └── index.xml               # 全站 RSS 2.0 Feed 订阅源
+│       ├── deploy.yml          # GitHub Actions: 自动构建、检查、发布 GitHub Pages 与 SEO Ping
+│       └── seo-push.yml        # IndexNow 手动/备份推送流水线
+├── public/                     # 部署时复制到根目录的纯静态资源
+│   ├── CNAME                   # 自定义域名配置 (blog.yunitytech.top)
+│   ├── robots.txt              # 搜索引擎爬虫抓取规则
+│   ├── BingSiteAuth.xml        # 微软 Bing 站长验证
+│   ├── 75d73fb2...txt          # 微信域名所有权校验
+│   ├── 9f8e4b7a...txt          # IndexNow 密钥验证文件
+│   ├── fonts/                  # 自托管 Noto Serif SC 字体切片 (woff2)
+│   └── images/                 # 头像、Bear 图标、项目与社区 Logo
+├── src/
+│   ├── components/             # Astro 复用组件
+│   │   ├── BaseHead.astro      # 全局 Head、SEO、OG、Schema.org、主题防闪烁
+│   │   ├── Header.astro        # 顶栏导航、主题切换、移动端抽屉
+│   │   ├── Footer.astro        # 页脚
+│   │   ├── TableOfContents.astro # 浮动文章目录与阅读滚动高亮
+│   │   ├── SeriesBox.astro     # 系列专题文章导航卡片
+│   │   └── SearchModal.astro   # ⌘K 站内实时搜索弹窗
+│   ├── content/
+│   │   ├── config.ts           # 文章 Schema 强校验定义 (Zod)
+│   │   └── posts/              # 9 篇真实技术博客 (标准 Markdown)
+│   │       ├── simple-seata-at-mode.md
+│   │       ├── agent-programming-language-benchmark.md
+│   │       ├── agent-programming-sdd-tdd.md
+│   │       ├── small-rpc-v3-governance.md
+│   │       ├── maven-central-publish-guide.md
+│   │       ├── openobserve-three-prs.md
+│   │       ├── glogcenter-two-prs.md
+│   │       ├── jooq-postgis-intro.md
+│   │       └── small-rpc-intro.md
+│   ├── layouts/
+│   │   ├── BaseLayout.astro    # 全站通用布局骨架
+│   │   └── PostLayout.astro    # 技术博文专属排版布局（TOC、代码复制、上下篇）
+│   ├── pages/                  # 页面路由
+│   │   ├── index.astro         # 首页（Hero、技术关注点、开源项目、贡献、精选博文）
+│   │   ├── about.astro         # “关于我”
+│   │   ├── 404.astro           # 404 错误页
+│   │   ├── post/
+│   │   │   ├── index.astro     # 文章聚合列表（时间线、分类与标签实时筛选）
+│   │   │   ├── [...slug].astro # 博文详情动态路由
+│   │   │   └── index.xml.ts    # 原有 RSS 路由兼容 (/post/index.xml)
+│   │   ├── api/
+│   │   │   └── search.json.ts  # 搜索索引动态生成端点
+│   │   ├── sitemap.xml.ts      # 站点地图生成器
+│   │   └── rss.xml.ts          # 官方 RSS 2.0 端点
+│   └── styles/
+│       ├── fonts.css           # 本地字体定义
+│       └── global.css          # Editorial 技术出版物全局设计令牌与样式
 ├── scripts/
-│   └── seo-ping.js             # Node.js 搜索引擎主动推送脚本
-├── CNAME                       # 独立域名配置文件 (blog.yunitytech.top)
-├── index.html                  # 站点主页 (Hero, 技术栈, 项目, 贡献, 精选博文)
-├── robots.txt                  # 搜索引擎爬虫抓取规则
-├── sitemap.xml                 # 全站站点地图
-└── README.md                   # 本说明文档
+│   ├── migrate_posts.py        # HTML 转高保真 Markdown 提取脚本
+│   └── seo-ping.js             # IndexNow 搜索引擎主动广播脚本
+├── astro.config.mjs            # Astro 配置文件
+├── tailwind.config.mjs         # Tailwind 设计系统扩展配置
+├── tsconfig.json               # TypeScript 严格模式配置
+├── package.json                # 项目依赖与运行脚本
+└── legacy-archive/             # 历史纯 HTML/JS/CSS 完整备份归档
 ```
 
 ---
 
-## 💻 本地预览与调试
+## 🛠 本地开发与构建
 
-因为本项目为标准纯静态站点，本地无需安装重型编译环境，任意静态 HTTP 服务器均可快速启动预览：
-
-### 方法 1：使用 Python（推荐，系统自带）
+### 1. 安装依赖
 
 ```bash
-# Python 3
-python3 -m http.server 8080
+npm install
 ```
-然后在浏览器中打开：`http://localhost:8080`
 
-### 方法 2：使用 Node.js / npx
+### 2. 启动本地开发服务
 
 ```bash
-npx serve . -p 8080
+npm run dev
+```
+启动后在浏览器中访问：`http://localhost:4321/`。
+
+### 3. 类型与模板检查
+
+```bash
+npm run check
 ```
 
-### 方法 3：VS Code / IDE 插件
+### 4. 生产构建与预览
 
-直接通过 VS Code 的 **Live Server** 插件或 IntelliJ IDEA 的内置浏览器预览功能右键打开 `index.html`。
+```bash
+npm run build
+npm run preview
+```
+构建产物输出至 `dist/` 目录，完全由纯静态 HTML、CSS、JS 与 XML 组成。
 
 ---
 
-## ✍️ 日常更新与发文流程
+## ✍️ 日常发文与内容维护
 
-1. **新建文章**：
-   - 在 `post/` 目录下创建新文章目录（如 `post/your-post-title/index.html`）。
-   - 复用既有文章模板，保持规范的 `<head>` 元标签（Title、Canonical、Schema JSON-LD）。
-2. **更新索引与聚合**：
-   - 在 `index.html` 与 `post/index.html` 的文章列表中增加条目。
-   - 在 `sitemap.xml` 中加入新 URL 并更新 `<lastmod>`。
-   - 在 `index.xml` (RSS) 中添加新的 `<item>` 条目。
-3. **提交与推送**：
-   - 提交代码推送至 `master` 分支，GitHub Pages 自动完成发布。
-   - GitHub Actions 触发 `seo-push.yml`，通过 IndexNow 自动将新 URL 实时广播至全网搜索引擎。
+### 1. 新建文章
+
+在 `src/content/posts/` 目录下创建新 Markdown 文件（如 `my-new-post.md`），头部遵循标准 YAML Frontmatter：
+
+```markdown
+---
+title: "文章标题"
+description: "文章的简明摘要（供 SEO 与搜索展示）"
+publishDate: 2026-10-24
+tags: ["Java", "分布式系统", "开源实战"]
+readTime: "约 10 分钟"
+series:
+  name: "系列专题名称" # 可选，属于某一专题时自动渲染系列卡片
+  order: 1
+refLink:
+  text: "参考工程：my-repo" # 可选，文首外链
+  url: "https://github.com/fengstack/my-repo"
+---
+
+这里开始正文内容。支持标准 Markdown、GFM 表格、标准代码块（带语言标识自动语法高亮）、引用提示块等。
+```
+
+### 2. 自动构建与发布
+
+将代码提交并推送至 `master` 分支：
+
+```bash
+git add .
+git commit -m "feat(post): add my new post"
+git push origin master
+```
+
+GitHub Actions 会全自动执行：
+1. **代码检查**：TypeScript 类型、Content Collections 元数据校验；
+2. **生产构建**：静态生成 HTML、`sitemap.xml`、RSS Feed、搜索索引；
+3. **安全部署**：通过官方 `actions/deploy-pages` 部署至 GitHub Pages，并自动应用自定义域名 `blog.yunitytech.top`；
+4. **主动收录**：调用 `scripts/seo-ping.js` 将新发布的 URL 自动广播至微软 Bing / IndexNow 搜索引擎。
 
 ---
 
@@ -153,4 +197,4 @@ npx serve . -p 8080
 
 ## 📄 开源许可证
 
-本项目内容与源码遵循 [MIT License](https://opensource.org/licenses/MIT) 开源协议。
+本项目源码及博文内容遵循 [MIT License](https://opensource.org/licenses/MIT) 开源协议。

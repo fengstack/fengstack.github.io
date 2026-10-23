@@ -1,0 +1,396 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowRight, Github, BookOpen, GitPullRequest, Code2, Server, Database, Bot, GitMerge } from 'lucide-astro';
+
+const allPosts = await getCollection('posts');
+const recentPosts = allPosts
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+  .slice(0, 6);
+
+const projects = [
+  {
+    name: 'small-rpc',
+    description: '基于 Netty 与 Hessian 的轻量级 RPC 治理框架，微内核架构、支持服务治理闭环（熔断、限流、降级、背压）与 Maven Central 发布。',
+    tags: ['Java', 'Netty', 'Hessian', 'SPI', '服务治理'],
+    repo: 'https://github.com/upowerman/small-rpc',
+  },
+  {
+    name: 'jooq-postgis',
+    description: 'jOOQ 与 PostGIS 的集成库，纯 JTS、零 GeoTools 依赖，实现类型安全空间数据库 SQL 查询与复杂地理几何对象映射。',
+    tags: ['Java', 'jOOQ', 'PostGIS', 'JTS', '空间计算'],
+    repo: 'https://github.com/upowerman/jooq-postgis',
+  },
+  {
+    name: 'simple-seata',
+    description: '轻量级教学分布式事务框架，提炼 Seata 精髓，补全内嵌 TC 协调器、全局行锁、防脏写核验与双物理库可观察 AT 模式闭环。',
+    tags: ['Java', '分布式事务', 'Seata AT', 'Druid AST', 'H2'],
+    repo: 'https://github.com/fengstack/simple-seata',
+  },
+];
+
+const contributions = [
+  {
+    repo: 'apache/dolphinscheduler',
+    repoUrl: 'https://github.com/apache/dolphinscheduler',
+    logo: '/images/dolphinscheduler.jpg',
+    badge: '已合并',
+    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    desc: 'Apache 顶级分布式工作流任务调度平台：为任务插件内置参数增加月/周边界占位符（month_first_day、week_first_day 等）携带日期偏移量解析支持，精确计算跨月/跨周基准边界。',
+    prs: [
+      {
+        title: 'PR #18726 · [Feature-16510][TaskPlugin] Support month and week boundary placeholders with date offset (已合并)',
+        url: 'https://github.com/apache/dolphinscheduler/pull/18726',
+        status: 'merged',
+      },
+    ],
+  },
+  {
+    repo: 'openobserve/openobserve',
+    repoUrl: 'https://github.com/openobserve/openobserve',
+    logo: '/images/openobserve.png',
+    badge: '2 个已合并 · 1 个撤回',
+    badgeColor: 'text-blue-700 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
+    desc: 'Rust 云原生可观测性平台：解决 PromQL 分位数插值边界失效（对齐 Prometheus 标准）与 _around 接口小分页越界漏洞；直方图 LIMIT 一项经维护者确认实现意图后撤回。',
+    prs: [
+      {
+        title: 'PR #15142 · fix(promql): quantile interpolation keeps infinite bounds like Prometheus (已合并)',
+        url: 'https://github.com/openobserve/openobserve/pull/15142',
+        status: 'merged',
+      },
+      {
+        title: 'PR #15143 · fix(search): clamp _around page size so small or invalid sizes stop expanding (已合并)',
+        url: 'https://github.com/openobserve/openobserve/pull/15143',
+        status: 'merged',
+      },
+      {
+        title: 'PR #15144 · fix(search): keep a histogram query eligible when it carries limit (已撤回)',
+        url: 'https://github.com/openobserve/openobserve/pull/15144',
+        status: 'closed',
+      },
+    ],
+  },
+  {
+    repo: 'gotoeasy/glogcenter',
+    repoUrl: 'https://github.com/gotoeasy/glogcenter',
+    logo: '/images/glogcenter.png',
+    badge: '已合并',
+    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    desc: '轻量集中式日志中心：排查并修复了集群模式节点通信及转发失效问题，以及特定网络波动下 Goroutine 潜在资源泄漏风险。',
+    prs: [
+      {
+        title: 'PR #92 · 集群模式节点通信与转发失效修复 (已合并)',
+        url: 'https://github.com/gotoeasy/glogcenter/pull/92',
+        status: 'merged',
+      },
+      {
+        title: 'PR #93 · 修复潜在的 Goroutine 资源泄漏问题 (已合并)',
+        url: 'https://github.com/gotoeasy/glogcenter/pull/93',
+        status: 'merged',
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="高云峰 — 软件工程师个人主页与技术博客"
+  description="高云峰（fengstack）的个人主页与技术博客：软件工程师，专注 RPC 框架治理、分布式系统与事务、现代 AI Agent 规范驱动编程实践（SDD 与 TDD）、jOOQ/PostGIS，分享开源项目与社区实战复盘。"
+>
+  <!-- Hero Section -->
+  <section class="border-b border-line bg-surface/20 py-16 sm:py-20">
+    <div class="wrap-container">
+      <div class="flex flex-col gap-5 max-w-2xl">
+        <div class="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-accent">
+          <span>高云峰 · FENGSTACK</span>
+          <span class="text-line">/</span>
+          <span>SOFTWARE ENGINEER</span>
+        </div>
+
+        <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-fg leading-tight">
+          高云峰
+          <span class="block mt-1 text-xl sm:text-2xl font-normal text-muted">
+            软件工程师 · 分布式架构与开源实践
+          </span>
+        </h1>
+
+        <p class="text-base sm:text-lg text-muted leading-relaxed">
+          日常以 Java 为主，专注分布式系统中间件、RPC 服务治理与空间数据库；积极拥抱现代 AI 编程，倡导基于规范驱动（SDD）与测试评判（TDD）的 Agent 工程化交付体系；热爱啃源码、造高质量轮子，向主流开源社区持续贡献。
+        </p>
+
+        <div class="mt-2 flex flex-wrap items-center gap-3">
+          <a
+            href="/post/"
+            class="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-all"
+          >
+            <BookOpen class="h-4 w-4" />
+            <span>阅读技术文章</span>
+          </a>
+
+          <a
+            href="#projects"
+            class="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/60 px-4 py-2 text-sm font-medium text-fg hover:border-accent hover:bg-surface transition-all"
+          >
+            <Code2 class="h-4 w-4 text-muted" />
+            <span>开源项目</span>
+          </a>
+
+          <a
+            href="https://github.com/fengstack"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/60 px-4 py-2 text-sm font-medium text-fg hover:border-accent hover:bg-surface transition-all"
+          >
+            <Github class="h-4 w-4 text-muted" />
+            <span>GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap-container py-12 flex flex-col gap-16">
+    <!-- Section 1: Technical Focus / Skills -->
+    <section id="skills" class="scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-line pb-4 mb-6">
+        <h2 class="font-serif text-2xl font-bold text-fg flex items-center gap-2">
+          <span>技术关注点</span>
+        </h2>
+        <span class="font-mono text-xs text-muted uppercase">Core Domains</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-lg border border-line bg-surface/40 p-5">
+          <div class="flex items-center gap-2 font-serif font-semibold text-fg mb-2">
+            <Server class="h-4 w-4 text-accent" />
+            <span>Java 与后端工程</span>
+          </div>
+          <p class="text-xs text-muted leading-relaxed mb-3">
+            扎实的 Java 生态基底，熟练掌握 Netty 4 二进制私有网络协议、线程模型优化、自定义类加载器与 SPI 扩展机制。
+          </p>
+          <div class="flex flex-wrap gap-1.5 font-mono text-xs">
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Java 8~21</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Netty</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Spring Boot</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Hessian</span>
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-line bg-surface/40 p-5">
+          <div class="flex items-center gap-2 font-serif font-semibold text-fg mb-2">
+            <GitMerge class="h-4 w-4 text-accent" />
+            <span>分布式系统与中间件治理</span>
+          </div>
+          <p class="text-xs text-muted leading-relaxed mb-3">
+            深入探索 RPC 消费端治理闭环（滑动窗口熔断、令牌桶限流、降级 Fallback、背压），剖析分布式事务 2PC 与 Seata AT 模式。
+          </p>
+          <div class="flex flex-wrap gap-1.5 font-mono text-xs">
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">分布式事务 AT</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">RPC 微内核</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">熔断限流</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">消息队列</span>
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-line bg-surface/40 p-5">
+          <div class="flex items-center gap-2 font-serif font-semibold text-fg mb-2">
+            <Database class="h-4 w-4 text-accent" />
+            <span>数据库与空间计算</span>
+          </div>
+          <p class="text-xs text-muted leading-relaxed mb-3">
+            PostgreSQL 与 PostGIS 深度实战，基于 JTS 封装轻量类型安全空间绑定库；精通 jOOQ 类型安全 SQL 编程与关系数据库调优。
+          </p>
+          <div class="flex flex-wrap gap-1.5 font-mono text-xs">
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">PostGIS</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">jOOQ</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">JTS Geometry</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">MySQL / PG</span>
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-line bg-surface/40 p-5">
+          <div class="flex items-center gap-2 font-serif font-semibold text-fg mb-2">
+            <Bot class="h-4 w-4 text-accent" />
+            <span>AI Agent 与开发工程化</span>
+          </div>
+          <p class="text-xs text-muted leading-relaxed mb-3">
+            践行由自然语言直觉向工程确定性演进的开发体系：以 SDD 规范为意图约束，以 TDD 与静态类型系统为客观机器裁判。
+          </p>
+          <div class="flex flex-wrap gap-1.5 font-mono text-xs">
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">双轨 SDD</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">TDD 机器评判</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Token 经济学</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Go / Python / Rust</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Open Source Projects -->
+    <section id="projects" class="scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-line pb-4 mb-6">
+        <h2 class="font-serif text-2xl font-bold text-fg">
+          开源项目
+        </h2>
+        <span class="font-mono text-xs text-muted uppercase">Open Source Projects</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {projects.map((proj) => (
+          <article class="flex flex-col justify-between rounded-lg border border-line bg-surface/30 p-5 transition-all hover:border-accent hover:bg-surface/70">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-serif text-lg font-bold text-fg">
+                  <a href={proj.repo} target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-colors flex items-center gap-1.5">
+                    <span>{proj.name}</span>
+                  </a>
+                </h3>
+                <a href={proj.repo} target="_blank" rel="noopener noreferrer" class="text-muted hover:text-fg" aria-label={`查看 ${proj.name} 仓库`}>
+                  <Github class="h-4 w-4" />
+                </a>
+              </div>
+              <p class="text-xs text-muted leading-relaxed mb-4">
+                {proj.description}
+              </p>
+            </div>
+
+            <div>
+              <div class="flex flex-wrap gap-1 font-mono text-[11px] mb-3">
+                {proj.tags.map((t) => (
+                  <span class="rounded bg-surface px-1.5 py-0.5 text-muted">
+                    {t}
+                  </span>
+                ))}
+              </div>
+              <a
+                href={proj.repo}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-xs font-mono text-accent hover:underline"
+              >
+                <span>github.com/{proj.repo.split('github.com/')[1]}</span>
+                <ArrowRight class="h-3 w-3" />
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Section 3: Open Source Contributions -->
+    <section id="contribs" class="scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-line pb-4 mb-6">
+        <h2 class="font-serif text-2xl font-bold text-fg">
+          开源社区贡献
+        </h2>
+        <span class="font-mono text-xs text-muted uppercase">Contributions</span>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        {contributions.map((item) => (
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-line bg-surface/30 p-5 transition-all hover:bg-surface/60">
+            <div class="flex items-start gap-4">
+              <a href={item.repoUrl} target="_blank" rel="noopener noreferrer" class="shrink-0">
+                <img
+                  src={item.logo}
+                  alt={item.repo}
+                  class="h-12 w-12 rounded-lg object-contain border border-line bg-white p-1"
+                  loading="lazy"
+                />
+              </a>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <a
+                    href={item.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-mono text-sm font-bold text-fg hover:text-accent transition-colors"
+                  >
+                    {item.repo}
+                  </a>
+                  <span class={`rounded-full border px-2 py-0.5 text-[11px] font-mono font-medium ${item.badgeColor}`}>
+                    {item.badge}
+                  </span>
+                </div>
+                <p class="text-xs text-muted leading-relaxed max-w-2xl">
+                  {item.desc}
+                </p>
+                <div class="flex flex-col gap-1 mt-1">
+                  {item.prs.map((pr) => (
+                    <a
+                      href={pr.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1 text-xs text-accent hover:underline font-mono"
+                    >
+                      <GitPullRequest class="h-3 w-3" />
+                      <span>{pr.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Section 4: Recent Articles -->
+    <section id="posts" class="scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-line pb-4 mb-6">
+        <div>
+          <h2 class="font-serif text-2xl font-bold text-fg">
+            精选博文
+          </h2>
+          <span class="text-xs font-mono text-muted">Recent Technical Articles</span>
+        </div>
+        <a
+          href="/post/"
+          class="inline-flex items-center gap-1 text-xs font-mono text-accent hover:underline"
+        >
+          <span>查看全部 ({allPosts.length})</span>
+          <ArrowRight class="h-3 w-3" />
+        </a>
+      </div>
+
+      <div class="divide-y divide-line/60">
+        {recentPosts.map((post) => {
+          const dateStr = post.data.publishDate.toISOString().slice(0, 10);
+          return (
+            <article class="py-5 first:pt-0 last:pb-0">
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center gap-3 text-xs font-mono text-muted">
+                  <time datetime={dateStr}>{dateStr}</time>
+                  {post.data.readTime && <span>· {post.data.readTime}</span>}
+                  {post.data.series && (
+                    <span class="rounded bg-accent/10 px-1.5 py-0.5 text-accent font-sans text-[11px]">
+                      {post.data.series.name}
+                    </span>
+                  )}
+                </div>
+
+                <h3 class="font-serif text-base sm:text-lg font-bold text-fg hover:text-accent transition-colors">
+                  <a href={`/post/${post.slug}/`}>
+                    {post.data.title}
+                  </a>
+                </h3>
+
+                <p class="text-xs sm:text-sm text-muted line-clamp-2 leading-relaxed">
+                  {post.data.description}
+                </p>
+
+                <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                  {post.data.tags.map((t) => (
+                    <span class="rounded bg-surface px-2 py-0.5 text-[11px] text-muted font-mono">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

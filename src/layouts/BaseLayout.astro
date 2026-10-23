@@ -1,0 +1,48 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SearchModal from '../components/SearchModal.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'profile';
+  publishDate?: Date;
+  articleTags?: string[];
+  canonicalURL?: URL | string;
+}
+
+const {
+  title,
+  description,
+  image,
+  type = 'website',
+  publishDate,
+  articleTags,
+  canonicalURL,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-cn">
+  <head>
+    <BaseHead
+      title={title}
+      description={description}
+      image={image}
+      type={type}
+      publishDate={publishDate}
+      articleTags={articleTags}
+      canonicalURL={canonicalURL}
+    />
+  </head>
+  <body class="flex min-h-screen flex-col bg-bg text-fg">
+    <Header />
+    <slot />
+    <Footer />
+    <SearchModal />
+  </body>
+</html>

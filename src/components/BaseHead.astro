@@ -1,0 +1,140 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'profile';
+  publishDate?: Date;
+  articleTags?: string[];
+  canonicalURL?: URL | string;
+}
+
+const {
+  title = '高云峰 — 软件工程师个人主页与技术博客',
+  description = '高云峰（fengstack）的个人主页与技术博客：软件工程师，专注 RPC 框架、现代 AI Agent 编程实践（SDD 与 TDD 规范驱动）、jOOQ/PostGIS，分享开源项目与社区实战复盘。',
+  image = '/images/avatar.png',
+  type = 'website',
+  publishDate,
+  articleTags = [],
+  canonicalURL = new URL(Astro.url.pathname, Astro.site),
+} = Astro.props;
+
+const siteTitle = title.includes('高云峰') ? title : `${title} · 高云峰的博客`;
+const fullImageURL = new URL(image, Astro.site).toString();
+---
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="icon" type="image/png" href="/images/bear.png" />
+<link rel="alternate" type="application/rss+xml" title="高云峰的技术文章" href="/post/index.xml" />
+<link rel="alternate" type="application/rss+xml" title="高云峰的技术文章 (RSS)" href="/rss.xml" />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Primary Meta Tags -->
+<title>{siteTitle}</title>
+<meta name="title" content={siteTitle} />
+<meta name="description" content={description} />
+<meta name="author" content="高云峰" />
+<meta name="robots" content="index,follow" />
+
+<!-- Search Engine Verification Tags -->
+<meta name="msvalidate.01" content="C881F074467FD6757DFB5E6C8EE1B7DB" />
+
+<!-- Theme color -->
+<meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:site_name" content="高云峰的博客" />
+<meta property="og:title" content={siteTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={fullImageURL} />
+<meta property="og:locale" content="zh_CN" />
+
+{type === 'article' && publishDate && (
+  <meta property="article:published_time" content={publishDate.toISOString()} />
+)}
+{articleTags.map(tag => (
+  <meta property="article:tag" content={tag} />
+))}
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary" />
+<meta property="twitter:url" content={canonicalURL} />
+<meta property="twitter:title" content={siteTitle} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={fullImageURL} />
+
+<!-- Structured Data (JSON-LD) -->
+{type === 'article' ? (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": title,
+    "description": description,
+    "url": canonicalURL.toString(),
+    "datePublished": publishDate ? publishDate.toISOString().slice(0, 10) : undefined,
+    "dateModified": publishDate ? publishDate.toISOString().slice(0, 10) : undefined,
+    "inLanguage": "zh-CN",
+    "author": {
+      "@type": "Person",
+      "name": "高云峰",
+      "url": "https://blog.yunitytech.top/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "高云峰",
+      "url": "https://blog.yunitytech.top/"
+    },
+    "mainEntityOfPage": canonicalURL.toString()
+  })} />
+) : (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://blog.yunitytech.top/#person",
+        "name": "高云峰",
+        "alternateName": ["fengstack", "upowerman"],
+        "url": "https://blog.yunitytech.top/",
+        "email": "mailto:gyf718@hotmail.com",
+        "jobTitle": "软件工程师",
+        "description": "高云峰，软件工程师，开源项目 small-rpc、jooq-postgis 作者，关注分布式 RPC、开源数据库与 AI 工程化。",
+        "sameAs": [
+          "https://github.com/fengstack",
+          "https://github.com/upowerman"
+        ],
+        "knowsAbout": ["Java", "RPC", "Netty", "jOOQ", "PostGIS", "Go", "Python", "TypeScript", "AI Agent", "SDD", "TDD"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://blog.yunitytech.top/#website",
+        "name": "高云峰的博客",
+        "alternateName": "高云峰个人主页",
+        "url": "https://blog.yunitytech.top/",
+        "inLanguage": "zh-CN",
+        "author": { "@id": "https://blog.yunitytech.top/#person" }
+      }
+    ]
+  })} />
+)}
+
+<!-- Prevent Dark Mode Flicker (FOUC) -->
+<script is:inline>
+  (function () {
+    const stored = localStorage.getItem('gw-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = stored || (prefersDark ? 'dark' : 'light');
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  })();
+</script>

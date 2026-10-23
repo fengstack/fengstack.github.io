@@ -1,0 +1,224 @@
+---
+import { Search, X } from 'lucide-astro';
+---
+
+<div
+  id="searchModal"
+  class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm p-4 sm:p-6 md:p-20 overflow-y-auto"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="searchModalTitle"
+>
+  <div class="mx-auto max-w-2xl transform rounded-lg border border-line bg-bg shadow-2xl transition-all">
+    <!-- Search Input Area -->
+    <div class="relative flex items-center border-b border-line px-4 py-3">
+      <Search class="h-5 w-5 text-muted shrink-0" />
+      <input
+        id="modalSearchInput"
+        type="search"
+        placeholder="搜索文章标题、摘要、标签或关键字…"
+        class="w-full bg-transparent px-3 py-1.5 text-base text-fg placeholder:text-muted focus:outline-none"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button
+        id="searchModalClose"
+        type="button"
+        class="rounded p-1 text-muted hover:text-fg hover:bg-surface transition-colors"
+        aria-label="关闭搜索"
+      >
+        <X class="h-5 w-5" />
+      </button>
+    </div>
+
+    <!-- Search Results / Empty State -->
+    <div id="searchResults" class="max-h-[60vh] overflow-y-auto p-3 divide-y divide-line/60">
+      <div id="searchPlaceholder" class="py-12 text-center text-sm text-muted">
+        输入关键字搜索博文… 支持标题、摘要及分类标签
+      </div>
+      <div id="searchEmpty" class="hidden py-12 text-center text-sm text-muted">
+        未找到包含该关键字的技术文章
+      </div>
+      <div id="resultsList" class="flex flex-col gap-1"></div>
+    </div>
+
+    <!-- Footer Guide -->
+    <div class="flex items-center justify-between border-t border-line bg-surface/50 px-4 py-2 text-xs text-muted">
+      <span>支持上下方向键导航，回车进入</span>
+      <div class="flex items-center gap-2">
+        <kbd class="rounded border border-line bg-bg px-1.5 py-0.5 font-mono text-[10px]">ESC</kbd>
+        <span>关闭</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface SearchItem {
+    slug: string;
+    title: string;
+    description: string;
+    date: string;
+    tags: string[];
+    readTime?: string;
+  }
+
+  let searchIndex: SearchItem[] = [];
+  let isIndexLoaded = false;
+  let selectedIndex = -1;
+
+  const modal = document.getElementById('searchModal');
+  const input = document.getElementById('modalSearchInput') as HTMLInputElement | null;
+  const triggerBtn = document.getElementById('searchTriggerBtn');
+  const closeBtn = document.getElementById('searchModalClose');
+  const resultsList = document.getElementById('resultsList');
+  const searchPlaceholder = document.getElementById('searchPlaceholder');
+  const searchEmpty = document.getElementById('searchEmpty');
+
+  async function loadSearchIndex() {
+    if (isIndexLoaded) return;
+    try {
+      const res = await fetch('/api/search.json');
+      searchIndex = await res.json();
+      isIndexLoaded = true;
+    } catch (e) {
+      console.error('Failed to load search index', e);
+    }
+  }
+
+  function openModal() {
+    modal?.classList.remove('hidden');
+    loadSearchIndex();
+    setTimeout(() => input?.focus(), 50);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal?.classList.add('hidden');
+    if (input) input.value = '';
+    renderResults([]);
+    document.body.style.overflow = '';
+  }
+
+  triggerBtn?.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+
+  // Close when clicking backdrop
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Global shortcut (Cmd+K / Ctrl+K / Escape)
+  window.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (modal?.classList.contains('hidden')) {
+        openModal();
+      } else {
+        closeModal();
+      }
+    } else if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+
+  function renderResults(items: SearchItem[]) {
+    if (!resultsList || !searchPlaceholder || !searchEmpty) return;
+    resultsList.innerHTML = '';
+    selectedIndex = -1;
+
+    if (!input?.value.trim()) {
+      searchPlaceholder.classList.remove('hidden');
+      searchEmpty.classList.add('hidden');
+      return;
+    }
+
+    searchPlaceholder.classList.add('hidden');
+
+    if (items.length === 0) {
+      searchEmpty.classList.remove('hidden');
+      return;
+    }
+
+    searchEmpty.classList.add('hidden');
+
+    items.forEach((item, idx) => {
+      const a = document.createElement('a');
+      a.href = `/post/${item.slug}/`;
+      a.className =
+        'search-result-item flex flex-col gap-1 rounded-md p-3 text-left transition-colors hover:bg-surface focus:bg-surface outline-none';
+      a.dataset.index = String(idx);
+
+      const tagsHtml = item.tags
+        .map(
+          (t) =>
+            `<span class="rounded bg-surface px-1.5 py-0.5 text-[11px] text-muted">${t}</span>`
+        )
+        .join(' ');
+
+      a.innerHTML = `
+        <div class="font-serif font-semibold text-fg text-sm">${item.title}</div>
+        <div class="line-clamp-2 text-xs text-muted leading-relaxed">${item.description}</div>
+        <div class="mt-1 flex items-center gap-3 text-[11px] text-muted font-mono">
+          <span>${item.date}</span>
+          ${item.readTime ? `<span>· ${item.readTime}</span>` : ''}
+          <div class="flex items-center gap-1">${tagsHtml}</div>
+        </div>
+      `;
+
+      resultsList.appendChild(a);
+    });
+  }
+
+  // Input filter
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) {
+      renderResults([]);
+      return;
+    }
+
+    const matched = searchIndex.filter((item) => {
+      const titleMatch = item.title.toLowerCase().includes(q);
+      const descMatch = item.description.toLowerCase().includes(q);
+      const tagMatch = item.tags.some((t) => t.toLowerCase().includes(q));
+      return titleMatch || descMatch || tagMatch;
+    });
+
+    renderResults(matched);
+  });
+
+  // Keyboard navigation within list
+  input?.addEventListener('keydown', (e) => {
+    const items = resultsList?.querySelectorAll('.search-result-item');
+    if (!items || items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = (selectedIndex + 1) % items.length;
+      updateSelection(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+      updateSelection(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        (items[selectedIndex] as HTMLAnchorElement).click();
+      } else if (items.length > 0) {
+        (items[0] as HTMLAnchorElement).click();
+      }
+    }
+  });
+
+  function updateSelection(items: NodeListOf<Element>) {
+    items.forEach((it, idx) => {
+      if (idx === selectedIndex) {
+        it.classList.add('bg-surface');
+        it.scrollIntoView({ block: 'nearest' });
+      } else {
+        it.classList.remove('bg-surface');
+      }
+    });
+  }
+</script>

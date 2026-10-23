@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Home, BookOpen, User, ArrowLeft } from 'lucide-astro';
+---
+
+<BaseLayout
+  title="404 - 页面未找到 · 高云峰的博客"
+  description="抱歉，您访问的页面不存在或已被移除。"
+>
+  <div class="wrap-container py-24 text-center">
+    <div class="mx-auto max-w-md flex flex-col items-center">
+      <span class="inline-block rounded-full border border-line bg-surface/60 px-3 py-1 font-mono text-xs text-muted">
+        HTTP 404 · NOT FOUND
+      </span>
+
+      <h1 class="font-serif text-6xl sm:text-7xl font-bold tracking-tight text-fg mt-4 mb-2">
+        404
+      </h1>
+
+      <p class="text-base text-muted mb-8">
+        抱歉，该页面可能已被移动、更名或链接已过期。
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
+        <a
+          href="/"
+          class="flex items-center gap-3 rounded-lg border border-line bg-surface/40 p-4 hover:border-accent hover:bg-surface transition-all"
+        >
+          <Home class="h-4 w-4 text-accent shrink-0" />
+          <div>
+            <div class="font-serif text-sm font-semibold text-fg">返回首页</div>
+            <div class="text-xs text-muted">回到个人品牌主页</div>
+          </div>
+        </a>
+
+        <a
+          href="/post/"
+          class="flex items-center gap-3 rounded-lg border border-line bg-surface/40 p-4 hover:border-accent hover:bg-surface transition-all"
+        >
+          <BookOpen class="h-4 w-4 text-accent shrink-0" />
+          <div>
+            <div class="font-serif text-sm font-semibold text-fg">技术文章</div>
+            <div class="text-xs text-muted">查看全部技术博文</div>
+          </div>
+        </a>
+
+        <a
+          href="/#projects"
+          class="flex items-center gap-3 rounded-lg border border-line bg-surface/40 p-4 hover:border-accent hover:bg-surface transition-all"
+        >
+          <User class="h-4 w-4 text-accent shrink-0" />
+          <div>
+            <div class="font-serif text-sm font-semibold text-fg">开源项目</div>
+            <div class="text-xs text-muted">了解个人开源代表作</div>
+          </div>
+        </a>
+
+        <a
+          href="/about/"
+          class="flex items-center gap-3 rounded-lg border border-line bg-surface/40 p-4 hover:border-accent hover:bg-surface transition-all"
+        >
+          <ArrowLeft class="h-4 w-4 text-accent shrink-0" />
+          <div>
+            <div class="font-serif text-sm font-semibold text-fg">关于我</div>
+            <div class="text-xs text-muted">作者介绍与技术栈</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

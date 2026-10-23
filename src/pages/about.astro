@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Github, Mail } from 'lucide-astro';
+---
+
+<BaseLayout
+  title="关于我 · 高云峰 (fengstack)"
+  description="高云峰（fengstack）的个人介绍：软件工程师，专注分布式 RPC 治理、数据库空间计算与现代 AI Agent 编程实践。技术栈、代表性开源项目与社区贡献实战。"
+  type="profile"
+>
+  <div class="wrap-container py-12">
+    <div class="wrap-article">
+      <!-- Breadcrumbs -->
+      <nav class="mb-6 flex items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
+        <a href="/" class="hover:text-fg transition-colors">首页</a>
+        <span class="text-line">/</span>
+        <span class="text-fg">关于我</span>
+      </nav>
+
+      <!-- Profile Header -->
+      <header class="border-b border-line pb-8 mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div class="flex items-center gap-5">
+          <img
+            src="/images/bear.png"
+            alt="高云峰"
+            width="80"
+            height="80"
+            class="h-20 w-20 rounded-full border-2 border-line object-cover bg-surface"
+          />
+          <div>
+            <h1 class="font-serif text-3xl font-bold text-fg">
+              高云峰
+            </h1>
+            <p class="mt-1 font-mono text-sm text-muted">
+              fengstack / upowerman · 软件工程师
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a
+            href="https://github.com/fengstack"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/50 px-3 py-1.5 text-xs font-mono text-muted hover:border-accent hover:text-fg transition-all"
+          >
+            <Github class="h-3.5 w-3.5" />
+            <span>GitHub</span>
+          </a>
+          <a
+            href="mailto:gyf718@hotmail.com"
+            class="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/50 px-3 py-1.5 text-xs font-mono text-muted hover:border-accent hover:text-fg transition-all"
+          >
+            <Mail class="h-3.5 w-3.5" />
+            <span>邮件联系</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Editorial Prose -->
+      <article class="editorial-prose">
+        <p>
+          你好 👋，我是 <strong>高云峰</strong>（GitHub 账号为 <a href="https://github.com/fengstack" target="_blank" rel="noopener noreferrer">@fengstack</a> / <a href="https://github.com/upowerman" target="_blank" rel="noopener noreferrer">@upowerman</a>），一名长期工作在后端的软件工程师。
+        </p>
+
+        <h2>我在关注什么</h2>
+        <p>
+          日常以 Java 为核心技术栈，围绕分布式系统、微服务中间件、高性能网络通信与空间地理数据库展开工程研发；同时在工程实践中使用 Go、Python、TypeScript，并积极学习 Rust；前端熟悉 Vue 与现代静态构建工具。
+        </p>
+        <p>
+          比起“调个现成 API 能跑就行”，我更偏好把系统深层的设计机理搞明白：从 Netty 二进制私有协议编解码，到分布式事务 AT 模式的前后镜像比对与脏写防线；从基于 JTS 封装零冗余依赖的 PostGIS 空间映射，到给主流开源软件排查 Goroutine 泄漏与插值边界。
+        </p>
+
+        <h2>AI 时代的编程工程化理念</h2>
+        <p>
+          在大模型与 Coding Agent 迅速普及的当下，我坚定反对毫无设计防护的“Vibe Coding（凭感觉编程）”。真实生产环境的工程交付，需要严密的结构化防护。我提倡：
+        </p>
+        <ul>
+          <li><strong>双轨 SDD（规范驱动开发）</strong>：通过精简且严谨的 Specification，将自然语言意图转换为状态机与接口协议，杜绝 Agent 的发散幻觉。</li>
+          <li><strong>TDD 机器裁判</strong>：在代码生成前建立自动化测试用例，让编译器与测试套件成为客观裁决者，实现 Agent 自主闭环验证。</li>
+        </ul>
+
+        <h2>代表性开源项目</h2>
+        <ul>
+          <li>
+            <a href="https://github.com/upowerman/small-rpc" target="_blank" rel="noopener noreferrer"><strong><code>small-rpc</code></strong></a>：基于 Netty 与 Hessian 的轻量级 RPC 治理框架，采用自研 SPI 微内核，实现熔断、限流、降级、背压治理闭环，已发布至 Maven Central。
+          </li>
+          <li>
+            <a href="https://github.com/upowerman/jooq-postgis" target="_blank" rel="noopener noreferrer"><strong><code>jooq-postgis</code></strong></a>：jOOQ 与 PostGIS 的类型安全空间集成库，纯 JTS 驱动、零 GeoTools 依赖，已发布至 Maven Central。
+          </li>
+          <li>
+            <a href="https://github.com/fengstack/simple-seata" target="_blank" rel="noopener noreferrer"><strong><code>simple-seata</code></strong></a>：教学级分布式事务框架，提炼 Seata 精髓，补齐内嵌 TC 协调器、全局行锁、防脏写核验与双物理库可观察 AT 模式闭环。
+          </li>
+        </ul>
+
+        <h2>开源社区贡献</h2>
+        <ul>
+          <li>
+            <strong><a href="https://github.com/apache/dolphinscheduler" target="_blank" rel="noopener noreferrer">apache/dolphinscheduler</a></strong>：为任务调度插件增加月/周边界占位符携带日期偏移量解析支持（<a href="https://github.com/apache/dolphinscheduler/pull/18726" target="_blank" rel="noopener noreferrer">PR #18726</a>，已合并）。
+          </li>
+          <li>
+            <strong><a href="https://github.com/openobserve/openobserve" target="_blank" rel="noopener noreferrer">openobserve/openobserve</a></strong>：云原生可观测平台 PromQL 分位数边界对齐与分页大小防御修复（<a href="https://github.com/openobserve/openobserve/pull/15142" target="_blank" rel="noopener noreferrer">PR #15142</a>、<a href="https://github.com/openobserve/openobserve/pull/15143" target="_blank" rel="noopener noreferrer">PR #15143</a>，均已合并）。
+          </li>
+          <li>
+            <strong><a href="https://github.com/gotoeasy/glogcenter" target="_blank" rel="noopener noreferrer">gotoeasy/glogcenter</a></strong>：轻量日志中心集群转发修复与 Goroutine 资源泄漏排查（<a href="https://github.com/gotoeasy/glogcenter/pull/92" target="_blank" rel="noopener noreferrer">PR #92</a>、<a href="https://github.com/gotoeasy/glogcenter/pull/93" target="_blank" rel="noopener noreferrer">PR #93</a>，均已合并）。
+          </li>
+        </ul>
+
+        <h2>联系方式</h2>
+        <ul>
+          <li>个人主页：<a href="https://blog.yunitytech.top/">blog.yunitytech.top</a></li>
+          <li>GitHub：<a href="https://github.com/fengstack" target="_blank" rel="noopener noreferrer">@fengstack</a> / <a href="https://github.com/upowerman" target="_blank" rel="noopener noreferrer">@upowerman</a></li>
+          <li>电子邮箱：<a href="mailto:gyf718@hotmail.com">gyf718@hotmail.com</a></li>
+          <li>全站 RSS 订阅：<a href="/post/index.xml">blog.yunitytech.top/post/index.xml</a></li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,192 @@
+---
+import type { MarkdownHeading } from 'astro';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import SeriesBox from '../components/SeriesBox.astro';
+import { Calendar, Clock, Tag, ExternalLink, ArrowLeft, ArrowRight, ChevronUp } from 'lucide-astro';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  headings: MarkdownHeading[];
+  prevPost?: CollectionEntry<'posts'>;
+  nextPost?: CollectionEntry<'posts'>;
+}
+
+const { post, headings, prevPost, nextPost } = Astro.props;
+const { title, description, publishDate, tags, readTime, series, refLink } = post.data;
+
+const formattedDate = publishDate.toISOString().slice(0, 10);
+---
+
+<BaseLayout
+  title={`${title} · 高云峰的博客`}
+  description={description}
+  type="article"
+  publishDate={publishDate}
+  articleTags={tags}
+>
+  <div class="wrap-container py-8 sm:py-12">
+    <!-- Breadcrumbs -->
+    <nav class="mb-6 flex items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
+      <a href="/" class="hover:text-fg transition-colors">首页</a>
+      <span class="text-line">/</span>
+      <a href="/post/" class="hover:text-fg transition-colors">文章</a>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="border-b border-line pb-8 mb-10">
+      <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl font-bold leading-tight tracking-tight text-fg">
+        {title}
+      </h1>
+
+      <div class="mt-4 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-mono text-muted">
+        <div class="flex items-center gap-1.5">
+          <Calendar class="h-3.5 w-3.5" />
+          <time datetime={formattedDate}>{formattedDate}</time>
+        </div>
+
+        {readTime && (
+          <div class="flex items-center gap-1.5">
+            <Clock class="h-3.5 w-3.5" />
+            <span>{readTime}</span>
+          </div>
+        )}
+
+        {tags.length > 0 && (
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <Tag class="h-3.5 w-3.5" />
+            {tags.map((tag) => (
+              <span class="rounded bg-surface px-2 py-0.5 text-muted hover:text-fg">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {refLink && (
+          <div class="flex items-center gap-1">
+            <a
+              href={refLink.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-1 text-accent hover:underline font-sans"
+            >
+              <span>{refLink.text}</span>
+              <ExternalLink class="h-3 w-3" />
+            </a>
+          </div>
+        )}
+      </div>
+    </header>
+
+    <!-- Content Grid: Article Prose + Sticky TOC -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_240px] gap-12 items-start">
+      <!-- Article Content -->
+      <article class="editorial-prose max-w-none min-w-0" id="articleBody">
+        {series && <SeriesBox seriesName={series.name} currentSlug={post.slug} />}
+        <slot />
+      </article>
+
+      <!-- Desktop Sidebar TOC -->
+      <aside class="hidden lg:block sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <TableOfContents headings={headings} />
+      </aside>
+    </div>
+
+    <!-- Prev & Next Article Navigation -->
+    <nav class="mt-16 border-t border-line pt-8" aria-label="上一篇与下一篇文章">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {prevPost ? (
+          <a
+            href={`/post/${prevPost.slug}/`}
+            class="group flex flex-col gap-1 rounded-lg border border-line bg-surface/30 p-4 transition-all hover:border-accent hover:bg-surface/80"
+          >
+            <span class="flex items-center gap-1 text-xs font-mono text-muted group-hover:text-accent">
+              <ArrowLeft class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+              <span>上一篇</span>
+            </span>
+            <span class="font-serif text-sm font-semibold text-fg line-clamp-2">
+              {prevPost.data.title}
+            </span>
+          </a>
+        ) : <div />}
+
+        {nextPost ? (
+          <a
+            href={`/post/${nextPost.slug}/`}
+            class="group flex flex-col gap-1 sm:items-end text-left sm:text-right rounded-lg border border-line bg-surface/30 p-4 transition-all hover:border-accent hover:bg-surface/80"
+          >
+            <span class="flex items-center gap-1 text-xs font-mono text-muted group-hover:text-accent">
+              <span>下一篇</span>
+              <ArrowRight class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </span>
+            <span class="font-serif text-sm font-semibold text-fg line-clamp-2">
+              {nextPost.data.title}
+            </span>
+          </a>
+        ) : <div />}
+      </div>
+    </nav>
+
+    <!-- Back to top button -->
+    <button
+      id="backToTopBtn"
+      type="button"
+      class="fixed bottom-6 right-6 hidden z-30 rounded-full border border-line bg-bg/90 backdrop-blur-md p-3 text-muted shadow-md hover:text-fg hover:border-accent transition-all"
+      aria-label="返回顶部"
+    >
+      <ChevronUp class="h-5 w-5" />
+    </button>
+  </div>
+</BaseLayout>
+
+<script>
+  // Add copy buttons to code blocks
+  document.querySelectorAll<HTMLElement>('.editorial-prose pre').forEach((pre) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block-wrapper my-6';
+    pre.parentNode?.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'code-copy-btn';
+    copyBtn.setAttribute('type', 'button');
+    copyBtn.setAttribute('aria-label', '复制代码');
+    copyBtn.innerText = '复制';
+
+    copyBtn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText || pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        copyBtn.innerText = '已复制!';
+        copyBtn.classList.add('text-accent');
+        setTimeout(() => {
+          copyBtn.innerText = '复制';
+          copyBtn.classList.remove('text-accent');
+        }, 2000);
+      } catch (err) {
+        copyBtn.innerText = '失败';
+        setTimeout(() => {
+          copyBtn.innerText = '复制';
+        }, 2000);
+      }
+    });
+
+    wrapper.appendChild(copyBtn);
+  });
+
+  // Back to top scroll button
+  const bttBtn = document.getElementById('backToTopBtn');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      bttBtn?.classList.remove('hidden');
+    } else {
+      bttBtn?.classList.add('hidden');
+    }
+  });
+
+  bttBtn?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>

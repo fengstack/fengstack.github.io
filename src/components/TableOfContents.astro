@@ -1,0 +1,71 @@
+---
+import type { MarkdownHeading } from 'astro';
+import { AlignLeft } from 'lucide-astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{filteredHeadings.length > 0 && (
+  <nav class="toc-wrapper text-xs font-sans" aria-label="文章目录">
+    <div class="flex items-center gap-1.5 font-mono text-muted uppercase tracking-wider mb-3">
+      <AlignLeft class="w-3.5 h-3.5" />
+      <span>目录 · Table of Contents</span>
+    </div>
+    <ul class="flex flex-col gap-2 border-l border-line pl-3 text-muted">
+      {filteredHeadings.map((h) => (
+        <li class={`transition-colors ${h.depth === 3 ? 'pl-3.5 text-[11px]' : 'font-medium'}`}>
+          <a
+            href={`#${h.slug}`}
+            class="toc-link block py-0.5 hover:text-fg transition-colors line-clamp-1"
+            data-slug={h.slug}
+          >
+            {h.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<script>
+  // Active TOC heading scrollspy
+  const links = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
+  if (links.length > 0) {
+    const headingElements = Array.from(links)
+      .map((link) => {
+        const slug = link.dataset.slug;
+        return slug ? document.getElementById(slug) : null;
+      })
+      .filter((el): el is HTMLElement => el !== null);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            links.forEach((link) => {
+              if (link.dataset.slug === id) {
+                link.classList.add('text-accent', 'font-semibold');
+                link.classList.remove('text-muted');
+              } else {
+                link.classList.remove('text-accent', 'font-semibold');
+                link.classList.add('text-muted');
+              }
+            });
+          }
+        });
+      },
+      {
+        rootMargin: '-80px 0% -70% 0%',
+        threshold: 0,
+      }
+    );
+
+    headingElements.forEach((h) => observer.observe(h));
+  }
+</script>
