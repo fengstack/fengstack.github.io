@@ -4,7 +4,7 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import SeriesBox from '../components/SeriesBox.astro';
-import { Calendar, Clock, Tag, ExternalLink, ArrowLeft, ArrowRight, ChevronUp } from 'lucide-astro';
+import { Calendar, Clock, Tag, ExternalLink, ArrowLeft, ArrowRight, ChevronUp, AlignLeft, ChevronDown } from 'lucide-astro';
 
 interface Props {
   post: CollectionEntry<'posts'>;
@@ -80,6 +80,22 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
       </div>
     </header>
 
+    <!-- Mobile Collapsible TOC (< 1024px) -->
+    {headings.filter((h) => h.depth === 2 || h.depth === 3).length > 0 && (
+      <details class="mobile-toc-details lg:hidden mb-8 rounded-lg border border-line bg-surface/50 p-4 transition-all">
+        <summary class="flex items-center justify-between cursor-pointer font-serif text-sm font-semibold text-fg select-none list-none">
+          <span class="flex items-center gap-2">
+            <AlignLeft class="h-4 w-4 text-accent" />
+            <span>文章目录 ({headings.filter((h) => h.depth === 2 || h.depth === 3).length} 节)</span>
+          </span>
+          <ChevronDown class="h-4 w-4 text-muted transition-transform duration-200 summary-chevron" />
+        </summary>
+        <div class="mt-4 pt-3 border-t border-line/60">
+          <TableOfContents headings={headings} />
+        </div>
+      </details>
+    )}
+
     <!-- Content Grid: Article Prose + Sticky TOC -->
     <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-12 xl:gap-16 items-start">
       <!-- Article Content -->
@@ -142,12 +158,31 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
 </BaseLayout>
 
 <script>
-  // Add copy buttons to code blocks
+  // Close mobile TOC details when a link is clicked
+  const mobileDetails = document.querySelector<HTMLDetailsElement>('.mobile-toc-details');
+  mobileDetails?.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => {
+      mobileDetails.open = false;
+    });
+  });
+
+  // Add copy buttons and language badges to code blocks
   document.querySelectorAll<HTMLElement>('.editorial-prose pre').forEach((pre) => {
+    const lang = pre.getAttribute('data-language') || '';
     const wrapper = document.createElement('div');
-    wrapper.className = 'code-block-wrapper my-6';
+    wrapper.className = 'code-block-wrapper my-6 relative group';
     pre.parentNode?.insertBefore(wrapper, pre);
     wrapper.appendChild(pre);
+
+    const actionsBar = document.createElement('div');
+    actionsBar.className = 'absolute top-2.5 right-3 flex items-center gap-2 z-10';
+
+    if (lang && lang !== 'text') {
+      const badge = document.createElement('span');
+      badge.className = 'code-action-badge';
+      badge.innerText = lang;
+      actionsBar.appendChild(badge);
+    }
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'code-copy-btn';
@@ -173,7 +208,8 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
       }
     });
 
-    wrapper.appendChild(copyBtn);
+    actionsBar.appendChild(copyBtn);
+    wrapper.appendChild(actionsBar);
   });
 
   // Back to top scroll button

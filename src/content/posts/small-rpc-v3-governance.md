@@ -37,7 +37,7 @@ refLink:
 
 3.0 没有为治理引入任何新概念——熔断、限流、降级全部实现为消费端 Filter，挂在 2.x 已有的过滤器链上。装配逻辑在 `ReferenceBeanPostProcessor.buildProxy` 里，链序与理由直接写在装配处注释中：
 
-```text
+```java
 // 链序：Trace（traceId 先落 attachments）→ Metrics（计时含 Cluster 重试全程）
 // → Fallback（包住全部下游失败，治理拒绝也由它兜底）
 // → RateLimit（先守自身水位）→ CircuitBreaker（再看下游健康，紧贴 Cluster）
@@ -104,7 +104,7 @@ public Stats stats() {
 
 只统计错误率有一个盲区：如果下游没有抛异常，只是每笔调用都磨到超时才失败——错误率看起来是 100%，可如果你的超时预算配得很宽（比如 30 秒），熔断前的 30 秒里每一笔调用都在占用线程和在途名额。所以 3.0 借鉴 Resilience4j，用**错误率与慢调用率双条件**，任一超阈值即跳闸：
 
-```text
+```java
 private void maybeTrip() {
     SlidingWindow.Stats s = window.stats();
     if (s.total < rule.minCalls()) {
@@ -137,7 +137,7 @@ private boolean isSlow(long rtMillis, long timeoutBudgetMillis) {
 
 状态机是经典的 CLOSED → OPEN → HALF_OPEN 三态，每个资源（`service#method`）一份独立状态：
 
-```text
+```java
 boolean tryPass() {
     if (state == CLOSED) {
         return true;                     // 快路径：只读 volatile，不加锁
@@ -190,7 +190,7 @@ private void completeProbe(boolean success) {
 
 限流 Filter 挂在消费端，防护的是「出压侧」：别让自己的突发流量把下游打爆。它有两道独立可配的闸门，第一道是令牌桶（RateLimiter SPI 的默认实现）：
 
-```text
+```java
 public boolean tryAcquire(String resource, RateLimitRule rule) {
     Bucket b = buckets.computeIfAbsent(resource, k -> new Bucket(rule.qps()));
     synchronized (b) {
@@ -235,7 +235,7 @@ try {
 
 熔断和限流负责「拒」，Fallback 负责「拒了之后怎么办」。用法上沿袭 Dubbo Mock 的思想，一个注解声明兜底实现：
 
-```text
+```java
 public static class HelloFallback implements HelloService {
     @Override
     public HelloDTO hello(String name) {

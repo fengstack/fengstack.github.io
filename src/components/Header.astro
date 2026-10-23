@@ -92,9 +92,36 @@ const isPost = pathname.startsWith('/post');
       </a>
     </nav>
   </div>
+
+  <!-- Reading Progress Bar (active on article pages) -->
+  <div id="readingProgress" class="absolute bottom-0 left-0 h-[2px] w-0 bg-accent transition-[width] duration-75 ease-out" aria-hidden="true"></div>
 </header>
 
 <script>
+  // Reading Progress Bar
+  const progressBar = document.getElementById('readingProgress');
+  const article = document.getElementById('articleBody');
+  if (progressBar && article) {
+    const updateProgress = () => {
+      const rect = article.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const articleTop = rect.top + scrollTop - 120;
+      const articleHeight = article.offsetHeight;
+      const windowHeight = window.innerHeight;
+
+      if (scrollTop < articleTop) {
+        progressBar.style.width = '0%';
+      } else {
+        const scrolled = scrollTop - articleTop;
+        const total = articleHeight - windowHeight + 200;
+        const pct = Math.min(100, Math.max(0, (scrolled / Math.max(1, total)) * 100));
+        progressBar.style.width = `${pct}%`;
+      }
+    };
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  }
+
   // Theme toggle functionality
   const themeBtn = document.getElementById('themeToggleBtn');
   themeBtn?.addEventListener('click', () => {

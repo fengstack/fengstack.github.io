@@ -111,7 +111,7 @@ ssb   rsa4096/0987654F3E2D1CBA 2026-10-18 [E]
 
 中央仓库在校验签名时，会自动到主流公钥服务器检索该 ID 的公钥。因此必须将公钥分发出去：
 
-```text
+```bash
 # 上传到 Ubuntu 官方密钥服务器（推荐，同步范围最广）
 gpg --keyserver keyserver.ubuntu.com --send-keys A1B2C3D4E5F67890
 
@@ -147,7 +147,7 @@ gpg --keyserver hkps://keys.openpgp.org --send-keys A1B2C3D4E5F67890
 
 Central 严禁匿名或缺失版权信息的依赖发布。顶级 `pom.xml` 中必须包含项目描述、开源协议、开发者信息以及 SCM 源码仓库地址：
 
-```text
+```xml
 <groupId>io.github.upowerman</groupId>
 <artifactId>small-rpc</artifactId>
 <version>2.1.1</version>
@@ -285,7 +285,7 @@ Central 严禁匿名或缺失版权信息的依赖发布。顶级 `pom.xml` 中�
 
 1. **父 POM 显式排除**：在 `central-publishing-maven-plugin` 配置中使用 ``：
 
-```text
+```xml
 <excludeArtifacts>
     <excludeArtifact>rpc-examples</excludeArtifact>
     <excludeArtifact>rpc-example-api</excludeArtifact>
@@ -296,7 +296,7 @@ Central 严禁匿名或缺失版权信息的依赖发布。顶级 `pom.xml` 中�
 
 2. **子模块 POM 跳过全套发布生命周期**：在 `rpc-examples/pom.xml` 的 `` 中增加如下属性：
 
-```text
+```xml
 <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <gpg.skip>true</gpg.skip>

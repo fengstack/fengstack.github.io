@@ -86,7 +86,7 @@ public class LockManager {
 - `GlobalCommitRequest`：发起二阶段提交。**遍历所有分支下发 `BranchCommitRequest`，只有全部成功才释放全局锁并销毁会话；任何一个分支失败，会话转入 `CommitRetrying`**；
 - `GlobalRollbackRequest`：发起二阶段回滚。**严格按照分支注册的逆序（Reverse Order）逐一下发 `BranchRollbackRequest`**，若失败则置为 `RollbackRetrying`。
 
-```text
+```java
 // DefaultCoordinator.java
 private void completeRollback(GlobalSession session) {
     session.changeStatus(GlobalStatus.Rollbacking);
@@ -148,7 +148,7 @@ public class TransactionalTemplate {
 
 真正的 AT 模式防脏写必须在反向补偿前执行**后镜像核验**：
 
-```text
+```java
 // AbstractUndoExecutor.java
 protected void dataValidation(Connection conn) throws SQLException {
     TableRecords afterImage = sqlUndoLog.getAfterImage();

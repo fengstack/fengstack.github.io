@@ -103,7 +103,7 @@ Subagent-Driven 执行 (主代理做 Tech Lead，派生子代理隔离编码与�
 
 跳过繁冗的问答，直接要求 Agent 针对当前需求输出一个结构化的 Implementation Plan，它必须明确三要素：
 
-```text
+```markdown
 // 典型的 Plan 模式结构示例：
 ### Step 1: 编写红测试用例
 - [ ] 目标文件: src/test/java/.../CircuitBreakerTest.java
