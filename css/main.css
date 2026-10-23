@@ -221,35 +221,47 @@ section + section { border-top: 1px solid var(--line); }
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--muted);
-  min-width: 170px;
+  width: 190px;
+  flex-shrink: 0;
   padding-top: 1px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
+}
+.contrib .who-title {
+  width: 100%;
+  word-break: break-all;
+  line-height: 1.4;
 }
 .contrib .who a {
-  color: inherit;
+  color: var(--fg);
   text-decoration: none;
+  font-weight: 500;
+  transition: color .15s ease;
 }
 .contrib .who a:hover {
   color: var(--accent);
 }
+.contrib .who-logo-link {
+  display: block;
+  line-height: 0;
+}
 .contrib .who-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: #ffffff;
   object-fit: contain;
-  padding: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  padding: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
   transition: transform .2s ease, box-shadow .2s ease;
   display: block;
 }
 .contrib .who-logo:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
 }
 .contrib .what { flex: 1; min-width: 0; }
 .contrib .what .t { font-weight: 600; font-size: 15px; }
@@ -401,17 +413,22 @@ section + section { border-top: 1px solid var(--line); }
   .card { padding: 18px; }
   .contrib { padding: 14px 16px; gap: 10px; }
   .contrib .who {
+    width: 100%;
     min-width: 100%;
     border-bottom: 1px dashed var(--line);
-    padding-bottom: 8px;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .contrib .who-title {
+    width: 100%;
   }
   .contrib .who-logo {
-    width: 36px;
-    height: 36px;
-    padding: 3px;
+    width: 52px;
+    height: 52px;
+    padding: 5px;
+    border-radius: 10px;
   }
 
   .article-head { padding-block: 28px 8px; }
