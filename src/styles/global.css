@@ -4,39 +4,59 @@
 @tailwind utilities;
 
 :root {
-  /* Editorial Technology Publication - Light Theme */
-  --color-bg: #FAF9F6;
-  --color-fg: #202124;
-  --color-muted: #686A6D;
-  --color-accent: #315E8A;
-  --color-accent-hover: #224363;
-  --color-surface: #F0EFEA;
-  --color-surface-hover: #E7E5DE;
-  --color-line: #E2E0DA;
-  --color-tag-bg: #EAE8E1;
-  --color-tag-fg: #4F5154;
-  --color-code-bg: #F4F3EE;
-  --color-code-border: #E0DDD5;
-  --radius: 6px;
-  --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  /* Modern Developer & Tech Publication - Clean Indigo/Slate Palette (Yesterday's Theme) */
+  --color-bg: #f6f7f9;
+  --color-fg: #161a21;
+  --color-muted: #4f5764;
+  --color-accent: #4a5cf7;
+  --color-accent-hover: #3b4bd8;
+  --color-surface: #ffffff;
+  --color-surface-hover: #eef1f5;
+  --color-line: #e3e7ee;
+  --color-tag-bg: #eaecff;
+  --color-tag-fg: #3b4bd8;
+  --color-code-bg: #eef1f5;
+  --color-code-border: #e3e7ee;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(20,25,40,.06), 0 8px 24px -16px rgba(20,25,40,.28);
+  --font-serif: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono: "IBM Plex Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #0e1217;
+    --color-fg: #e7ebf2;
+    --color-muted: #a3adbc;
+    --color-accent: #7c8aff;
+    --color-accent-hover: #9ca7ff;
+    --color-surface: #141a22;
+    --color-surface-hover: #1c2430;
+    --color-line: #232d3a;
+    --color-tag-bg: #1d2440;
+    --color-tag-fg: #9ca7ff;
+    --color-code-bg: #1c2430;
+    --color-code-border: #232d3a;
+    --shadow: 0 1px 2px rgba(0,0,0,.25), 0 10px 28px -18px rgba(0,0,0,.6);
+  }
+}
+
 [data-theme="dark"] {
-  /* Editorial Technology Publication - Refined Dark Theme */
-  --color-bg: #141413;
-  --color-fg: #E8E6E3;
-  --color-muted: #999690;
-  --color-accent: #7EA2C7;
-  --color-accent-hover: #A0C0E0;
-  --color-surface: #1E1D1B;
-  --color-surface-hover: #272522;
-  --color-line: #2C2A26;
-  --color-tag-bg: #23221F;
-  --color-tag-fg: #B3B0AA;
-  --color-code-bg: #1A1917;
-  --color-code-border: #2D2B27;
+  /* Modern Developer & Tech Publication - Sleek Dark Slate */
+  --color-bg: #0e1217;
+  --color-fg: #e7ebf2;
+  --color-muted: #a3adbc;
+  --color-accent: #7c8aff;
+  --color-accent-hover: #9ca7ff;
+  --color-surface: #141a22;
+  --color-surface-hover: #1c2430;
+  --color-line: #232d3a;
+  --color-tag-bg: #1d2440;
+  --color-tag-fg: #9ca7ff;
+  --color-code-bg: #1c2430;
+  --color-code-border: #232d3a;
+  --shadow: 0 1px 2px rgba(0,0,0,.25), 0 10px 28px -18px rgba(0,0,0,.6);
 }
 
 /* Base resets & typography */
@@ -223,19 +243,25 @@ h1, h2, h3, h4, .font-editorial {
 }
 
 /* Shiki Dual-theme switching */
-html:not([data-theme="dark"]) .editorial-prose .astro-code,
+html:not([data-theme="dark"]) .editorial-prose .astro-code {
+  color: var(--shiki-light) !important;
+  background-color: var(--color-surface) !important;
+}
 html:not([data-theme="dark"]) .editorial-prose .astro-code span {
   color: var(--shiki-light) !important;
-  background-color: var(--shiki-light-bg) !important;
+  background-color: transparent !important;
   font-style: var(--shiki-light-font-style) !important;
   font-weight: var(--shiki-light-font-weight) !important;
   text-decoration: var(--shiki-light-text-decoration) !important;
 }
 
-html[data-theme="dark"] .editorial-prose .astro-code,
+html[data-theme="dark"] .editorial-prose .astro-code {
+  color: var(--shiki-dark) !important;
+  background-color: var(--color-surface) !important;
+}
 html[data-theme="dark"] .editorial-prose .astro-code span {
   color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg) !important;
+  background-color: transparent !important;
   font-style: var(--shiki-dark-font-style) !important;
   font-weight: var(--shiki-dark-font-weight) !important;
   text-decoration: var(--shiki-dark-text-decoration) !important;

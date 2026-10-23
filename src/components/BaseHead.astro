@@ -44,8 +44,8 @@ const fullImageURL = new URL(image, Astro.site).toString();
 <meta name="msvalidate.01" content="C881F074467FD6757DFB5E6C8EE1B7DB" />
 
 <!-- Theme color -->
-<meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0e1217" media="(prefers-color-scheme: dark)" />
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
@@ -134,7 +134,7 @@ const fullImageURL = new URL(image, Astro.site).toString();
     if (theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   })();
 </script>

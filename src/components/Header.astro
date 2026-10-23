@@ -131,7 +131,7 @@ const isPost = pathname.startsWith('/post');
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('gw-theme', 'dark');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
       localStorage.setItem('gw-theme', 'light');
     }
   });
