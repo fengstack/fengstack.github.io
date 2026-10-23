@@ -49,9 +49,9 @@ const contributions = [
     repo: 'openobserve/openobserve',
     repoUrl: 'https://github.com/openobserve/openobserve',
     logo: '/images/openobserve.png',
-    badge: '2 个已合并 · 1 个撤回',
-    badgeColor: 'text-blue-700 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
-    desc: 'Rust 云原生可观测性平台：解决 PromQL 分位数插值边界失效（对齐 Prometheus 标准）与 _around 接口小分页越界漏洞；直方图 LIMIT 一项经维护者确认实现意图后撤回。',
+    badge: '已合并 (2 个 PR)',
+    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    desc: 'Rust 云原生可观测性平台：解决 PromQL 分位数插值边界对齐（对齐 Prometheus 官方标准）与 _around 检索接口小分页越界安全漏洞。',
     prs: [
       {
         title: 'PR #15142 · fix(promql): quantile interpolation keeps infinite bounds like Prometheus (已合并)',
@@ -62,11 +62,6 @@ const contributions = [
         title: 'PR #15143 · fix(search): clamp _around page size so small or invalid sizes stop expanding (已合并)',
         url: 'https://github.com/openobserve/openobserve/pull/15143',
         status: 'merged',
-      },
-      {
-        title: 'PR #15144 · fix(search): keep a histogram query eligible when it carries limit (已撤回)',
-        url: 'https://github.com/openobserve/openobserve/pull/15144',
-        status: 'closed',
       },
     ],
   },
@@ -115,7 +110,7 @@ const contributions = [
         </h1>
 
         <p class="text-base sm:text-lg text-muted leading-relaxed">
-          日常以 Java 为主，专注分布式系统中间件、RPC 服务治理与空间数据库；积极拥抱现代 AI 编程，倡导基于规范驱动（SDD）与测试评判（TDD）的 Agent 工程化交付体系；热爱啃源码、造高质量轮子，向主流开源社区持续贡献。
+          日常以 Java 为核心技术栈，熟练掌握 Vue 3 与 TypeScript 现代化前端工程交付；专注分布式中间件、RPC 服务治理与空间数据库；积极拥抱现代 AI 编程，倡导基于规范驱动（SDD）与测试评判（TDD）的 Agent 工程化交付体系；热爱啃源码、向主流开源社区持续贡献。
         </p>
 
         <div class="mt-2 flex flex-wrap items-center gap-3">
@@ -163,16 +158,18 @@ const contributions = [
         <div class="rounded-lg border border-line bg-surface/40 p-5">
           <div class="flex items-center gap-2 font-serif font-semibold text-fg mb-2">
             <Server class="h-4 w-4 text-accent" />
-            <span>Java 与后端工程</span>
+            <span>Java 与现代前端工程</span>
           </div>
           <p class="text-xs text-muted leading-relaxed mb-3">
-            扎实的 Java 生态基底，熟练掌握 Netty 4 二进制私有网络协议、线程模型优化、自定义类加载器与 SPI 扩展机制。
+            扎实的 Java 生态与网络协议基底，熟练掌握 Netty 4、线程模型优化与微内核扩展；同时具备 Vue 3 与 TypeScript 现代化前端全栈工程交付能力。
           </p>
           <div class="flex flex-wrap gap-1.5 font-mono text-xs">
             <span class="rounded bg-surface px-2 py-0.5 text-muted">Java 8~21</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Netty</span>
             <span class="rounded bg-surface px-2 py-0.5 text-muted">Spring Boot</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Hessian</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Netty</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Vue 3</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">TypeScript</span>
+            <span class="rounded bg-surface px-2 py-0.5 text-muted">Node.js</span>
           </div>
         </div>
 
