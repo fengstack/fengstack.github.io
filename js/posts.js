@@ -67,6 +67,28 @@
   function render(items) {
     var list = document.getElementById('postList');
     if (!list) return;
+
+    // Check if the page already has pre-rendered items.
+    // If it does, and the feed has fewer items or doesn't bring anything new,
+    // do NOT wipe the DOM to prevent content downgrade or flicker from cached feeds.
+    var existingItems = list.querySelectorAll('.tl-item:not(.empty)');
+    if (existingItems.length > 0 && items.length <= existingItems.length) {
+      var existingLinks = [];
+      for (var i = 0; i < existingItems.length; i++) {
+        var a = existingItems[i].querySelector('a');
+        if (a) existingLinks.push(a.getAttribute('href') || '');
+      }
+      var hasNew = items.some(function (it) {
+        var rel = relative(it.link);
+        return !existingLinks.some(function (l) {
+          return l && (l.indexOf(rel) !== -1 || rel.indexOf(l) !== -1);
+        });
+      });
+      if (!hasNew) {
+        return;
+      }
+    }
+
     var frag = document.createDocumentFragment();
     items.forEach(function (it) {
       if (!it.title) return;
