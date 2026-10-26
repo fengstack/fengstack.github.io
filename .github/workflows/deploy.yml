@@ -71,4 +71,5 @@ jobs:
       - name: Broadcast URLs
         env:
           BAIDU_TOKEN: ${{ secrets.BAIDU_TOKEN }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
         run: node scripts/seo-ping.js

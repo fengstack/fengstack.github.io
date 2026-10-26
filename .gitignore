@@ -5,6 +5,11 @@ node_modules/
 dist/
 .astro/
 
+# Environment variables & secrets
+.env
+.env.*
+*.env
+
 # IDE & OS
 .DS_Store
 */.DS_Store

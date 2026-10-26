@@ -12,8 +12,8 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const HOST = 'blog.yunitytech.top';
-const KEY = '9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b';
+const HOST = process.env.INDEXNOW_HOST || 'blog.yunitytech.top';
+const KEY = process.env.INDEXNOW_KEY || '9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b';
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
