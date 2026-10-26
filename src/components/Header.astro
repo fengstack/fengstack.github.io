@@ -3,6 +3,7 @@ import { Search, Moon, Sun, Menu, X } from 'lucide-astro';
 
 const pathname = new URL(Astro.request.url).pathname;
 const isAbout = pathname.startsWith('/about');
+const isTopic = pathname.startsWith('/topic');
 const isPost = pathname.startsWith('/post');
 ---
 
@@ -27,6 +28,9 @@ const isPost = pathname.startsWith('/post');
       </a>
       <a href="/#contribs" class="transition-colors hover:text-fg">
         开源贡献
+      </a>
+      <a href="/topic/" class={`transition-colors hover:text-fg ${isTopic ? 'text-fg font-semibold' : ''}`}>
+        专题
       </a>
       <a href="/post/" class={`transition-colors hover:text-fg ${isPost ? 'text-fg font-semibold' : ''}`}>
         文章
@@ -86,6 +90,9 @@ const isPost = pathname.startsWith('/post');
       </a>
       <a href="/#contribs" class="transition-colors hover:text-fg mobile-nav-link">
         开源贡献
+      </a>
+      <a href="/topic/" class={`transition-colors hover:text-fg mobile-nav-link ${isTopic ? 'text-fg font-semibold' : ''}`}>
+        技术专题
       </a>
       <a href="/post/" class={`transition-colors hover:text-fg ${isPost ? 'text-fg font-semibold' : ''}`}>
         技术文章

@@ -1,9 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { Search } from 'lucide-astro';
+import { TOPICS } from '../../data/topics';
+import { Search, Layers } from 'lucide-astro';
 
-const posts = await getCollection('posts');
+const posts = await getCollection('posts', ({ data }) => !data.draft);
 const sortedPosts = posts.sort(
   (a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime()
 );
@@ -17,13 +18,26 @@ sortedPosts.forEach((p) => {
 });
 
 const allTags = Array.from(tagCounts.entries()).sort((a, b) => b[1] - a[1]);
+
+const breadcrumbs = [
+  { name: '首页', url: '/' },
+  { name: '技术文章', url: '/post/' },
+];
 ---
 
 <BaseLayout
   title="技术文章与开源博客 · 高云峰"
   description="高云峰的技术文章与开源博客列表：专注 Java RPC 框架治理、分布式系统与事务（simple-seata）、AI Agent 规范驱动编程实践（SDD/TDD）、数据库与开源实战。"
+  breadcrumbs={breadcrumbs}
 >
   <div class="wrap-container py-12">
+    <!-- Breadcrumbs -->
+    <nav class="mb-6 flex items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
+      <a href="/" class="hover:text-fg transition-colors">首页</a>
+      <span class="text-line">/</span>
+      <span class="text-fg">技术文章</span>
+    </nav>
+
     <!-- Header -->
     <div class="border-b border-line pb-8">
       <h1 class="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-fg">
@@ -33,8 +47,24 @@ const allTags = Array.from(tagCounts.entries()).sort((a, b) => b[1] - a[1]);
         posts · 分布式系统、RPC 治理、开源实战与现代 AI Agent 编程实践
       </p>
 
+      <!-- Topic Shortcuts -->
+      <div class="mt-5 flex flex-wrap items-center gap-2">
+        <span class="text-xs font-mono text-muted flex items-center gap-1">
+          <Layers class="h-3.5 w-3.5 text-accent" />
+          <span>核心专题：</span>
+        </span>
+        {TOPICS.map((topic) => (
+          <a
+            href={`/topic/${topic.slug}/`}
+            class="rounded-md border border-line bg-surface/50 px-2.5 py-1 text-xs font-mono text-muted hover:border-accent hover:text-fg transition-all"
+          >
+            {topic.name}
+          </a>
+        ))}
+      </div>
+
       <!-- Search & Tags bar -->
-      <div class="mt-8 flex flex-col gap-4">
+      <div class="mt-6 flex flex-col gap-4">
         <!-- Search Input -->
         <div class="relative">
           <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />

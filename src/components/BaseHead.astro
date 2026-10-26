@@ -1,26 +1,39 @@
 ---
 interface Props {
   title?: string;
+  cleanTitle?: string;
   description?: string;
   image?: string;
   type?: 'website' | 'article' | 'profile';
   publishDate?: Date;
+  updatedDate?: Date;
   articleTags?: string[];
   canonicalURL?: URL | string;
+  noindex?: boolean;
+  breadcrumbs?: Array<{ name: string; url: string }>;
 }
 
 const {
   title = '高云峰 — 软件工程师个人主页与技术博客',
+  cleanTitle,
   description = '高云峰（fengstack）的个人主页与技术博客：软件工程师，专注 RPC 框架、现代 AI Agent 编程实践（SDD 与 TDD 规范驱动）、jOOQ/PostGIS，分享开源项目与社区实战复盘。',
   image = '/images/avatar.png',
   type = 'website',
   publishDate,
+  updatedDate,
   articleTags = [],
-  canonicalURL = new URL(Astro.url.pathname, Astro.site),
+  canonicalURL,
+  noindex = false,
+  breadcrumbs,
 } = Astro.props;
+
+const rawCanonical = canonicalURL ? canonicalURL.toString() : new URL(Astro.url.pathname, Astro.site).toString();
+const finalCanonical = rawCanonical.endsWith('/') || rawCanonical.includes('.') ? rawCanonical : `${rawCanonical}/`;
 
 const siteTitle = title.includes('高云峰') ? title : `${title} · 高云峰的博客`;
 const fullImageURL = new URL(image, Astro.site).toString();
+const logoImageURL = new URL('/images/bear.png', Astro.site).toString();
+const finalModifiedDate = updatedDate || publishDate;
 ---
 
 <!-- Global Metadata -->
@@ -31,7 +44,7 @@ const fullImageURL = new URL(image, Astro.site).toString();
 <link rel="alternate" type="application/rss+xml" title="高云峰的技术文章 (RSS)" href="/rss.xml" />
 
 <!-- Canonical URL -->
-<link rel="canonical" href={canonicalURL} />
+<link rel="canonical" href={finalCanonical} />
 
 <!-- Primary Meta Tags -->
 <title>{siteTitle}</title>
@@ -39,7 +52,11 @@ const fullImageURL = new URL(image, Astro.site).toString();
 <meta name="description" content={description} />
 <meta name="author" content="高云峰" />
 <meta name="keywords" content={articleTags.length > 0 ? articleTags.join(', ') : '软件工程师, 高云峰, 技术博客, AI 编程, Java, Go, RPC, Netty, jOOQ, PostGIS, SDD, TDD, Code Review'} />
-<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+{noindex ? (
+  <meta name="robots" content="noindex, follow" />
+) : (
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+)}
 
 <!-- Search Engine Verification Tags -->
 <meta name="msvalidate.01" content="C881F074467FD6757DFB5E6C8EE1B7DB" />
@@ -50,7 +67,7 @@ const fullImageURL = new URL(image, Astro.site).toString();
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
-<meta property="og:url" content={canonicalURL} />
+<meta property="og:url" content={finalCanonical} />
 <meta property="og:site_name" content="高云峰的博客" />
 <meta property="og:title" content={siteTitle} />
 <meta property="og:description" content={description} />
@@ -60,29 +77,46 @@ const fullImageURL = new URL(image, Astro.site).toString();
 {type === 'article' && publishDate && (
   <meta property="article:published_time" content={publishDate.toISOString()} />
 )}
+{type === 'article' && finalModifiedDate && (
+  <meta property="article:modified_time" content={finalModifiedDate.toISOString()} />
+)}
 {articleTags.map(tag => (
   <meta property="article:tag" content={tag} />
 ))}
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary" />
-<meta property="twitter:url" content={canonicalURL} />
+<meta property="twitter:url" content={finalCanonical} />
 <meta property="twitter:title" content={siteTitle} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={fullImageURL} />
 
-<!-- Structured Data (JSON-LD) -->
+<!-- Structured Data: BreadcrumbList (JSON-LD) -->
+{breadcrumbs && breadcrumbs.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": breadcrumbs.map((crumb, idx) => ({
+      "@type": "ListItem",
+      "position": idx + 1,
+      "name": crumb.name,
+      "item": crumb.url.startsWith('http') ? crumb.url : new URL(crumb.url, Astro.site).toString()
+    }))
+  })} />
+)}
+
+<!-- Structured Data: Article / Person / WebSite (JSON-LD) -->
 {type === 'article' ? (
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": title,
+    "headline": cleanTitle || title.replace(/ · 高云峰的博客$/, '').replace(/ — 软件工程师个人主页与技术博客$/, ''),
     "description": description,
     "image": fullImageURL,
     "keywords": articleTags.length > 0 ? articleTags.join(', ') : undefined,
-    "url": canonicalURL.toString(),
+    "url": finalCanonical,
     "datePublished": publishDate ? publishDate.toISOString().slice(0, 10) : undefined,
-    "dateModified": publishDate ? publishDate.toISOString().slice(0, 10) : undefined,
+    "dateModified": finalModifiedDate ? finalModifiedDate.toISOString().slice(0, 10) : undefined,
     "inLanguage": "zh-CN",
     "author": {
       "@type": "Person",
@@ -92,9 +126,16 @@ const fullImageURL = new URL(image, Astro.site).toString();
     "publisher": {
       "@type": "Person",
       "name": "高云峰",
-      "url": "https://blog.yunitytech.top/"
+      "url": "https://blog.yunitytech.top/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": logoImageURL
+      }
     },
-    "mainEntityOfPage": canonicalURL.toString()
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": finalCanonical
+    }
   })} />
 ) : (
   <script type="application/ld+json" set:html={JSON.stringify({

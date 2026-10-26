@@ -7,22 +7,30 @@ import '../styles/global.css';
 
 interface Props {
   title?: string;
+  cleanTitle?: string;
   description?: string;
   image?: string;
   type?: 'website' | 'article' | 'profile';
   publishDate?: Date;
+  updatedDate?: Date;
   articleTags?: string[];
   canonicalURL?: URL | string;
+  noindex?: boolean;
+  breadcrumbs?: Array<{ name: string; url: string }>;
 }
 
 const {
   title,
+  cleanTitle,
   description,
   image,
   type = 'website',
   publishDate,
+  updatedDate,
   articleTags,
   canonicalURL,
+  noindex = false,
+  breadcrumbs,
 } = Astro.props;
 ---
 
@@ -31,12 +39,16 @@ const {
   <head>
     <BaseHead
       title={title}
+      cleanTitle={cleanTitle}
       description={description}
       image={image}
       type={type}
       publishDate={publishDate}
+      updatedDate={updatedDate}
       articleTags={articleTags}
       canonicalURL={canonicalURL}
+      noindex={noindex}
+      breadcrumbs={breadcrumbs}
     />
   </head>
   <body class="flex min-h-screen flex-col bg-bg text-fg">

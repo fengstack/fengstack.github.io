@@ -341,13 +341,22 @@ const contributions = [
           </h2>
           <span class="text-xs font-mono text-muted">Recent Technical Articles</span>
         </div>
-        <a
-          href="/post/"
-          class="inline-flex items-center gap-1 text-xs font-mono text-accent hover:underline"
-        >
-          <span>查看全部 ({allPosts.length})</span>
-          <ArrowRight class="h-3 w-3" />
-        </a>
+        <div class="flex items-center gap-3">
+          <a
+            href="/topic/"
+            class="hidden sm:inline-flex items-center gap-1 text-xs font-mono text-muted hover:text-accent transition-colors"
+          >
+            <span>技术专题</span>
+          </a>
+          <span class="hidden sm:inline text-line text-xs font-mono">/</span>
+          <a
+            href="/post/"
+            class="inline-flex items-center gap-1 text-xs font-mono text-accent hover:underline"
+          >
+            <span>查看全部 ({allPosts.length})</span>
+            <ArrowRight class="h-3 w-3" />
+          </a>
+        </div>
       </div>
 
       <div class="divide-y divide-line/60">

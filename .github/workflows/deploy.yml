@@ -38,6 +38,9 @@ jobs:
       - name: Build static site
         run: npx astro build
 
+      - name: Verify SEO Quality Assurance
+        run: npm run seo:check
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

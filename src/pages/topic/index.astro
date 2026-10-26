@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { TOPICS } from '../../data/topics';
+import { ArrowRight, Layers } from 'lucide-astro';
+
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+
+const breadcrumbs = [
+  { name: '首页', url: '/' },
+  { name: '技术专题', url: '/topic/' },
+];
+---
+
+<BaseLayout
+  title="技术专题聚合 · 高云峰的博客"
+  description="高云峰的技术专题精选索引：汇集 Java 分布式系统、RPC 微内核与微服务治理、AI Agent 规范驱动编程（SDD/TDD）、开源贡献与线上故障排查等深度技术主题。"
+  breadcrumbs={breadcrumbs}
+>
+  <div class="wrap-container py-12">
+    <!-- Header -->
+    <div class="border-b border-line pb-8">
+      <nav class="mb-4 flex items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
+        <a href="/" class="hover:text-fg transition-colors">首页</a>
+        <span class="text-line">/</span>
+        <span class="text-fg">技术专题</span>
+      </nav>
+
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-fg">
+        技术专题聚合
+      </h1>
+      <p class="mt-2 text-sm font-mono text-muted">
+        topics · 核心技术领域的深度探索、原理剖析与工程实践
+      </p>
+    </div>
+
+    <!-- Topic Grid -->
+    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {TOPICS.map((topic) => {
+        const posts = allPosts.filter((p) => topic.postSlugs.includes(p.slug));
+        return (
+          <article class="flex flex-col justify-between rounded-lg border border-line bg-surface/30 p-6 transition-all hover:border-accent hover:bg-surface/70">
+            <div>
+              <div class="flex items-center gap-2 text-xs font-mono text-accent uppercase tracking-wider mb-2">
+                <Layers class="h-4 w-4" />
+                <span>{topic.subtitle}</span>
+              </div>
+
+              <h2 class="font-serif text-xl font-bold text-fg mb-3 hover:text-accent transition-colors">
+                <a href={`/topic/${topic.slug}/`}>
+                  {topic.name}
+                </a>
+              </h2>
+
+              <p class="text-xs sm:text-sm text-muted leading-relaxed mb-6">
+                {topic.description}
+              </p>
+            </div>
+
+            <div class="border-t border-line/60 pt-4 flex items-center justify-between">
+              <span class="text-xs font-mono text-muted">
+                收录 {posts.length} 篇核心文章
+              </span>
+              <a
+                href={`/topic/${topic.slug}/`}
+                class="inline-flex items-center gap-1 text-xs font-mono text-accent hover:underline font-medium"
+              >
+                <span>浏览专题</span>
+                <ArrowRight class="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</BaseLayout>

@@ -1,10 +1,12 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import SeriesBox from '../components/SeriesBox.astro';
-import { Calendar, Clock, Tag, ExternalLink, ArrowLeft, ArrowRight, ChevronUp, AlignLeft, ChevronDown } from 'lucide-astro';
+import { TOPICS } from '../data/topics';
+import { Calendar, Clock, Tag, ExternalLink, ArrowLeft, ArrowRight, ChevronUp, AlignLeft, ChevronDown, Sparkles, Layers } from 'lucide-astro';
 
 interface Props {
   post: CollectionEntry<'posts'>;
@@ -14,24 +16,70 @@ interface Props {
 }
 
 const { post, headings, prevPost, nextPost } = Astro.props;
-const { title, description, publishDate, tags, readTime, series, refLink } = post.data;
+const { title, description, publishDate, updatedDate, tags, readTime, series, refLink } = post.data;
 
 const formattedDate = publishDate.toISOString().slice(0, 10);
+const formattedUpdatedDate = updatedDate ? updatedDate.toISOString().slice(0, 10) : undefined;
+
+// Current topic
+const currentTopic = TOPICS.find((t) => t.postSlugs.includes(post.slug));
+
+// Structured Breadcrumbs
+const breadcrumbs = [
+  { name: '首页', url: '/' },
+  { name: '技术文章', url: '/post/' },
+  ...(currentTopic ? [{ name: currentTopic.name, url: `/topic/${currentTopic.slug}/` }] : []),
+  { name: title, url: `/post/${post.slug}/` },
+];
+
+// Related posts calculation
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const relatedPosts = allPosts
+  .filter((p) => p.slug !== post.slug)
+  .map((p) => {
+    let score = 0;
+    if (series && p.data.series?.name === series.name) {
+      score += 5;
+    }
+    const sharedTags = p.data.tags.filter((t) => tags.includes(t));
+    score += sharedTags.length * 2;
+    if (currentTopic && currentTopic.postSlugs.includes(p.slug)) {
+      score += 3;
+    }
+    return { post: p, score };
+  })
+  .filter((item) => item.score > 0)
+  .sort((a, b) => b.score - a.score || b.post.data.publishDate.getTime() - a.post.data.publishDate.getTime())
+  .slice(0, 3)
+  .map((item) => item.post);
 ---
 
 <BaseLayout
   title={`${title} · 高云峰的博客`}
+  cleanTitle={title}
   description={description}
   type="article"
   publishDate={publishDate}
+  updatedDate={updatedDate}
   articleTags={tags}
+  breadcrumbs={breadcrumbs}
 >
   <div class="w-full max-w-[1240px] mx-auto px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
     <!-- Breadcrumbs -->
-    <nav class="mb-6 flex items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
+    <nav class="mb-6 flex flex-wrap items-center gap-2 text-xs font-mono text-muted" aria-label="面包屑导航">
       <a href="/" class="hover:text-fg transition-colors">首页</a>
       <span class="text-line">/</span>
       <a href="/post/" class="hover:text-fg transition-colors">文章</a>
+      {currentTopic && (
+        <>
+          <span class="text-line">/</span>
+          <a href={`/topic/${currentTopic.slug}/`} class="hover:text-fg transition-colors text-accent">
+            {currentTopic.name}
+          </a>
+        </>
+      )}
+      <span class="text-line">/</span>
+      <span class="text-fg truncate max-w-[200px] sm:max-w-xs md:max-w-md" title={title}>{title}</span>
     </nav>
 
     <!-- Article Header -->
@@ -44,12 +92,24 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
         <div class="flex items-center gap-1.5">
           <Calendar class="h-3.5 w-3.5" />
           <time datetime={formattedDate}>{formattedDate}</time>
+          {formattedUpdatedDate && formattedUpdatedDate !== formattedDate && (
+            <span class="text-[11px] opacity-75">（更新于 {formattedUpdatedDate}）</span>
+          )}
         </div>
 
         {readTime && (
           <div class="flex items-center gap-1.5">
             <Clock class="h-3.5 w-3.5" />
             <span>{readTime}</span>
+          </div>
+        )}
+
+        {currentTopic && (
+          <div class="flex items-center gap-1">
+            <Layers class="h-3.5 w-3.5 text-accent" />
+            <a href={`/topic/${currentTopic.slug}/`} class="text-accent hover:underline">
+              {currentTopic.name}
+            </a>
           </div>
         )}
 
@@ -110,12 +170,60 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
       </aside>
     </div>
 
+    <!-- Related Posts Section -->
+    {relatedPosts.length > 0 && (
+      <section class="mt-14 rounded-lg border border-line bg-surface/30 p-6" aria-label="相关技术文章推荐">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5 pb-3 border-b border-line/60">
+          <h2 class="font-serif text-base sm:text-lg font-bold text-fg flex items-center gap-2">
+            <Sparkles class="h-4 w-4 text-accent" />
+            <span>相关技术分析与延伸阅读</span>
+          </h2>
+          {currentTopic && (
+            <a
+              href={`/topic/${currentTopic.slug}/`}
+              class="text-xs font-mono text-accent hover:underline flex items-center gap-1"
+            >
+              <span>查看「{currentTopic.name}」专题全集</span>
+              <ArrowRight class="h-3 w-3" />
+            </a>
+          )}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {relatedPosts.map((relPost) => (
+            <a
+              href={`/post/${relPost.slug}/`}
+              class="group flex flex-col justify-between rounded-md border border-line/70 bg-surface/40 p-4 transition-all hover:border-accent hover:bg-surface"
+            >
+              <div>
+                <div class="text-[11px] font-mono text-muted mb-1.5">
+                  {relPost.data.publishDate.toISOString().slice(0, 10)}
+                  {relPost.data.readTime && ` · ${relPost.data.readTime}`}
+                </div>
+                <h3 class="font-serif text-sm font-semibold text-fg group-hover:text-accent transition-colors line-clamp-2 leading-snug mb-2">
+                  {relPost.data.title}
+                </h3>
+                <p class="text-xs text-muted line-clamp-2 leading-relaxed">
+                  {relPost.data.description}
+                </p>
+              </div>
+              <div class="mt-3 flex items-center gap-1 text-[11px] font-mono text-accent group-hover:underline">
+                <span>阅读全文</span>
+                <ArrowRight class="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
     <!-- Prev & Next Article Navigation -->
-    <nav class="mt-16 border-t border-line pt-8" aria-label="上一篇与下一篇文章">
+    <nav class="mt-12 border-t border-line pt-8" aria-label="上一篇与下一篇文章">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {prevPost ? (
           <a
             href={`/post/${prevPost.slug}/`}
+            rel="prev"
             class="group flex flex-col gap-1 rounded-lg border border-line bg-surface/30 p-4 transition-all hover:border-accent hover:bg-surface/80"
           >
             <span class="flex items-center gap-1 text-xs font-mono text-muted group-hover:text-accent">
@@ -131,6 +239,7 @@ const formattedDate = publishDate.toISOString().slice(0, 10);
         {nextPost ? (
           <a
             href={`/post/${nextPost.slug}/`}
+            rel="next"
             class="group flex flex-col gap-1 sm:items-end text-left sm:text-right rounded-lg border border-line bg-surface/30 p-4 transition-all hover:border-accent hover:bg-surface/80"
           >
             <span class="flex items-center gap-1 text-xs font-mono text-muted group-hover:text-accent">

@@ -15,7 +15,6 @@ const path = require('path');
 const HOST = process.env.INDEXNOW_HOST || 'blog.yunitytech.top';
 const KEY = process.env.INDEXNOW_KEY || '9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b';
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
-const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
 // Extract all URLs dynamically: first check dist/sitemap.xml, then parse src/content/posts directory
 function getUrlList() {
@@ -47,7 +46,12 @@ function getUrlList() {
       const staticUrls = [
         `https://${HOST}/`,
         `https://${HOST}/about/`,
-        `https://${HOST}/post/`
+        `https://${HOST}/post/`,
+        `https://${HOST}/topic/`,
+        `https://${HOST}/topic/java-distributed/`,
+        `https://${HOST}/topic/rpc-governance/`,
+        `https://${HOST}/topic/ai-agent-engineering/`,
+        `https://${HOST}/topic/troubleshooting-opensource/`
       ];
       return [...new Set([...staticUrls, ...postUrls])];
     }
@@ -59,6 +63,11 @@ function getUrlList() {
     `https://${HOST}/`,
     `https://${HOST}/about/`,
     `https://${HOST}/post/`,
+    `https://${HOST}/topic/`,
+    `https://${HOST}/topic/java-distributed/`,
+    `https://${HOST}/topic/rpc-governance/`,
+    `https://${HOST}/topic/ai-agent-engineering/`,
+    `https://${HOST}/topic/troubleshooting-opensource/`,
     `https://${HOST}/post/ai-code-review-delivery-pipeline/`,
     `https://${HOST}/post/refreshscope-scheduled-duplicate-rca/`,
     `https://${HOST}/post/ai-coding-era-engineer-survival/`,

@@ -10,7 +10,7 @@ const currentYear = new Date().getFullYear();
       <span class="text-xs">软件工程师</span>
     </div>
 
-    <div class="flex items-center gap-4 text-xs font-mono">
+    <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono">
       <a
         href="https://github.com/fengstack"
         target="_blank"
@@ -21,11 +21,26 @@ const currentYear = new Date().getFullYear();
       </a>
       <span class="text-line">/</span>
       <a
+        href="/topic/"
+        class="hover:text-fg transition-colors"
+      >
+        技术专题
+      </a>
+      <span class="text-line">/</span>
+      <a
         href="/post/index.xml"
         class="hover:text-fg transition-colors"
         title="RSS 2.0 订阅源"
       >
         RSS 订阅
+      </a>
+      <span class="text-line">/</span>
+      <a
+        href="/sitemap.xml"
+        class="hover:text-fg transition-colors"
+        title="XML 站点地图"
+      >
+        Sitemap
       </a>
       <span class="text-line">/</span>
       <a
