@@ -38,7 +38,8 @@ const fullImageURL = new URL(image, Astro.site).toString();
 <meta name="title" content={siteTitle} />
 <meta name="description" content={description} />
 <meta name="author" content="高云峰" />
-<meta name="robots" content="index,follow" />
+<meta name="keywords" content={articleTags.length > 0 ? articleTags.join(', ') : '软件工程师, 高云峰, 技术博客, AI 编程, Java, Go, RPC, Netty, jOOQ, PostGIS, SDD, TDD, Code Review'} />
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
 
 <!-- Search Engine Verification Tags -->
 <meta name="msvalidate.01" content="C881F074467FD6757DFB5E6C8EE1B7DB" />
@@ -77,6 +78,8 @@ const fullImageURL = new URL(image, Astro.site).toString();
     "@type": "BlogPosting",
     "headline": title,
     "description": description,
+    "image": fullImageURL,
+    "keywords": articleTags.length > 0 ? articleTags.join(', ') : undefined,
     "url": canonicalURL.toString(),
     "datePublished": publishDate ? publishDate.toISOString().slice(0, 10) : undefined,
     "dateModified": publishDate ? publishDate.toISOString().slice(0, 10) : undefined,

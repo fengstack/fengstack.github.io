@@ -17,25 +17,51 @@ const KEY = '9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b';
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
-// Extract all URLs dynamically from sitemap.xml to always stay 100% in sync
+// Extract all URLs dynamically: first check dist/sitemap.xml, then parse src/content/posts directory
 function getUrlList() {
   const distSitemap = path.resolve(__dirname, '../dist/sitemap.xml');
   const rootSitemap = path.resolve(__dirname, '../sitemap.xml');
-  const sitemapPath = fs.existsSync(distSitemap) ? distSitemap : rootSitemap;
+  const sitemapPath = fs.existsSync(distSitemap) ? distSitemap : (fs.existsSync(rootSitemap) ? rootSitemap : null);
+
+  if (sitemapPath) {
+    try {
+      const content = fs.readFileSync(sitemapPath, 'utf8');
+      const matches = [...content.matchAll(/<loc>(https:\/\/[^<]+)<\/loc>/g)].map(m => m[1].trim());
+      if (matches && matches.length > 0) {
+        return [...new Set(matches)];
+      }
+    } catch (err) {
+      console.warn(`[SEO Ping] Could not read sitemap.xml dynamically (${err.message}). Trying filesystem...`);
+    }
+  }
+
+  // Fallback: Read directly from src/content/posts directory (works in CI without prior build step)
   try {
-    const content = fs.readFileSync(sitemapPath, 'utf8');
-    const matches = [...content.matchAll(/<loc>(https:\/\/[^<]+)<\/loc>/g)].map(m => m[1].trim());
-    if (matches && matches.length > 0) {
-      return [...new Set(matches)];
+    const postsDir = path.resolve(__dirname, '../src/content/posts');
+    if (fs.existsSync(postsDir)) {
+      const files = fs.readdirSync(postsDir);
+      const postUrls = files
+        .filter(f => f.endsWith('.md') || f.endsWith('.mdx'))
+        .map(f => `https://${HOST}/post/${f.replace(/\.(md|mdx)$/, '')}/`);
+
+      const staticUrls = [
+        `https://${HOST}/`,
+        `https://${HOST}/about/`,
+        `https://${HOST}/post/`
+      ];
+      return [...new Set([...staticUrls, ...postUrls])];
     }
   } catch (err) {
-    console.warn(`[SEO Ping] Could not read sitemap.xml dynamically (${err.message}). Using fallback list.`);
+    console.warn(`[SEO Ping] Could not scan src/content/posts (${err.message}).`);
   }
 
   return [
     `https://${HOST}/`,
     `https://${HOST}/about/`,
     `https://${HOST}/post/`,
+    `https://${HOST}/post/ai-code-review-delivery-pipeline/`,
+    `https://${HOST}/post/refreshscope-scheduled-duplicate-rca/`,
+    `https://${HOST}/post/ai-coding-era-engineer-survival/`,
     `https://${HOST}/post/simple-seata-at-mode/`,
     `https://${HOST}/post/agent-programming-language-benchmark/`,
     `https://${HOST}/post/agent-programming-sdd-tdd/`,
@@ -44,9 +70,7 @@ function getUrlList() {
     `https://${HOST}/post/small-rpc-intro/`,
     `https://${HOST}/post/openobserve-three-prs/`,
     `https://${HOST}/post/glogcenter-two-prs/`,
-    `https://${HOST}/post/jooq-postgis-intro/`,
-    `https://${HOST}/tags/`,
-    `https://${HOST}/categories/`
+    `https://${HOST}/post/jooq-postgis-intro/`
   ];
 }
 
