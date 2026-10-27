@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#090D16"/>
+      <stop offset="1" stop-color="#121A2B"/>
+    </linearGradient>
+    <linearGradient id="plateTopGrad" x1="22" y1="13" x2="42" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="plateMidGrad" x1="16" y1="24" x2="48" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="plateBotGrad" x1="12" y1="35" x2="52" y2="53" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="dataBusGrad" x1="22" y1="18" x2="22" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.3" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Container Squircle -->
+  <rect width="64" height="64" rx="15" fill="url(#bgGrad)" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.25"/>
+
+  <!-- Subtle Coordinate Ambient Grid -->
+  <line x1="8" y1="56" x2="56" y2="56" stroke="#315E8A" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.3"/>
+  <line x1="14" y1="59" x2="50" y2="59" stroke="#315E8A" stroke-width="0.8" stroke-dasharray="1 2" opacity="0.2"/>
+
+  <!-- Tier 1: Bottom Foundation Plate (Data/Storage) -->
+  <path d="M12 44L32 35L52 44L32 53L12 44Z" fill="url(#plateBotGrad)" stroke="#315E8A" stroke-width="1.6" stroke-linejoin="round"/>
+
+  <!-- Tier 2: Middle Distributed RPC Plate -->
+  <path d="M16 32L32 24L48 32L32 40L16 32Z" fill="url(#plateMidGrad)" stroke="#38BDF8" stroke-width="1.8" stroke-linejoin="round"/>
+
+  <!-- Tier 3: Top Apex Compute Plate (AI Logic / Peak) -->
+  <path d="M22 20L32 13L42 20L32 27L22 20Z" fill="url(#plateTopGrad)" stroke="#93C5FD" stroke-width="1.8" stroke-linejoin="round"/>
+
+  <!-- Vertical High-Speed Data Bus (F-Logic Core Spine) -->
+  <path d="M22 18V48" stroke="url(#dataBusGrad)" stroke-width="2.6" stroke-linecap="round" filter="url(#softGlow)"/>
+
+  <!-- Bus Interconnection Nodes -->
+  <circle cx="22" cy="20" r="3" fill="#FFFFFF"/>
+  <circle cx="22" cy="32" r="3" fill="#38BDF8"/>
+  <circle cx="22" cy="44" r="3" fill="#2563EB"/>
+
+  <!-- Peak Apex Beacon Pulse -->
+  <circle cx="32" cy="13" r="3" fill="#FFFFFF" filter="url(#softGlow)"/>
+  <circle cx="32" cy="13" r="1.5" fill="#38BDF8"/>
+</svg>
