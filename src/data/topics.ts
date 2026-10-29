@@ -38,10 +38,11 @@ export const TOPICS: Topic[] = [
     subtitle: 'AI Agent & Spec-Driven Engineering',
     description: '探讨大模型时代工业级 AI 辅助研发交付体系：告别凭感觉编程（Vibe Coding），推行双轨 SDD 规范意图约束、TDD 机器裁判与严谨 Code Review 交付流水线。',
     postSlugs: [
-      'agent-programming-language-benchmark',
-      'agent-programming-sdd-tdd',
+      'claude-code-multi-agent-worktree',
       'ai-code-review-delivery-pipeline',
       'ai-coding-era-engineer-survival',
+      'agent-programming-language-benchmark',
+      'agent-programming-sdd-tdd',
     ],
   },
   {
