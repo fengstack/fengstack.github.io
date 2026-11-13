@@ -4,6 +4,9 @@ description: "复盘 Spring Boot 2.7.x 与 Spring Cloud Consul 环境下，配�
 publishDate: 2026-10-25
 tags: ["Spring Boot", "Spring Cloud", "故障排查", "源码剖析", "Java"]
 readTime: "约 12 分钟"
+series:
+  name: "生产级深度 RCA 排查实战"
+  order: 1
 ---
 
 在 Spring Cloud 技术栈中，`@RefreshScope` 常用于配合配置中心实现参数热刷新，而 `@Scheduled` 与 `@Async` 则是处理定时任务和异步执行最常用的轻量注解。

@@ -4,6 +4,9 @@ description: "在微服务网关代理后端智能体与 DeepSeek 大模型的 S
 publishDate: 2026-11-04
 tags: ["Spring Cloud Gateway", "DeepSeek", "SSE", "AI 智能体", "源码剖析", "故障排查"]
 readTime: "约 12 分钟"
+series:
+  name: "生产级深度 RCA 排查实战"
+  order: 4
 refLink:
   text: "github.com/spring-cloud/spring-cloud-gateway/issues/4357"
   url: "https://github.com/spring-cloud/spring-cloud-gateway/issues/4357#issuecomment-6628205979"

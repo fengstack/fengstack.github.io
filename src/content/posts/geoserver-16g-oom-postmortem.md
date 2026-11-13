@@ -4,6 +4,9 @@ description: "记录一次 16 节点 GeoServer 集群遭遇 16G 堆内存打满�
 publishDate: 2026-10-30
 tags: ["JVM", "OOM", "故障排查", "GeoServer", "遥感GIS", "性能调优", "Java"]
 readTime: "约 15 分钟"
+series:
+  name: "生产级深度 RCA 排查实战"
+  order: 2
 ---
 
 ## 引言

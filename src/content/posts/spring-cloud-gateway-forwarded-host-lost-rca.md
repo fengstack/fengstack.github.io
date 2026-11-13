@@ -4,6 +4,9 @@ description: "在网关级联与多级反向代理场景下，配置 server.forw
 publishDate: 2026-11-01
 tags: ["Spring Cloud Gateway", "Spring Boot", "源码剖析", "网络协议", "故障排查"]
 readTime: "约 10 分钟"
+series:
+  name: "生产级深度 RCA 排查实战"
+  order: 3
 refLink:
   text: "github.com/spring-cloud/spring-cloud-gateway/issues/4326"
   url: "https://github.com/spring-cloud/spring-cloud-gateway/issues/4326"
