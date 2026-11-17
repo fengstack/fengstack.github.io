@@ -1,9 +1,9 @@
 ---
-title: "高并发 GIS 瓦片代理网关架构实战：高分影像反向中继、单终端互斥与金融级流量计量流水线"
-description: "深入剖析遥感高分影像切片代理网关的设计与实现。从海量 XYZ 瓦片的高性能反向流式中继、基于 Redis + Cookie 的单终端并发会话互斥防盗刷，到基于双轨策略的高精度流量计量与 Kafka 异步削峰、毒丸防御、Exactly-Once 消费及断网补偿机制，呈现一套生产级高可用瓦片网关架构。"
+title: "高并发 GIS 瓦片代理网关架构实战：高分影像反向中继、单终端互斥与流量计量流水线"
+description: "记录遥感高分影像切片代理网关的设计与落地：针对海量 XYZ 瓦片请求，实现流式反向中继、基于 Redis + Cookie 的单终端并发互斥，以及结合双轨内存自增、Kafka 异步削峰、消费端毒丸隔离与断网补偿的流量计量流水线。"
 publishDate: 2026-11-17
 tags: ["架构设计", "遥感GIS", "高并发", "网关", "Redis", "Kafka", "分布式系统", "Java"]
-readTime: "约 16 分钟"
+readTime: "约 15 分钟"
 series:
   name: "遥感与分布式系统架构实战"
   order: 1
@@ -11,24 +11,24 @@ series:
 
 ## 引言
 
-在现代地理信息系统（GIS）与商业遥感（Remote Sensing）平台中，高分辨率卫星影像的在线浏览通常基于 **XYZ 瓦片金字塔规范**（如 Slippy Map Tiles 或 WMTS 协议）。用户在前端地图上每进行一次平移、缩放或图层切换，浏览器或桌面 GIS 软件（如 QGIS、ArcGIS）就会瞬间并发数十甚至上百个瓦片切片 HTTP 请求。
+在地理信息系统（GIS）与商业遥感平台中，高分辨率卫星影像的在线浏览通常基于 XYZ 瓦片金字塔规范（如 Slippy Map Tiles 或 WMTS 协议）。用户在前端地图上平移、缩放或切换图层时，浏览器或桌面 GIS 软件（如 QGIS、ArcGIS）会并发发出数十甚至上百个切片 HTTP 请求。
 
-如果将上游商业卫星供应商（如长光吉林一号、四维高景等）的切片服务直接暴露给终端用户，系统将面临严重的架构缺陷与商业风险：
+如果直接把上游商业卫星供应商（如长光吉林一号、四维高景等）的切片服务地址交给前端访问，会遇到几个实际问题：
 
-1. **凭证泄露与接口盗刷**：商业卫星影像调用成本高昂，直连会导致供应商密钥（API Key / Token）暴露在前端网络请求中；
-2. **账号多开与超额滥用**：单个企业机构账号被恶意分享至多台设备同时并发拖拽下载，导致配额快速耗尽；
-3. **缺乏精细化计费手段**：上游供应商通常只提供粗放的总调用计数，无法感知用户在不同缩放级别（低清概览 vs 超清细节）下的业务差异；
-4. **高并发与持久化矛盾**：瓦片请求具有**高频、海量、短连接、高突发**的特征，若每次请求都同步写入关系型数据库记账，数据库连接池与 I/O 吞吐瞬间就会被击穿。
+1. **凭证暴露与盗刷**：商业卫星影像调用成本较高，直连会让供应商凭证（Token / Key）暴露在前端网络请求中；
+2. **账号多开与超量使用**：单个企业机构账号如果被复制到多台设备同时并发拖拽下载，配额会很快被耗尽；
+3. **缺乏分级计费手段**：上游供应商通常只按总调用次数收费，无法区分用户是在浏览低分辨率的全球概览，还是在查看高分辨率的细节图层；
+4. **高频请求冲击数据库**：瓦片请求具有高频、短连接和突发性，如果每次瓦片响应都同步写关系型数据库记账，数据库连接池与 I/O 很快就会出现瓶颈。
 
-为了解决上述问题，我们在遥感数据服务系统（RSSC）中构建了一套轻量级、高吞吐的高分影像切片代理网关（High-Definition Imagery Proxy，简称 HDI）。本文将深入拆解这套网关的真实架构设计与生产级落地实践。
+为了解决这些问题，我们在遥感数据服务系统（RSSC）中实现了一套切片代理网关（High-Definition Imagery Proxy，简称 HDI）。本文记录这套网关的结构划分、流式反向中继、单终端防刷机制，以及异步计量与容错流水线的实现细节。
 
 ---
 
-## 一、 全景架构设计：瓦片流式中继与异步计量拓扑
+## 一、 整体结构：流式中继与异步计量流水线
 
-系统在物理与逻辑上被划分为 **生产端代理网关（`hfp`，HDI Flow Producer）** 与 **消费端统计引擎（`hfc`，HDI Flow Consumer）**。
+系统拆分为两个独立服务：生产端代理网关 `rssc-hdi-producer`（hfp）与消费端统计引擎 `rssc-hdi-consumer`（hfc）。
 
-整个网关请求处理与流量计量流水线如下所示：
+网关的请求处理与流量计量流程如下：
 
 ```text
 +-----------------------+
@@ -56,7 +56,7 @@ series:
 |  | 标准流量包: Redis incr (原子累加)                                          |  |
 |  | 时长周期包: RedisLockRegistry 分布式锁 -> 日用量/周期 List 复合更新         |  |
 |  | 消息削峰投递: KafkaTemplate.send(topic, payload)                         |  |
-|  | 降级容错缓冲: Kafka 故障时 -> 兜底写入 Redis 重试队列                        |  |
+|  | 降级容错缓冲: Kafka 故障时 -> 写入 Redis 重试队列                           |  |
 |  +---------------------------------------+-----------------------------------+  |
 +------------------------------------------|--------------------------------------+
                                            |
@@ -67,7 +67,7 @@ series:
 |                                                                                 |
 |  [ Step 4: 消费幂等与持久化落库 ]                                                |
 |  +---------------------------------------------------------------------------+  |
-|  | 毒丸防御: 畸形反序列化捕获与 ACK 提交 (防止分区挂死)                           |  |
+|  | 毒丸防御: 畸形反序列化捕获与 ACK 提交 (防止分区阻塞)                           |  |
 |  | 幂等去重: setIfAbsent("topic:partition:offset", 24h)                       |  |
 |  | 事务入库: PostgreSQL 当月分表存储流量明细流水                               |  |
 |  | 异常回退: DB 异常立即删除 Redis 幂等标记，触发 Kafka 容器重试                 |  |
@@ -85,20 +85,20 @@ series:
 
 ---
 
-## 二、 核心机制剖析：从请求过滤到反向中继
+## 二、 核心机制：请求过滤与反向中继
 
-### 1. 缩放层级感知与按需计费（Zoom-Aware Billing）
+### 1. 缩放层级感知与按需计费
 
-在 GIS 遥感体系中，全球切片层级通常在 $z \in [1, 20]$：
-* 当 $z \le 12$ 时，影像多为几十米至数百米分辨率的中低分卫星概览图（用于宏观定位，成本极低）；
-* 当 $z \ge 13$ 时，影像进入亚米级、高分商业卫星切片（单景成本极高，属于高价值商业资产）。
+在瓦片金字塔体系中，全球切片层级通常分布在 $z \in [1, 20]$：
+* 当 $z \le 12$ 时，影像多为几十米至数百米分辨率的中低分卫星概览图（主要用于大范围快速定位）；
+* 当 $z \ge 13$ 时，影像进入米级、亚米级的高分商业卫星切片（单景采购与服务成本较高）。
 
-网关如果对所有层级一刀切计费，不仅会导致用户检索体验极差，更会引发计费争端。因此网关内置了**缩放层级感知器**：
+如果在所有层级上一刀切计费，用户在缩小地图找位置时就会被频繁扣费。因此网关需要根据瓦片缩放层级（Zoom Level）实施按需计费：
 
 ```java
 // AuthQuotaServiceImpl.java
 public CgQuotaResult checkChangguangQuota(int orgId, int z) {
-    // 1. 校验当前机构是否配置了时长套餐（TimeFlow Plan）
+    // 1. 检查当前机构是否配置了时长套餐（TimeFlow Plan）
     List<OrgTimeFlow> orgTimeFlowList = timeFlowRedisTemplate.opsForList()
             .range(redisPreTimeflowRl + orgId, 0, -1);
     boolean withinTimeFlowPlan = orgTimeFlowList != null && orgTimeFlowList.parallelStream().anyMatch(t -> {
@@ -106,7 +106,7 @@ public CgQuotaResult checkChangguangQuota(int orgId, int z) {
         return !now.isBefore(t.getBeginTime()) && !now.isAfter(t.getEndTime()) && t.isEnabled();
     });
 
-    // 2. 获取当日已用流量与单日上限阈值
+    // 2. 读取当日已用流量与单日上限阈值
     String dayFD = redisPreOrgTimeflowDay + orgId;
     OrgTimeFlowDay orgTimeFlowDay = (OrgTimeFlowDay) timeFlowDayRedisTemplate.opsForHash().get(keyOrgTimeflowDay, dayFD);
     double dayUsage = orgTimeFlowDay != null ? orgTimeFlowDay.getUsage() : 0d;
@@ -118,16 +118,14 @@ public CgQuotaResult checkChangguangQuota(int orgId, int z) {
     String realtimeStr = strRedisTemplate.opsForValue().get(FlowRedisKeys.realtimeKey(orgId));
     long flowRealTime = (realtimeStr == null) ? 0 : new BigDecimal(realtimeStr).longValue();
 
-    // 4. 层级判定：只有缩放级别大于等于配置的 chargeThreshold 时，才触发计费阈值约束
+    // 4. 层级判定：缩放级别达到配置的 chargeThreshold 时才受限额约束
     boolean zoomThresholdReached = z >= Integer.parseInt(chargeThreshold);
 
-    // 5. 超额拦截：达到计费层级且流量超标，立即阻断请求
+    // 5. 超额拦截：达到计费层级且流量超标，阻断请求
     if (flowThreshold != -1 && flowRealTime >= flowThreshold && zoomThresholdReached) {
         if (!withinTimeFlowPlan) {
-            // 返回 403 / 509 自定义业务状态码 QUOTA_REACHED
             return CgQuotaResult.builder().allowed(false).errorResponse(error).build();
         } else if (dayUsage >= upperLimit) {
-            // 返回 DAILY_QUOTA_REACHED 单日限额耗尽
             return CgQuotaResult.builder().allowed(false).errorResponse(error).build();
         }
     }
@@ -140,11 +138,11 @@ public CgQuotaResult checkChangguangQuota(int orgId, int z) {
 }
 ```
 
-### 2. 单终端并发 Cookie 会话互斥防盗刷
+### 2. 单终端 Cookie 会话互斥防刷
 
-在遥感行业中，桌面端软件（如自研插件、ArcGIS 插件）通常通过传入 Header Token 进行身份认证。但如果多名员工共用同一 Token，或者攻击者写爬虫使用同一凭证并发爬取整座城市的全部瓦片，会导致服务瘫痪和企业资产流失。
+在桌面端 GIS（如自研分析工具、QGIS 插件）场景中，客户端通常在 Header 中携带 Token 发起请求。如果同一个 Token 被多名员工共用，或有脚本在后台并发爬取瓦片，会导致账号配额在短时间内被刷爆。
 
-为此，网关设计了基于 **`Token + GSessionId`** 的单终端排他会话锁：
+网关结合 Token 与客户端 Cookie（`GSessionId`）来维护单终端排他会话：
 
 ```java
 // AuthQuotaServiceImpl.java
@@ -156,21 +154,21 @@ public ResponseEntity<Object> checkSessionCookie(String token, String cookie, Ht
     String cookieInRedis = strRedisTemplate.opsForValue().get(redisPreTokenCookie + token);
 
     if (StringUtils.isBlank(cookie)) {
-        // 场景 A：客户端首次握手未携带 Cookie
+        // 首次请求：未携带 Cookie
         if (null != cookieInRedis) {
-            // Redis 中已存在该 Token 的活跃会话 -> 说明另一台终端正在使用中，直接拒绝
+            // Redis 中已存在该 Token 的活跃会话，说明已有其他终端在使用
             HttpHeaders rspHeaders = new HttpHeaders();
             rspHeaders.setContentType(MediaType.APPLICATION_JSON);
             return new ResponseEntity<>("Another user is currently using this session.", rspHeaders, HttpStatus.FORBIDDEN.value());
         }
-        // 生成全新全局会话 UUID 并作为响应 Set-Cookie 种下
+        // 生成全局唯一会话 ID 并通过 Set-Cookie 返回
         cName = "GSessionId";
         cValue = UUID.randomUUID().toString().replace("-", "");
         strCookie = cName + "=" + cValue;
     } else {
-        // 场景 B：客户端后续请求携带了 Cookie
+        // 后续请求：携带了 Cookie
         if (null != cookieInRedis && !cookieInRedis.equals(cookie)) {
-            // 会话不匹配 -> 该 Token 已被后来者或另一台终端抢占踢出
+            // 会话不匹配，说明该 Token 已被其他终端重新接管
             HttpHeaders rspHeaders = new HttpHeaders();
             rspHeaders.setContentType(MediaType.APPLICATION_JSON);
             return new ResponseEntity<>("Another user is currently using this session.", rspHeaders, HttpStatus.FORBIDDEN.value());
@@ -181,7 +179,7 @@ public ResponseEntity<Object> checkSessionCookie(String token, String cookie, Ht
         cValue = parts.length > 1 ? parts[1] : "";
     }
 
-    // 刷新 Cookie 客户端生存期并重置 Redis 会话 TTL（如 30 分钟）
+    // 写入响应 Cookie 并刷新 Redis 会话有效期（如 30 分钟）
     Cookie ck = new Cookie(cName, cValue);
     response.addCookie(ck);
     strRedisTemplate.opsForValue().set(redisPreTokenCookie + token, strCookie, 
@@ -190,34 +188,32 @@ public ResponseEntity<Object> checkSessionCookie(String token, String cookie, Ht
 }
 ```
 
-* **互斥效果**：当设备 A 正在浏览时，设备 B 若尝试使用相同 Token 访问，因没有设备 A 的 `GSessionId`，直接被返回 `403 Forbidden`；
-* **空闲释放**：当设备 A 停止操作达到 TTL 超时时间，Redis 记录自动过期，设备 B 即可正常接管新会话。
+* **互斥规则**：终端 A 处于使用状态时，终端 B 携带相同 Token 访问，因缺少终端 A 的 `GSessionId`，直接返回 `403 Forbidden`；
+* **自然释放**：终端 A 停止操作并超过过期时间后，Redis 记录自动失效，其他终端即可正常建连。
 
 ---
 
-## 三、 高性能数据管道：双轨扣减与 Kafka 削峰
+## 三、 流量扣减：Redis 原子自增与分布式锁
 
-瓦片网关在将上游字节流代理回传给客户端的同时，需要精确统计响应的字节大小（`Content-Length`）。
+网关在把切片响应流式透传给客户端的同时，需要统计实际返回的字节大小（`Content-Length`）。
 
-### 1. 双轨计量：原子自增与分布式锁更新
-
-系统支持两种商业结算模式：**标准流量包（按量充值）** 与 **时长套餐包（包月/包年，带单日上限）**。针对两种模式的数据结构差异，网关采取了双轨更新策略：
+系统支持两种结算模式：标准流量包（按量购买）与时长套餐包（包月/包年，带单日用量上限）。两者的更新路径不同：
 
 ```java
 // FlowMeteringServiceImpl.java
 private void saveToRedis(UserFlowVO userFlowVO) {
     if (userFlowVO.getBillType() == BillStrategy.STANDARD_FLOW.getCode()) {
-        // 轨一路：标准按量包 -> 纯原子操作，无锁亚毫秒更新
+        // 模式一：标准按量包，使用 Redis 原子递增，无锁操作
         String rtKey = FlowRedisKeys.realtimeKey(userFlowVO.getOrgId());
         strRedisTemplate.opsForValue().increment(rtKey, userFlowVO.getContentLength());
     } else if (userFlowVO.getBillType() == BillStrategy.TIMESPAN_FLOW.getCode()) {
-        // 轨二路：时长周期包 -> 复合对象读写，加组织级分布式锁防止并发写丢失（Lost Updates）
+        // 模式二：时长周期包，需要读取和修改 Hash 与 List 复合状态，加分布式锁避免并发写丢失
         String lockKey = FlowRedisKeys.lockHdiFlowKey(userFlowVO.getOrgId());
         Lock lock = redisLockRegistry.obtain(lockKey);
         try {
             if (lock.tryLock(3, TimeUnit.SECONDS)) {
                 try {
-                    // 1. 更新当前机构的今日已用流量 (Hash 结构)
+                    // 1. 更新当前机构今日已用流量 (Hash 结构)
                     String fdKey = redisPreOrgTimeflowDay + userFlowVO.getOrgId();
                     OrgTimeFlowDay orgTimeFlowDay = (OrgTimeFlowDay) timeFlowDayRedisTemplate
                             .opsForHash().get(keyOrgTimeflowDay, fdKey);
@@ -226,7 +222,7 @@ private void saveToRedis(UserFlowVO userFlowVO) {
                         timeFlowDayRedisTemplate.opsForHash().put(keyOrgTimeflowDay, fdKey, orgTimeFlowDay);
                     }
 
-                    // 2. 更新当前生效时间周期的累积总用量 (List 结构)
+                    // 2. 更新当前生效时间周期的总用量 (List 结构)
                     String rlKey = redisPreTimeflowRl + userFlowVO.getOrgId();
                     List<OrgTimeFlow> orgTimeFlowList = timeFlowRedisTemplate.opsForList().range(rlKey, 0, -1);
                     if (orgTimeFlowList != null && !orgTimeFlowList.isEmpty()) {
@@ -254,17 +250,17 @@ private void saveToRedis(UserFlowVO userFlowVO) {
 ```
 
 > [!NOTE] 为什么对时长套餐使用分布式锁？
-> 时长套餐的数据存储在 Redis 的 `Hash` 与 `List` 中，包含生效时间校验、单日配额与总配额叠加。如果不上锁，在高并发瓦片拉取下，两个请求同时读取到旧对象并分别修改写回，必然会导致后写入的数据覆盖前者的累加结果（并发写丢失），造成流量少计漏计。
+> 时长套餐的数据存储在 Redis 的 `Hash` 与 `List` 中，包含生效时间检查、单日配额与总配额的累加。如果不加锁，在高并发拉取瓦片时，两个请求可能同时读取到相同的旧对象并分别加和写回，导致后一次写入覆盖前一次的结果（Lost Updates），从而使统计数据偏小。
 
 ---
 
-## 四、 金融级“零丢数”容错：缓冲降级、毒丸防御与 Exactly-Once
+## 四、 容错与一致性：缓冲降级、毒丸防御与幂等消费
 
-瓦片计量直接关系到商业营收。如果在高并发下 Kafka 集群短暂抖动、分区重平衡，或者数据库短暂死锁，数据怎么做到一条不丢且不重复？
+瓦片请求量大且与计费挂钩。高并发下遇到 Kafka 网络抖动、分区重平衡或数据库锁竞争时，需要兼顾低延迟响应和计费数据的准确性。
 
 ### 1. 生产者端：Kafka 异常降级至 Redis 缓冲队列
 
-在 `FlowStatProducer` 中，我们为 Kafka 发送增加了同步捕获与异步回调双保险：
+在 `FlowStatProducer` 中，为 Kafka 发送增加了同步捕获与异步回调处理：
 
 ```java
 // FlowStatProducer.java
@@ -296,9 +292,9 @@ private void bufferFailedMessage(String payload) {
 }
 ```
 
-### 2. 补偿定时任务：分布式重试流水线
+### 2. 补偿定时任务：重发暂存消息
 
-当网络或 Kafka 恢复后，后台调度任务自动将堆积在 Redis 队列中的失败流量单重新灌入 Kafka：
+当网络或 Kafka 恢复后，后台定时任务从 Redis 队列取出暂存的消息重新投递至 Kafka：
 
 ```java
 // FlowStatCompensationTask.java
@@ -308,7 +304,6 @@ public void retryBufferedFlowMessages() {
     if (stringRedisTemplate == null) return;
 
     for (int i = 0; i < BATCH_SIZE; i++) {
-        // 从 Redis 队列左侧出队
         String payload = stringRedisTemplate.opsForList().leftPop(FlowStatProducer.HDI_FLOW_RETRY_QUEUE);
         if (payload == null) break;
 
@@ -317,12 +312,12 @@ public void retryBufferedFlowMessages() {
             Integer userId = json != null ? json.getInteger("userId") : null;
             String key = (userId != null) ? redisPrefixDetail + userId : "unknown";
             
-            // 同步等待确保发送成功
+            // 同步等待确认发送成功
             kafkaTemplate.send(topicName, key, payload).get(5, TimeUnit.SECONDS);
             log.info("Successfully compensated buffered flow message to Kafka: {}", payload);
         } catch (Exception ex) {
             log.error("Failed to compensate flow message, pushing back to retry queue: {}", payload, ex);
-            // 发送依然失败，重新插回队列头部并中断本轮重试，避免死循环消耗
+            // 发送失败则插回队列头部并中断本轮重试，避免死循环
             stringRedisTemplate.opsForList().leftPush(FlowStatProducer.HDI_FLOW_RETRY_QUEUE, payload);
             break;
         }
@@ -332,9 +327,9 @@ public void retryBufferedFlowMessages() {
 
 ### 3. 消费者端：毒丸隔离与幂等落库
 
-在 `hfc` 消费端，必须处理两个极端情况：
-1. **毒丸（Poison Pill）问题**：如果有畸形非法的 JSON 数据进入 Topic，反复抛出反序列化异常会导致 Kafka 容器无限重试，单分区被永久阻塞挂死；
-2. **重复消费问题**：Kafka Rebalance 或网络丢包容易触发消息重投，若直接 `INSERT` 数据库会导致重复计费。
+在消费端 `hfc`，主要处理两类异常：
+1. **反序列化异常（Poison Pill）**：如果队列中出现畸形格式的消息，重复反序列化报错会导致消费循环重试，单分区被卡住；
+2. **重复投递问题**：Kafka 重平衡或网络丢包可能导致重复消费，重复入库会导致多记流量。
 
 ```java
 // HdiConsumer.java
@@ -344,14 +339,14 @@ public void listen(ConsumerRecord<String, String> record, Acknowledgment ack) {
     try {
         addUserFlowDetail = JSON.parseObject(record.value(), AddUserFlowDetail.class);
     } catch (Exception e) {
-        // 毒丸防御：反序列化异常时记录告警日志并立即提交 ACK，跳过坏消息防止单分区死锁
+        // 反序列化异常时记录日志并直接提交 ACK，跳过坏消息以防止分区阻塞
         log.error("反序列化 HDI 流量消息失败 (Poison Pill), topic={}, partition={}, offset={}",
                 record.topic(), record.partition(), record.offset(), e);
         ack.acknowledge();
         return;
     }
 
-    // 幂等去重判断：基于 topic:partition:offset 作为唯一指纹
+    // 幂等判重：使用 topic:partition:offset 作为唯一键
     String deduplicationKey = "rssc:hdi:flow:consumed:" + record.topic() + ":" + record.partition() + ":" + record.offset();
     if (stringRedisTemplate != null) {
         Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(deduplicationKey, "1", 24, TimeUnit.HOURS);
@@ -363,11 +358,11 @@ public void listen(ConsumerRecord<String, String> record, Acknowledgment ack) {
     }
 
     try {
-        // 业务落库：写入数据库流量流水表
+        // 流量流水写入数据库
         userFlowDetailService.add(addUserFlowDetail);
         ack.acknowledge();
     } catch (Exception e) {
-        // 关键容错：若 DB 故障抛异常，立即清理已占位的幂等标记，允许 Kafka 容器后续重试
+        // 关键处理：如果写库失败，立即删除幂等标记，以便 Kafka 后续重试
         if (stringRedisTemplate != null) {
             try {
                 stringRedisTemplate.delete(deduplicationKey);
@@ -380,21 +375,21 @@ public void listen(ConsumerRecord<String, String> record, Acknowledgment ack) {
 }
 ```
 
-> [!IMPORTANT] 幂等标记的异常回退是核心细节
-> 许多系统在做消费幂等时，先在 Redis `setIfAbsent` 占位，但在下游数据库写入失败时忘记清理这个 Key。结果虽然抛出异常触发重试，但下一次重试时该 Key 已存在，导致重试逻辑直接跳过该消息，造成真实数据丢失。本实现的 `catch` 块中立即删除 `deduplicationKey`，确保了数据库恢复后的最终一致性。
+> [!IMPORTANT] 幂等标记的异常回退是关键细节
+> 如果在 Redis `setIfAbsent` 成功后下游写库失败，若不清除该 Key，下一次重试时该 Key 已存在，会导致重试逻辑将该消息视作“重复消息”跳过，从而丢失计费数据。这里的 `catch` 块主动删除 `deduplicationKey`，保证了数据库恢复后能继续重试。
 
 ---
 
-## 五、 总结与架构演化思考
+## 五、 总结与工程权衡
 
-通过将高分影像瓦片代理切分为 **高性能反向流式中继** 与 **异步削峰计费流水线**，该网关成功在千万级瓦片请求场景下实现了以下架构收益：
+将高分影像瓦片代理拆分为**反向流式中继**与**异步流水线**后，网关在实现效果上主要有以下权衡：
 
-| 关注维度 | 传统单体/直连方案 | 本网关架构方案 |
+| 关注维度 | 直连 / 单体落库方案 | 网关中继与异步流水方案 |
 | :--- | :--- | :--- |
-| **凭证安全** | 前端暴露上游 Vendor Token，存在被爬虫逆向风险 | 网关统一注入上游凭证，对外暴露隔离的内部 Token |
-| **并发防护** | 允许无限制多端共享账号，成本不可控 | 单终端 Cookie 会话独占互斥，自动踢出与心跳续期 |
-| **吞吐能力** | 依赖关系型数据库事务记录请求，TPS 受限于 DB 磁盘 I/O | Redis 亚毫秒原子自增 + Kafka 异步削峰，吞吐提升 20 倍以上 |
-| **数据一致性** | Kafka 抖动或数据库死锁直接丢数据 | Redis 降级缓冲队列 + 定时补偿回放 + 幂等异常安全回滚 |
-| **业务灵活性** | 粗粒度全量计费，用户体验差 | 缩放层级（Zoom Level）感知，低分概览免费，高分细节计费 |
+| **凭证管理** | 前端持有上游凭证，存在被提取风险 | 网关后端统一注入凭证，对外仅暴露内部会话 Token |
+| **并发防护** | 无法限制同一账号在多台设备上并发下载 | 基于 Redis + Cookie 维持单终端排他会话，超限阻断 |
+| **吞吐能力** | 每个瓦片请求同步写库，I/O 竞争明显 | 内存原子操作计数 + Kafka 异步削峰，减轻数据库写入压力 |
+| **容错处理** | 中间件抖动时容易丢请求或失败报错 | 异常时降级至 Redis 队列并由定时任务补偿重试 |
+| **计费粒度** | 粗粒度全量统计 | 依据缩放层级（Zoom Level）分级，概览免流，高分计费 |
 
-高并发网关的核心设计哲学在于**将高频热路径（Hot Path）与持久化冷路径（Cold Path）彻底解耦**。在面临极端网络抖动和基础设施故障时，通过精心设计的降级、补偿与幂等防腐层，构建出真正具备金融级韧性的现代遥感服务系统。
+在这套实现中，核心思路是把高频的读路径（切片透传）与慢速的写路径（明细落库）分开处理。对于标准计费直接使用单键原子自增，避免过多锁竞争；对于有复合状态的时长套餐，则在组织维度使用短时分布式锁避免写冲突；通过消息队列削峰并在异常时回退重试，在保证吞吐量的同时尽量减少计量漏记。
