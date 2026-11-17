@@ -13,20 +13,20 @@ series:
 
 在地理信息系统（GIS）与商业遥感平台中，高分辨率卫星影像的在线浏览通常基于 XYZ 瓦片金字塔规范（如 Slippy Map Tiles 或 WMTS 协议）。用户在前端地图上平移、缩放或切换图层时，浏览器或桌面 GIS 软件（如 QGIS、ArcGIS）会并发发出数十甚至上百个切片 HTTP 请求。
 
-如果直接把上游商业卫星供应商（如长光吉林一号、四维高景等）的切片服务地址交给前端访问，会遇到几个实际问题：
+如果直接把上游商业卫星服务商的切片服务地址交给前端访问，会遇到几个实际问题：
 
 1. **凭证暴露与盗刷**：商业卫星影像调用成本较高，直连会让供应商凭证（Token / Key）暴露在前端网络请求中；
 2. **账号多开与超量使用**：单个企业机构账号如果被复制到多台设备同时并发拖拽下载，配额会很快被耗尽；
 3. **缺乏分级计费手段**：上游供应商通常只按总调用次数收费，无法区分用户是在浏览低分辨率的全球概览，还是在查看高分辨率的细节图层；
 4. **高频请求冲击数据库**：瓦片请求具有高频、短连接和突发性，如果每次瓦片响应都同步写关系型数据库记账，数据库连接池与 I/O 很快就会出现瓶颈。
 
-为了解决这些问题，我们在遥感数据服务系统（RSSC）中实现了一套切片代理网关（High-Definition Imagery Proxy，简称 HDI）。本文记录这套网关的结构划分、流式反向中继、单终端防刷机制，以及异步计量与容错流水线的实现细节。
+为了解决这些问题，我们在分布式遥感影像服务平台中设计了一套切片代理网关服务。本文记录这套网关的结构划分、流式反向中继、单终端防刷机制，以及异步计量与容错流水线的实现细节。
 
 ---
 
 ## 一、 整体结构：流式中继与异步计量流水线
 
-系统拆分为两个独立服务：生产端代理网关 `rssc-hdi-producer`（hfp）与消费端统计引擎 `rssc-hdi-consumer`（hfc）。
+系统拆分为两个独立服务：生产端代理服务 `tile-proxy-service` 与消费端统计引擎 `tile-metering-service`。
 
 网关的请求处理与流量计量流程如下：
 
@@ -35,15 +35,15 @@ series:
 |  Web / Desktop GIS    |
 | (QGIS, Mapbox, Cesium)|
 +-----------+-----------+
-            | 1. GET /hdimage-cg?x={x}&y={y}&z={z}&token={t} (Cookie: GSessionId)
+            | 1. GET /api/v1/tiles/satellite?x={x}&y={y}&z={z}&token={t} (Cookie: TileSessionId)
             v
 +---------------------------------------------------------------------------------+
-|                       hfp (HDI Tile Proxy Gateway)                             |
+|                       Tile Proxy Service (Gateway)                              |
 |                                                                                 |
 |  [ Step 1: 鉴权与单终端校验 ]                                                    |
 |  +--------------------+    +--------------------+    +-----------------------+  |
 |  | Token 身份鉴权      | -> | 单终端 Cookie 互斥  | -> | 缩放层级与配额判定      |  |
-|  | (Redis Token 校验)  |    | (GSessionId 独占)  |    | (z >= 13 & 限额拦截)  |  |
+|  | (Redis Token 校验)  |    | (TileSessionId独占) |    | (z >= 13 & 限额拦截)  |  |
 |  +--------------------+    +--------------------+    +-----------+-----------+  |
 |                                                                  |              |
 |  [ Step 2: 上游流式反向中继 ]                                     v              |
@@ -60,15 +60,15 @@ series:
 |  +---------------------------------------+-----------------------------------+  |
 +------------------------------------------|--------------------------------------+
                                            |
-                                           | 2. Kafka Topic: rssc-flow-stat
+                                           | 2. Kafka Topic: imagery-tile-usage-events
                                            v
 +---------------------------------------------------------------------------------+
-|                       hfc (HDI Flow Stat Consumer)                              |
+|                       Tile Metering Service (Consumer)                          |
 |                                                                                 |
 |  [ Step 4: 消费幂等与持久化落库 ]                                                |
 |  +---------------------------------------------------------------------------+  |
 |  | 毒丸防御: 畸形反序列化捕获与 ACK 提交 (防止分区阻塞)                           |  |
-|  | 幂等去重: setIfAbsent("topic:partition:offset", 24h)                       |  |
+|  | 幂等去重: setIfAbsent("imagery:tile:consumed:...", 24h)                    |  |
 |  | 事务入库: PostgreSQL 当月分表存储流量明细流水                               |  |
 |  | 异常回退: DB 异常立即删除 Redis 幂等标记，触发 Kafka 容器重试                 |  |
 |  +---------------------------------------------------------------------------+  |
@@ -77,7 +77,7 @@ series:
                                            | 3. 定时对账与配额重置 (分布式锁保护)
                                            v
                           +----------------------------------+
-                          |   ScheduleStatFlowTask (00:00)   |
+                          |      TileDailySummaryTask        |
                           |   - 每日流量对账与历史汇总       |
                           |   - 跨天日配额刷新与计数器重置   |
                           +----------------------------------+
@@ -96,44 +96,44 @@ series:
 如果在所有层级上一刀切计费，用户在缩小地图找位置时就会被频繁扣费。因此网关需要根据瓦片缩放层级（Zoom Level）实施按需计费：
 
 ```java
-// AuthQuotaServiceImpl.java
-public CgQuotaResult checkChangguangQuota(int orgId, int z) {
-    // 1. 检查当前机构是否配置了时长套餐（TimeFlow Plan）
-    List<OrgTimeFlow> orgTimeFlowList = timeFlowRedisTemplate.opsForList()
-            .range(redisPreTimeflowRl + orgId, 0, -1);
-    boolean withinTimeFlowPlan = orgTimeFlowList != null && orgTimeFlowList.parallelStream().anyMatch(t -> {
+// TileAccessAuthService.java
+public TileAccessResult checkTileQuota(int orgId, int z) {
+    // 1. 检查当前机构是否配置了时长套餐
+    List<OrgTimePackage> orgPackageList = timeFlowRedisTemplate.opsForList()
+            .range(TileRedisKeys.PREFIX_TIME_PACKAGE + orgId, 0, -1);
+    boolean withinActivePackage = orgPackageList != null && orgPackageList.parallelStream().anyMatch(pkg -> {
         OffsetDateTime now = OffsetDateTime.now();
-        return !now.isBefore(t.getBeginTime()) && !now.isAfter(t.getEndTime()) && t.isEnabled();
+        return !now.isBefore(pkg.getBeginTime()) && !now.isAfter(pkg.getEndTime()) && pkg.isEnabled();
     });
 
     // 2. 读取当日已用流量与单日上限阈值
-    String dayFD = redisPreOrgTimeflowDay + orgId;
-    OrgTimeFlowDay orgTimeFlowDay = (OrgTimeFlowDay) timeFlowDayRedisTemplate.opsForHash().get(keyOrgTimeflowDay, dayFD);
-    double dayUsage = orgTimeFlowDay != null ? orgTimeFlowDay.getUsage() : 0d;
-    double upperLimit = orgTimeFlowDay != null ? orgTimeFlowDay.getUpperLimit() : 0d;
+    String dayKey = TileRedisKeys.PREFIX_DAILY_USAGE + orgId;
+    OrgDailyUsage dailyUsage = (OrgDailyUsage) dailyUsageRedisTemplate.opsForHash().get(TileRedisKeys.KEY_DAILY_USAGE, dayKey);
+    double usedToday = dailyUsage != null ? dailyUsage.getUsage() : 0d;
+    double dailyLimit = dailyUsage != null ? dailyUsage.getUpperLimit() : 0d;
 
     // 3. 读取总阈值与实时已消耗总流量
-    String thresholdStr = strRedisTemplate.opsForValue().get(FlowRedisKeys.thresholdKey(orgId));
+    String thresholdStr = strRedisTemplate.opsForValue().get(TileRedisKeys.thresholdKey(orgId));
     long flowThreshold = (thresholdStr == null) ? -1 : new BigDecimal(thresholdStr).longValue();
-    String realtimeStr = strRedisTemplate.opsForValue().get(FlowRedisKeys.realtimeKey(orgId));
+    String realtimeStr = strRedisTemplate.opsForValue().get(TileRedisKeys.realtimeKey(orgId));
     long flowRealTime = (realtimeStr == null) ? 0 : new BigDecimal(realtimeStr).longValue();
 
-    // 4. 层级判定：缩放级别达到配置的 chargeThreshold 时才受限额约束
+    // 4. 层级判定：缩放级别达到配置阈值时才受限额约束
     boolean zoomThresholdReached = z >= Integer.parseInt(chargeThreshold);
 
     // 5. 超额拦截：达到计费层级且流量超标，阻断请求
     if (flowThreshold != -1 && flowRealTime >= flowThreshold && zoomThresholdReached) {
-        if (!withinTimeFlowPlan) {
-            return CgQuotaResult.builder().allowed(false).errorResponse(error).build();
-        } else if (dayUsage >= upperLimit) {
-            return CgQuotaResult.builder().allowed(false).errorResponse(error).build();
+        if (!withinActivePackage) {
+            return TileAccessResult.builder().allowed(false).errorResponse(buildQuotaExceededResponse()).build();
+        } else if (usedToday >= dailyLimit) {
+            return TileAccessResult.builder().allowed(false).errorResponse(buildDailyQuotaExceededResponse()).build();
         }
     }
 
-    return CgQuotaResult.builder()
+    return TileAccessResult.builder()
             .allowed(true)
             .zoomThresholdReached(zoomThresholdReached)
-            .billType(withinTimeFlowPlan && dayUsage < upperLimit ? BillStrategy.TIMESPAN_FLOW.getCode() : BillStrategy.STANDARD_FLOW.getCode())
+            .billType(withinActivePackage && usedToday < dailyLimit ? BillStrategy.TIME_PACKAGE.getCode() : BillStrategy.STANDARD_METERING.getCode())
             .build();
 }
 ```
@@ -142,16 +142,15 @@ public CgQuotaResult checkChangguangQuota(int orgId, int z) {
 
 在桌面端 GIS（如自研分析工具、QGIS 插件）场景中，客户端通常在 Header 中携带 Token 发起请求。如果同一个 Token 被多名员工共用，或有脚本在后台并发爬取瓦片，会导致账号配额在短时间内被刷爆。
 
-网关结合 Token 与客户端 Cookie（`GSessionId`）来维护单终端排他会话：
+网关结合 Token 与客户端 Cookie（`TileSessionId`）来维护单终端排他会话：
 
 ```java
-// AuthQuotaServiceImpl.java
-@Override
+// TileAccessAuthService.java
 public ResponseEntity<Object> checkSessionCookie(String token, String cookie, HttpServletResponse response) {
     String strCookie;
     String cName;
     String cValue;
-    String cookieInRedis = strRedisTemplate.opsForValue().get(redisPreTokenCookie + token);
+    String cookieInRedis = strRedisTemplate.opsForValue().get(TileRedisKeys.PREFIX_TOKEN_SESSION + token);
 
     if (StringUtils.isBlank(cookie)) {
         // 首次请求：未携带 Cookie
@@ -162,7 +161,7 @@ public ResponseEntity<Object> checkSessionCookie(String token, String cookie, Ht
             return new ResponseEntity<>("Another user is currently using this session.", rspHeaders, HttpStatus.FORBIDDEN.value());
         }
         // 生成全局唯一会话 ID 并通过 Set-Cookie 返回
-        cName = "GSessionId";
+        cName = "TileSessionId";
         cValue = UUID.randomUUID().toString().replace("-", "");
         strCookie = cName + "=" + cValue;
     } else {
@@ -182,13 +181,13 @@ public ResponseEntity<Object> checkSessionCookie(String token, String cookie, Ht
     // 写入响应 Cookie 并刷新 Redis 会话有效期（如 30 分钟）
     Cookie ck = new Cookie(cName, cValue);
     response.addCookie(ck);
-    strRedisTemplate.opsForValue().set(redisPreTokenCookie + token, strCookie, 
-            Integer.parseInt(redisTokenCookieExpire), TimeUnit.MINUTES);
+    strRedisTemplate.opsForValue().set(TileRedisKeys.PREFIX_TOKEN_SESSION + token, strCookie, 
+            Integer.parseInt(sessionExpireMinutes), TimeUnit.MINUTES);
     return null;
 }
 ```
 
-* **互斥规则**：终端 A 处于使用状态时，终端 B 携带相同 Token 访问，因缺少终端 A 的 `GSessionId`，直接返回 `403 Forbidden`；
+* **互斥规则**：终端 A 处于使用状态时，终端 B 携带相同 Token 访问，因缺少终端 A 的 `TileSessionId`，直接返回 `403 Forbidden`；
 * **自然释放**：终端 A 停止操作并超过过期时间后，Redis 记录自动失效，其他终端即可正常建连。
 
 ---
@@ -200,38 +199,38 @@ public ResponseEntity<Object> checkSessionCookie(String token, String cookie, Ht
 系统支持两种结算模式：标准流量包（按量购买）与时长套餐包（包月/包年，带单日用量上限）。两者的更新路径不同：
 
 ```java
-// FlowMeteringServiceImpl.java
-private void saveToRedis(UserFlowVO userFlowVO) {
-    if (userFlowVO.getBillType() == BillStrategy.STANDARD_FLOW.getCode()) {
+// TileMeteringService.java
+private void saveToRedis(TileUsageEvent event) {
+    if (event.getBillType() == BillStrategy.STANDARD_METERING.getCode()) {
         // 模式一：标准按量包，使用 Redis 原子递增，无锁操作
-        String rtKey = FlowRedisKeys.realtimeKey(userFlowVO.getOrgId());
-        strRedisTemplate.opsForValue().increment(rtKey, userFlowVO.getContentLength());
-    } else if (userFlowVO.getBillType() == BillStrategy.TIMESPAN_FLOW.getCode()) {
+        String rtKey = TileRedisKeys.realtimeKey(event.getOrgId());
+        strRedisTemplate.opsForValue().increment(rtKey, event.getContentLength());
+    } else if (event.getBillType() == BillStrategy.TIME_PACKAGE.getCode()) {
         // 模式二：时长周期包，需要读取和修改 Hash 与 List 复合状态，加分布式锁避免并发写丢失
-        String lockKey = FlowRedisKeys.lockHdiFlowKey(userFlowVO.getOrgId());
+        String lockKey = TileRedisKeys.lockOrgFlowKey(event.getOrgId());
         Lock lock = redisLockRegistry.obtain(lockKey);
         try {
             if (lock.tryLock(3, TimeUnit.SECONDS)) {
                 try {
                     // 1. 更新当前机构今日已用流量 (Hash 结构)
-                    String fdKey = redisPreOrgTimeflowDay + userFlowVO.getOrgId();
-                    OrgTimeFlowDay orgTimeFlowDay = (OrgTimeFlowDay) timeFlowDayRedisTemplate
-                            .opsForHash().get(keyOrgTimeflowDay, fdKey);
-                    if (orgTimeFlowDay != null) {
-                        orgTimeFlowDay.setUsage(orgTimeFlowDay.getUsage() + userFlowVO.getContentLength());
-                        timeFlowDayRedisTemplate.opsForHash().put(keyOrgTimeflowDay, fdKey, orgTimeFlowDay);
+                    String dayKey = TileRedisKeys.PREFIX_DAILY_USAGE + event.getOrgId();
+                    OrgDailyUsage dailyUsage = (OrgDailyUsage) dailyUsageRedisTemplate
+                            .opsForHash().get(TileRedisKeys.KEY_DAILY_USAGE, dayKey);
+                    if (dailyUsage != null) {
+                        dailyUsage.setUsage(dailyUsage.getUsage() + event.getContentLength());
+                        dailyUsageRedisTemplate.opsForHash().put(TileRedisKeys.KEY_DAILY_USAGE, dayKey, dailyUsage);
                     }
 
                     // 2. 更新当前生效时间周期的总用量 (List 结构)
-                    String rlKey = redisPreTimeflowRl + userFlowVO.getOrgId();
-                    List<OrgTimeFlow> orgTimeFlowList = timeFlowRedisTemplate.opsForList().range(rlKey, 0, -1);
-                    if (orgTimeFlowList != null && !orgTimeFlowList.isEmpty()) {
+                    String pkgKey = TileRedisKeys.PREFIX_TIME_PACKAGE + event.getOrgId();
+                    List<OrgTimePackage> packageList = timePackageRedisTemplate.opsForList().range(pkgKey, 0, -1);
+                    if (packageList != null && !packageList.isEmpty()) {
                         OffsetDateTime now = OffsetDateTime.now();
-                        IntStream.range(0, orgTimeFlowList.size()).forEach(i -> {
-                            OrgTimeFlow rule = orgTimeFlowList.get(i);
-                            if (rule.isEnabled() && !now.isBefore(rule.getBeginTime()) && !now.isAfter(rule.getEndTime())) {
-                                rule.setUsage(rule.getUsage() + userFlowVO.getContentLength());
-                                timeFlowRedisTemplate.opsForList().set(rlKey, i, rule);
+                        IntStream.range(0, packageList.size()).forEach(i -> {
+                            OrgTimePackage pkg = packageList.get(i);
+                            if (pkg.isEnabled() && !now.isBefore(pkg.getBeginTime()) && !now.isAfter(pkg.getEndTime())) {
+                                pkg.setUsage(pkg.getUsage() + event.getContentLength());
+                                timePackageRedisTemplate.opsForList().set(pkgKey, i, pkg);
                             }
                         });
                     }
@@ -239,11 +238,11 @@ private void saveToRedis(UserFlowVO userFlowVO) {
                     lock.unlock();
                 }
             } else {
-                log.warn("Acquire flow lock timeout for orgId: {}", userFlowVO.getOrgId());
+                log.warn("Acquire flow lock timeout for orgId: {}", event.getOrgId());
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("Interrupted while acquiring flow lock for orgId: {}", userFlowVO.getOrgId(), e);
+            log.error("Interrupted while acquiring flow lock for orgId: {}", event.getOrgId(), e);
         }
     }
 }
@@ -260,10 +259,10 @@ private void saveToRedis(UserFlowVO userFlowVO) {
 
 ### 1. 生产者端：Kafka 异常降级至 Redis 缓冲队列
 
-在 `FlowStatProducer` 中，为 Kafka 发送增加了同步捕获与异步回调处理：
+在 `TileMeteringProducer` 中，为 Kafka 发送增加了同步捕获与异步回调处理：
 
 ```java
-// FlowStatProducer.java
+// TileMeteringProducer.java
 public void sendPayload(String key, String payload) {
     try {
         ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topicName, key, payload);
@@ -283,7 +282,7 @@ public void sendPayload(String key, String payload) {
 private void bufferFailedMessage(String payload) {
     if (stringRedisTemplate != null) {
         try {
-            stringRedisTemplate.opsForList().rightPush(HDI_FLOW_RETRY_QUEUE, payload);
+            stringRedisTemplate.opsForList().rightPush(TileRedisKeys.RETRY_QUEUE, payload);
             log.warn("Flow metering message buffered to Redis retry queue for compensation: {}", payload);
         } catch (Exception re) {
             log.error("Failed to buffer flow message to Redis retry queue: {}", payload, re);
@@ -297,20 +296,20 @@ private void bufferFailedMessage(String payload) {
 当网络或 Kafka 恢复后，后台定时任务从 Redis 队列取出暂存的消息重新投递至 Kafka：
 
 ```java
-// FlowStatCompensationTask.java
+// TileCompensationTask.java
 @Scheduled(fixedDelay = 60000)
-@CacheLock(lockedPrefix = CacheLockKeys.JOB_FLOW_COMPENSATE, expireTime = 50, timeUnit = TimeUnit.SECONDS)
+@CacheLock(lockedPrefix = LockKeys.JOB_TILE_COMPENSATE, expireTime = 50, timeUnit = TimeUnit.SECONDS)
 public void retryBufferedFlowMessages() {
     if (stringRedisTemplate == null) return;
 
     for (int i = 0; i < BATCH_SIZE; i++) {
-        String payload = stringRedisTemplate.opsForList().leftPop(FlowStatProducer.HDI_FLOW_RETRY_QUEUE);
+        String payload = stringRedisTemplate.opsForList().leftPop(TileRedisKeys.RETRY_QUEUE);
         if (payload == null) break;
 
         try {
             JSONObject json = JSON.parseObject(payload);
             Integer userId = json != null ? json.getInteger("userId") : null;
-            String key = (userId != null) ? redisPrefixDetail + userId : "unknown";
+            String key = (userId != null) ? userPrefix + userId : "unknown";
             
             // 同步等待确认发送成功
             kafkaTemplate.send(topicName, key, payload).get(5, TimeUnit.SECONDS);
@@ -318,7 +317,7 @@ public void retryBufferedFlowMessages() {
         } catch (Exception ex) {
             log.error("Failed to compensate flow message, pushing back to retry queue: {}", payload, ex);
             // 发送失败则插回队列头部并中断本轮重试，避免死循环
-            stringRedisTemplate.opsForList().leftPush(FlowStatProducer.HDI_FLOW_RETRY_QUEUE, payload);
+            stringRedisTemplate.opsForList().leftPush(TileRedisKeys.RETRY_QUEUE, payload);
             break;
         }
     }
@@ -327,31 +326,31 @@ public void retryBufferedFlowMessages() {
 
 ### 3. 消费者端：毒丸隔离与幂等落库
 
-在消费端 `hfc`，主要处理两类异常：
+在消费端 `tile-metering-service`，主要处理两类异常：
 1. **反序列化异常（Poison Pill）**：如果队列中出现畸形格式的消息，重复反序列化报错会导致消费循环重试，单分区被卡住；
 2. **重复投递问题**：Kafka 重平衡或网络丢包可能导致重复消费，重复入库会导致多记流量。
 
 ```java
-// HdiConsumer.java
+// TileMeteringConsumer.java
 @KafkaListener(topics = {"${spring.kafka.topic-name}"})
 public void listen(ConsumerRecord<String, String> record, Acknowledgment ack) {
-    AddUserFlowDetail addUserFlowDetail;
+    TileUsageRecord usageRecord;
     try {
-        addUserFlowDetail = JSON.parseObject(record.value(), AddUserFlowDetail.class);
+        usageRecord = JSON.parseObject(record.value(), TileUsageRecord.class);
     } catch (Exception e) {
         // 反序列化异常时记录日志并直接提交 ACK，跳过坏消息以防止分区阻塞
-        log.error("反序列化 HDI 流量消息失败 (Poison Pill), topic={}, partition={}, offset={}",
+        log.error("反序列化瓦片流量消息失败 (Poison Pill), topic={}, partition={}, offset={}",
                 record.topic(), record.partition(), record.offset(), e);
         ack.acknowledge();
         return;
     }
 
     // 幂等判重：使用 topic:partition:offset 作为唯一键
-    String deduplicationKey = "rssc:hdi:flow:consumed:" + record.topic() + ":" + record.partition() + ":" + record.offset();
+    String deduplicationKey = "imagery:tile:consumed:" + record.topic() + ":" + record.partition() + ":" + record.offset();
     if (stringRedisTemplate != null) {
         Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(deduplicationKey, "1", 24, TimeUnit.HOURS);
         if (Boolean.FALSE.equals(isNew)) {
-            log.info("Duplicate HDI Kafka message detected and skipped: offset={}", record.offset());
+            log.info("Duplicate Kafka message detected and skipped: offset={}", record.offset());
             ack.acknowledge();
             return;
         }
@@ -359,7 +358,7 @@ public void listen(ConsumerRecord<String, String> record, Acknowledgment ack) {
 
     try {
         // 流量流水写入数据库
-        userFlowDetailService.add(addUserFlowDetail);
+        tileUsageRecordService.add(usageRecord);
         ack.acknowledge();
     } catch (Exception e) {
         // 关键处理：如果写库失败，立即删除幂等标记，以便 Kafka 后续重试
