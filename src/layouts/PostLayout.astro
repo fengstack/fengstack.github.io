@@ -334,4 +334,31 @@ const relatedPosts = allPosts
   bttBtn?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+
+  // Mermaid diagram rendering: Shiki uses pre[data-language="mermaid"] > code
+  const mermaidPres = document.querySelectorAll<HTMLPreElement>('pre[data-language="mermaid"]');
+  if (mermaidPres.length > 0) {
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.textContent = `
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+      mermaid.initialize({ startOnLoad: false, theme });
+      document.querySelectorAll('pre[data-language="mermaid"]').forEach(async (pre, i) => {
+        const wrapper = pre.closest('.code-block-wrapper') || pre;
+        const graphDef = pre.querySelector('code')?.textContent || '';
+        const id = 'mermaid-' + i;
+        try {
+          const { svg } = await mermaid.render(id, graphDef);
+          const container = document.createElement('div');
+          container.className = 'mermaid-diagram my-6 flex justify-center overflow-x-auto';
+          container.innerHTML = svg;
+          wrapper.replaceWith(container);
+        } catch (e) {
+          console.error('Mermaid render error:', e);
+        }
+      });
+    `;
+    document.body.appendChild(script);
+  }
 </script>

@@ -13,6 +13,7 @@ export const TOPICS: Topic[] = [
     subtitle: 'Java & Distributed Systems',
     description: '涵盖 Java 后端核心工程体系、Netty 网络编程与分布式架构实战，深入 RPC 微内核、分布式事务 Seata AT 模式、空间计算及线上疑难排查。',
     postSlugs: [
+      'credit-fund-loan-routing-settlement-architecture',
       'credit-risk-engine-multi-kernel-architecture',
       'credit-thirdparty-gateway-architecture',
       'spring-cloud-gateway-webmvc-sse-stream-abort-rca',
@@ -58,6 +59,7 @@ export const TOPICS: Topic[] = [
     subtitle: 'Troubleshooting & Open Source',
     description: '生产级深度技术排查与开源社区贡献复盘：剖析 Spring 复杂生命周期调度重入缺陷、OpenObserve 边界缺陷定位，以及 Glogcenter 协程泄漏排查。',
     postSlugs: [
+      'credit-fund-loan-routing-settlement-architecture',
       'credit-risk-engine-multi-kernel-architecture',
       'credit-thirdparty-gateway-architecture',
       'spring-cloud-gateway-webmvc-sse-stream-abort-rca',
