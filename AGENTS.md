@@ -22,7 +22,7 @@
 | **开发语言** | TypeScript 5.7+ | 严格类型模式，配合 `@astrojs/check` |
 | **内容管理** | Astro Content Collections | 基于 Zod Schema 强类型约束博文元数据 |
 | **样式系统** | Tailwind CSS 3.4+ | 结合 CSS Variables 实现双主题 Design Tokens |
-| **排版与高亮** | Noto Serif SC + Shiki | 自托管切片中文字体；双主题代码高亮 (`github-light` / `github-dark`) |
+| **排版与高亮** | Noto Serif SC + IBM Plex Mono + Shiki | 自托管切片中文字体与等宽字体；双主题代码高亮 (`github-light` / `github-dark`) |
 | **站内搜索** | 编译时静态索引 (`/api/search.json`) | 纯前端极轻量快捷搜索弹窗（`⌘K` / `Ctrl+K`） |
 | **SEO 与收录** | JSON-LD + Sitemap + RSS + IndexNow | 结构化知识图谱、全网主动推送 (`scripts/seo-ping.js`) |
 | **部署托管** | GitHub Pages | 绑定自定义域名 `blog.yunitytech.top`，启用 HTTPS 与强制尾部斜杠 |
@@ -43,25 +43,31 @@ fengstack.github.io/
 │   ├── BingSiteAuth.xml        # 微软 Bing 站长验证凭据
 │   ├── 75d73fb2*.txt           # 微信域名所有权校验
 │   ├── 9f8e4b7a*.txt           # IndexNow 密钥验证文件
-│   ├── fonts/                  # 自托管 Noto Serif SC 字体切片 (woff2)
+│   ├── fonts/                  # 自托管 Noto Serif SC 与 IBM Plex Mono 字体切片 (woff2)
 │   └── images/                 # 头像、技术架构图、项目与社区 Logo
 ├── src/
 │   ├── components/             # Astro 复用组件（BaseHead, Header, Footer, TableOfContents 等）
 │   ├── content/                # 博客内容集合
 │   │   ├── config.ts           # 博文 Schema 强校验定义 (Zod)
 │   │   └── posts/              # Markdown / MDX 技术博文源文件
+│   ├── data/                   # 站点配置与专题元数据
+│   │   ├── site.ts             # 站点全局配置、开源项目与社区贡献常量
+│   │   └── topics.ts           # 技术专题分类与文章映射定义
 │   ├── layouts/                # 页面骨架布局 (BaseLayout, PostLayout)
 │   ├── pages/                  # 文件路由与动态端点
 │   │   ├── index.astro         # 首页（个人介绍、开源项目、贡献实战、精选文章）
 │   │   ├── about.astro         # 关于我
 │   │   ├── 404.astro           # 404 页面
-│   │   ├── post/               # 博客路由 ([...slug].astro 动态详情页, index.astro 聚合页)
+│   │   ├── post/               # 博客路由 ([...slug].astro 动态详情页, index.astro 聚合页, index.xml.ts 兼容 RSS)
+│   │   ├── topic/              # 专题路由 (index.astro 专题聚合页, [slug].astro 专题详情页)
 │   │   ├── api/search.json.ts  # 编译时搜索数据索引生成器
 │   │   ├── sitemap.xml.ts      # 动态全站 Sitemap
 │   │   └── rss.xml.ts          # 官方 RSS 2.0 订阅源
-│   └── styles/
-│       ├── fonts.css           # 字体声明
-│       └── global.css          # 全局色彩令牌、排版重置与技术出版物样式
+│   ├── styles/
+│   │   ├── fonts.css           # 字体声明
+│   │   └── global.css          # 全局色彩令牌、排版重置与技术出版物样式
+│   └── utils/
+│       └── posts.ts            # 已发布文章过滤、确定性排序与专题匹配工具
 ├── scripts/
 │   ├── verify-seo.mjs          # 构建产物自动化 SEO 质量验收测试脚本 (CI 必跑)
 │   ├── seo-ping.js             # 微软 IndexNow / 百度 API 主动广播脚本
@@ -152,7 +158,7 @@ refLink:                     # 可选：文首项目参考外链
      * 卡片表面：`var(--color-surface)` / `bg-surface`
 2. **字体与排版**：
    * 标题与出版物强调内容采用衬线字体（`font-serif`：Noto Serif SC）。
-   * 代码与数字优先采用等宽字体（`font-mono`：JetBrains Mono）。
+   * 代码与数字优先采用等宽字体（`font-mono`：自托管的 IBM Plex Mono）。
 3. **保持零客户端 JavaScript 原则**：
    * 保持 Astro 的 Islands 架构纯净，页面级组件尽量保持纯静态 HTML 渲染；仅搜索弹窗 (`SearchModal.astro`) 与目录滚动监听 (`TableOfContents.astro`) 包含必要的微型客户端脚本。
 

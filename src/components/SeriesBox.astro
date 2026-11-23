@@ -1,6 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
 import { Layers } from 'lucide-astro';
+import { getPublishedPosts } from '../utils/posts';
 
 interface Props {
   seriesName: string;
@@ -9,10 +9,10 @@ interface Props {
 
 const { seriesName, currentSlug } = Astro.props;
 
-const allPosts = await getCollection('posts');
+const allPosts = await getPublishedPosts('asc');
 const seriesPosts = allPosts
   .filter((p) => p.data.series?.name === seriesName)
-  .sort((a, b) => (a.data.series?.order || 0) - (b.data.series?.order || 0));
+  .sort((a, b) => (a.data.series?.order ?? 0) - (b.data.series?.order ?? 0));
 ---
 
 {seriesPosts.length > 1 && (

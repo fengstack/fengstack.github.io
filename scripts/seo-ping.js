@@ -8,16 +8,81 @@
  * - Baidu: Optional active push if BAIDU_TOKEN environment variable is set
  */
 
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import https from 'node:https';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const HOST = process.env.INDEXNOW_HOST || 'blog.yunitytech.top';
 const KEY = process.env.INDEXNOW_KEY || '9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b';
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 
-// Extract all URLs dynamically: first check dist/sitemap.xml, then parse src/content/posts directory
-function getUrlList() {
+export function isDraftPost(markdownContent) {
+  const fmMatch = markdownContent.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fmMatch) return false;
+  return /^\s*draft:\s*true\s*(?:#.*)?$/im.test(fmMatch[1]);
+}
+
+export function getTopicUrls() {
+  const topicsPath = path.resolve(__dirname, '../src/data/topics.ts');
+  if (!fs.existsSync(topicsPath)) return [];
+
+  const content = fs.readFileSync(topicsPath, 'utf8');
+  const slugs = [...content.matchAll(/slug:\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
+  return slugs.map(slug => `https://${HOST}/topic/${slug}/`);
+}
+
+function collectPostFiles(dir, baseDir = dir, result = []) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      collectPostFiles(fullPath, baseDir, result);
+    } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdx'))) {
+      result.push({
+        fullPath,
+        relSlug: path.relative(baseDir, fullPath).split(path.sep).join('/').replace(/\.(md|mdx)$/, ''),
+      });
+    }
+  }
+  return result;
+}
+
+export function getPostUrls() {
+  const postsDir = path.resolve(__dirname, '../src/content/posts');
+  if (!fs.existsSync(postsDir)) return [];
+
+  return collectPostFiles(postsDir)
+    .filter(({ fullPath }) => {
+      const content = fs.readFileSync(fullPath, 'utf8');
+      return !isDraftPost(content);
+    })
+    .map(({ relSlug }) => `https://${HOST}/post/${relSlug}/`);
+}
+
+export function getFallbackUrlList() {
+  const staticUrls = [
+    `https://${HOST}/`,
+    `https://${HOST}/about/`,
+    `https://${HOST}/post/`,
+    `https://${HOST}/topic/`,
+  ];
+
+  try {
+    const topicUrls = getTopicUrls();
+    const postUrls = getPostUrls();
+    return [...new Set([...staticUrls, ...topicUrls, ...postUrls])];
+  } catch (err) {
+    console.warn(`[SEO Ping] Could not scan source files (${err.message}).`);
+    return staticUrls;
+  }
+}
+
+// Extract all URLs dynamically: first check dist/sitemap.xml, then fallback to source files
+export function getUrlList() {
   const distSitemap = path.resolve(__dirname, '../dist/sitemap.xml');
   const rootSitemap = path.resolve(__dirname, '../sitemap.xml');
   const sitemapPath = fs.existsSync(distSitemap) ? distSitemap : (fs.existsSync(rootSitemap) ? rootSitemap : null);
@@ -26,73 +91,25 @@ function getUrlList() {
     try {
       const content = fs.readFileSync(sitemapPath, 'utf8');
       const matches = [...content.matchAll(/<loc>(https:\/\/[^<]+)<\/loc>/g)].map(m => m[1].trim());
-      if (matches && matches.length > 0) {
+      if (matches.length > 0) {
         return [...new Set(matches)];
       }
     } catch (err) {
-      console.warn(`[SEO Ping] Could not read sitemap.xml dynamically (${err.message}). Trying filesystem...`);
+      console.warn(`[SEO Ping] Could not read sitemap.xml dynamically (${err.message}). Falling back to source files...`);
     }
   }
 
-  // Fallback: Read directly from src/content/posts directory (works in CI without prior build step)
-  try {
-    const postsDir = path.resolve(__dirname, '../src/content/posts');
-    if (fs.existsSync(postsDir)) {
-      const files = fs.readdirSync(postsDir);
-      const postUrls = files
-        .filter(f => f.endsWith('.md') || f.endsWith('.mdx'))
-        .map(f => `https://${HOST}/post/${f.replace(/\.(md|mdx)$/, '')}/`);
-
-      const staticUrls = [
-        `https://${HOST}/`,
-        `https://${HOST}/about/`,
-        `https://${HOST}/post/`,
-        `https://${HOST}/topic/`,
-        `https://${HOST}/topic/java-distributed/`,
-        `https://${HOST}/topic/rpc-governance/`,
-        `https://${HOST}/topic/ai-agent-engineering/`,
-        `https://${HOST}/topic/troubleshooting-opensource/`
-      ];
-      return [...new Set([...staticUrls, ...postUrls])];
-    }
-  } catch (err) {
-    console.warn(`[SEO Ping] Could not scan src/content/posts (${err.message}).`);
-  }
-
-  return [
-    `https://${HOST}/`,
-    `https://${HOST}/about/`,
-    `https://${HOST}/post/`,
-    `https://${HOST}/topic/`,
-    `https://${HOST}/topic/java-distributed/`,
-    `https://${HOST}/topic/rpc-governance/`,
-    `https://${HOST}/topic/ai-agent-engineering/`,
-    `https://${HOST}/topic/troubleshooting-opensource/`,
-    `https://${HOST}/post/ai-code-review-delivery-pipeline/`,
-    `https://${HOST}/post/refreshscope-scheduled-duplicate-rca/`,
-    `https://${HOST}/post/ai-coding-era-engineer-survival/`,
-    `https://${HOST}/post/simple-seata-at-mode/`,
-    `https://${HOST}/post/agent-programming-language-benchmark/`,
-    `https://${HOST}/post/agent-programming-sdd-tdd/`,
-    `https://${HOST}/post/small-rpc-v3-governance/`,
-    `https://${HOST}/post/maven-central-publish-guide/`,
-    `https://${HOST}/post/small-rpc-intro/`,
-    `https://${HOST}/post/openobserve-three-prs/`,
-    `https://${HOST}/post/glogcenter-two-prs/`,
-    `https://${HOST}/post/jooq-postgis-intro/`
-  ];
+  return getFallbackUrlList();
 }
 
-const URL_LIST = getUrlList();
-
 // 1. Submit to IndexNow (Bing / Yandex / Naver)
-function submitIndexNow() {
+function submitIndexNow(urlList) {
   return new Promise((resolve) => {
     const payload = JSON.stringify({
       host: HOST,
       key: KEY,
       keyLocation: KEY_LOCATION,
-      urlList: URL_LIST
+      urlList
     });
 
     const options = {
@@ -111,7 +128,7 @@ function submitIndexNow() {
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
         console.log(`[IndexNow] Response code: ${res.statusCode} (${res.statusCode === 200 || res.statusCode === 202 ? 'Success / Accepted' : 'Check status'})`);
-        if (data) console.log(`[IndexNow] Message:`, data);
+        if (data) console.log('[IndexNow] Message:', data);
         resolve(res.statusCode);
       });
     });
@@ -127,7 +144,7 @@ function submitIndexNow() {
 }
 
 // 2. Submit to Baidu Active Push (if token provided)
-function submitBaidu() {
+function submitBaidu(urlList) {
   return new Promise((resolve) => {
     const token = process.env.BAIDU_TOKEN;
     if (!token) {
@@ -136,7 +153,7 @@ function submitBaidu() {
       return;
     }
 
-    const payload = URL_LIST.join('\n');
+    const payload = urlList.join('\n');
     const options = {
       hostname: 'data.zz.baidu.com',
       port: 443,
@@ -153,7 +170,7 @@ function submitBaidu() {
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
         console.log(`[Baidu] Response code: ${res.statusCode}`);
-        console.log(`[Baidu] Response:`, data);
+        console.log('[Baidu] Response:', data);
         resolve(res.statusCode);
       });
     });
@@ -169,12 +186,15 @@ function submitBaidu() {
 }
 
 async function main() {
-  console.log(`Broadcasting ${URL_LIST.length} URLs to search engine indexers...`);
+  const urlList = getUrlList();
+  console.log(`Broadcasting ${urlList.length} URLs to search engine indexers...`);
   await Promise.all([
-    submitIndexNow(),
-    submitBaidu()
+    submitIndexNow(urlList),
+    submitBaidu(urlList)
   ]);
   console.log('SEO ping broadcast completed.');
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) {
+  main();
+}

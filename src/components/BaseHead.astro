@@ -1,4 +1,6 @@
 ---
+import { SITE } from '../data/site';
+
 interface Props {
   title?: string;
   cleanTitle?: string;
@@ -14,10 +16,10 @@ interface Props {
 }
 
 const {
-  title = 'fengstack — 软件工程师个人主页与技术博客',
+  title = SITE.title,
   cleanTitle,
-  description = 'fengstack 的个人主页与技术博客：软件工程师，专注 RPC 框架、现代 AI Agent 编程实践（SDD 与 TDD 规范驱动）、jOOQ/PostGIS，分享开源项目与社区实战复盘。',
-  image = '/images/avatar.png',
+  description = SITE.description,
+  image = SITE.defaultImage,
   type = 'website',
   publishDate,
   updatedDate,
@@ -27,13 +29,24 @@ const {
   breadcrumbs,
 } = Astro.props;
 
-const rawCanonical = canonicalURL ? canonicalURL.toString() : new URL(Astro.url.pathname, Astro.site).toString();
-const finalCanonical = rawCanonical.endsWith('/') || rawCanonical.includes('.') ? rawCanonical : `${rawCanonical}/`;
+const siteBase = Astro.site || SITE.url;
+const siteOrigin = `${SITE.url.replace(/\/$/, '')}/`;
+const rawCanonical = canonicalURL ? canonicalURL.toString() : new URL(Astro.url.pathname, siteBase).toString();
+const canonicalObj = new URL(rawCanonical, siteBase);
+const hasExt = /\.[a-zA-Z0-9]+$/.test(canonicalObj.pathname);
+const finalCanonical = canonicalObj.pathname.endsWith('/') || hasExt
+  ? canonicalObj.toString()
+  : `${canonicalObj.origin}${canonicalObj.pathname}/${canonicalObj.search}${canonicalObj.hash}`;
 
-const siteTitle = title.includes('fengstack') ? title : `${title} · fengstack 的博客`;
-const fullImageURL = new URL(image, Astro.site).toString();
-const logoImageURL = new URL('/images/logo.png', Astro.site).toString();
+const siteTitle = title.includes(SITE.name) ? title : `${title} · ${SITE.siteName}`;
+const fullImageURL = new URL(image, siteBase).toString();
+const logoImageURL = new URL(SITE.logoImage, siteBase).toString();
 const finalModifiedDate = updatedDate || publishDate;
+const headline =
+  cleanTitle ||
+  title
+    .replace(` · ${SITE.siteName}`, '')
+    .replace(SITE.title.replace(SITE.name, ''), '');
 ---
 
 <!-- Global Metadata -->
@@ -42,18 +55,17 @@ const finalModifiedDate = updatedDate || publishDate;
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="alternate" type="application/rss+xml" title="fengstack 的技术文章" href="/post/index.xml" />
-<link rel="alternate" type="application/rss+xml" title="fengstack 的技术文章 (RSS)" href="/rss.xml" />
+<link rel="alternate" type="application/rss+xml" title={SITE.rssTitle} href={SITE.rssPath} />
 
 <!-- Canonical URL -->
-<link rel="canonical" href={finalCanonical} />
+{!noindex && <link rel="canonical" href={finalCanonical} />}
 
 <!-- Primary Meta Tags -->
 <title>{siteTitle}</title>
 <meta name="title" content={siteTitle} />
 <meta name="description" content={description} />
-<meta name="author" content="fengstack" />
-<meta name="keywords" content={articleTags.length > 0 ? articleTags.join(', ') : '软件工程师, fengstack, 技术博客, AI 编程, Java, Go, RPC, Netty, jOOQ, PostGIS, SDD, TDD, Code Review'} />
+<meta name="author" content={SITE.name} />
+<meta name="keywords" content={articleTags.length > 0 ? articleTags.join(', ') : `软件工程师, ${SITE.name}, 技术博客, AI 编程, Java, Go, RPC, Netty, jOOQ, PostGIS, SDD, TDD, Code Review`} />
 {noindex ? (
   <meta name="robots" content="noindex, follow" />
 ) : (
@@ -70,7 +82,7 @@ const finalModifiedDate = updatedDate || publishDate;
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
 <meta property="og:url" content={finalCanonical} />
-<meta property="og:site_name" content="fengstack 的博客" />
+<meta property="og:site_name" content={SITE.siteName} />
 <meta property="og:title" content={siteTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={fullImageURL} />
@@ -87,14 +99,14 @@ const finalModifiedDate = updatedDate || publishDate;
 ))}
 
 <!-- Twitter -->
-<meta property="twitter:card" content="summary" />
-<meta property="twitter:url" content={finalCanonical} />
-<meta property="twitter:title" content={siteTitle} />
-<meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={fullImageURL} />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:url" content={finalCanonical} />
+<meta name="twitter:title" content={siteTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={fullImageURL} />
 
 <!-- Structured Data: BreadcrumbList (JSON-LD) -->
-{breadcrumbs && breadcrumbs.length > 0 && (
+{!noindex && breadcrumbs && breadcrumbs.length > 0 && (
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -102,17 +114,17 @@ const finalModifiedDate = updatedDate || publishDate;
       "@type": "ListItem",
       "position": idx + 1,
       "name": crumb.name,
-      "item": crumb.url.startsWith('http') ? crumb.url : new URL(crumb.url, Astro.site).toString()
+      "item": crumb.url.startsWith('http') ? crumb.url : new URL(crumb.url, siteBase).toString()
     }))
   })} />
 )}
 
 <!-- Structured Data: Article / Person / WebSite (JSON-LD) -->
-{type === 'article' ? (
+{!noindex && (type === 'article' ? (
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": cleanTitle || title.replace(/ · fengstack 的博客$/, '').replace(/ — 软件工程师个人主页与技术博客$/, ''),
+    "headline": headline,
     "description": description,
     "image": fullImageURL,
     "keywords": articleTags.length > 0 ? articleTags.join(', ') : undefined,
@@ -122,17 +134,14 @@ const finalModifiedDate = updatedDate || publishDate;
     "inLanguage": "zh-CN",
     "author": {
       "@type": "Person",
-      "name": "fengstack",
-      "url": "https://blog.yunitytech.top/"
+      "name": SITE.name,
+      "url": siteOrigin
     },
     "publisher": {
       "@type": "Person",
-      "name": "fengstack",
-      "url": "https://blog.yunitytech.top/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": logoImageURL
-      }
+      "name": SITE.name,
+      "url": siteOrigin,
+      "image": logoImageURL
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
@@ -145,31 +154,31 @@ const finalModifiedDate = updatedDate || publishDate;
     "@graph": [
       {
         "@type": "Person",
-        "@id": "https://blog.yunitytech.top/#person",
-        "name": "fengstack",
-        "alternateName": ["upowerman"],
-        "url": "https://blog.yunitytech.top/",
-        "email": "mailto:gyf718@hotmail.com",
+        "@id": `${siteOrigin}#person`,
+        "name": SITE.name,
+        "alternateName": SITE.alternateNames,
+        "url": siteOrigin,
+        "email": `mailto:${SITE.email}`,
         "jobTitle": "软件工程师",
-        "description": "fengstack，软件工程师，开源项目 small-rpc、jooq-postgis 作者，关注分布式 RPC、开源数据库与 AI 工程化。",
+        "description": `${SITE.name}，软件工程师，开源项目 small-rpc、jooq-postgis 作者，关注分布式 RPC、开源数据库与 AI 工程化。`,
         "sameAs": [
-          "https://github.com/fengstack",
-          "https://github.com/upowerman"
+          SITE.githubUrl,
+          SITE.altGithubUrl
         ],
         "knowsAbout": ["Java", "RPC", "Netty", "jOOQ", "PostGIS", "Go", "Python", "TypeScript", "AI Agent", "SDD", "TDD"]
       },
       {
         "@type": "WebSite",
-        "@id": "https://blog.yunitytech.top/#website",
-        "name": "fengstack 的博客",
-        "alternateName": "fengstack 个人主页",
-        "url": "https://blog.yunitytech.top/",
+        "@id": `${siteOrigin}#website`,
+        "name": SITE.siteName,
+        "alternateName": SITE.alternateSiteName,
+        "url": siteOrigin,
         "inLanguage": "zh-CN",
-        "author": { "@id": "https://blog.yunitytech.top/#person" }
+        "author": { "@id": `${siteOrigin}#person` }
       }
     ]
   })} />
-)}
+))}
 
 <!-- Prevent Dark Mode Flicker (FOUC) -->
 <script is:inline>

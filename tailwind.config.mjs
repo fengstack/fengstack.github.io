@@ -42,6 +42,7 @@ export default {
           'sans-serif',
         ],
         mono: [
+          '"IBM Plex Mono"',
           '"JetBrains Mono"',
           '"SF Mono"',
           'Consolas',
@@ -49,10 +50,6 @@ export default {
           'Monaco',
           'monospace',
         ],
-      },
-      maxWidth: {
-        content: '768px',
-        container: '960px',
       },
       borderRadius: {
         DEFAULT: '6px',

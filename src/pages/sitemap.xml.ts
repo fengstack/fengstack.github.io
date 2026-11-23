@@ -1,14 +1,20 @@
-import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
+import { SITE } from '../data/site';
 import { TOPICS } from '../data/topics';
+import { getPublishedPosts } from '../utils/posts';
 
 export async function GET(context: APIContext) {
-  const allPosts = await getCollection('posts', ({ data }) => !data.draft);
-  const siteUrl = context.site?.toString().replace(/\/$/, '') || 'https://blog.yunitytech.top';
+  const allPosts = await getPublishedPosts();
+  const siteUrl = (context.site?.toString() || SITE.url).replace(/\/$/, '');
 
-  const sortedPosts = allPosts.sort(
-    (a, b) => (b.data.updatedDate || b.data.publishDate).getTime() - (a.data.updatedDate || a.data.publishDate).getTime()
-  );
+  const sortedPosts = [...allPosts].sort((a, b) => {
+    const aTime = (a.data.updatedDate || a.data.publishDate).getTime();
+    const bTime = (b.data.updatedDate || b.data.publishDate).getTime();
+    if (bTime !== aTime) {
+      return bTime - aTime;
+    }
+    return b.slug.localeCompare(a.slug, 'en');
+  });
 
   const latestPostDate = sortedPosts[0]
     ? (sortedPosts[0].data.updatedDate || sortedPosts[0].data.publishDate).toISOString().slice(0, 10)

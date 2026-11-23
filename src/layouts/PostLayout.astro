@@ -1,18 +1,17 @@
 ---
 import type { MarkdownHeading } from 'astro';
-import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import SeriesBox from '../components/SeriesBox.astro';
-import { TOPICS } from '../data/topics';
+import { SITE } from '../data/site';
+import { getPublishedPosts, getPrimaryTopic, getPostTopics, type PostEntry } from '../utils/posts';
 import { Calendar, Clock, Tag, ExternalLink, ArrowLeft, ArrowRight, ChevronUp, AlignLeft, ChevronDown, Sparkles, Layers } from 'lucide-astro';
 
 interface Props {
-  post: CollectionEntry<'posts'>;
+  post: PostEntry;
   headings: MarkdownHeading[];
-  prevPost?: CollectionEntry<'posts'>;
-  nextPost?: CollectionEntry<'posts'>;
+  prevPost?: PostEntry;
+  nextPost?: PostEntry;
 }
 
 const { post, headings, prevPost, nextPost } = Astro.props;
@@ -21,19 +20,21 @@ const { title, description, publishDate, updatedDate, tags, readTime, series, re
 const formattedDate = publishDate.toISOString().slice(0, 10);
 const formattedUpdatedDate = updatedDate ? updatedDate.toISOString().slice(0, 10) : undefined;
 
-// Current topic
-const currentTopic = TOPICS.find((t) => t.postSlugs.includes(post.slug));
+// Topics: primary topic (most specific) and all belonging topics
+const postTopics = getPostTopics(post.slug);
+const primaryTopic = getPrimaryTopic(post.slug);
+const postTopicSlugs = new Set(postTopics.map((t) => t.slug));
 
 // Structured Breadcrumbs
 const breadcrumbs = [
   { name: '首页', url: '/' },
   { name: '技术文章', url: '/post/' },
-  ...(currentTopic ? [{ name: currentTopic.name, url: `/topic/${currentTopic.slug}/` }] : []),
+  ...(primaryTopic ? [{ name: primaryTopic.name, url: `/topic/${primaryTopic.slug}/` }] : []),
   { name: title, url: `/post/${post.slug}/` },
 ];
 
-// Related posts calculation
-const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+// Related posts calculation (series + shared tags + all belonging topics)
+const allPosts = await getPublishedPosts('desc');
 const relatedPosts = allPosts
   .filter((p) => p.slug !== post.slug)
   .map((p) => {
@@ -43,19 +44,24 @@ const relatedPosts = allPosts
     }
     const sharedTags = p.data.tags.filter((t) => tags.includes(t));
     score += sharedTags.length * 2;
-    if (currentTopic && currentTopic.postSlugs.includes(p.slug)) {
-      score += 3;
+    const candidateTopics = getPostTopics(p.slug);
+    const sharedTopicsCount = candidateTopics.filter((t) => postTopicSlugs.has(t.slug)).length;
+    if (sharedTopicsCount > 0) {
+      score += sharedTopicsCount * 3;
+    }
+    if (primaryTopic && primaryTopic.postSlugs.includes(p.slug)) {
+      score += 1;
     }
     return { post: p, score };
   })
   .filter((item) => item.score > 0)
-  .sort((a, b) => b.score - a.score || b.post.data.publishDate.getTime() - a.post.data.publishDate.getTime())
+  .sort((a, b) => b.score - a.score)
   .slice(0, 3)
   .map((item) => item.post);
 ---
 
 <BaseLayout
-  title={`${title} · fengstack 的博客`}
+  title={`${title} · ${SITE.siteName}`}
   cleanTitle={title}
   description={description}
   type="article"
@@ -70,11 +76,11 @@ const relatedPosts = allPosts
       <a href="/" class="hover:text-fg transition-colors">首页</a>
       <span class="text-line">/</span>
       <a href="/post/" class="hover:text-fg transition-colors">文章</a>
-      {currentTopic && (
+      {primaryTopic && (
         <>
           <span class="text-line">/</span>
-          <a href={`/topic/${currentTopic.slug}/`} class="hover:text-fg transition-colors text-accent">
-            {currentTopic.name}
+          <a href={`/topic/${primaryTopic.slug}/`} class="hover:text-fg transition-colors text-accent">
+            {primaryTopic.name}
           </a>
         </>
       )}
@@ -104,12 +110,17 @@ const relatedPosts = allPosts
           </div>
         )}
 
-        {currentTopic && (
-          <div class="flex items-center gap-1">
-            <Layers class="h-3.5 w-3.5 text-accent" />
-            <a href={`/topic/${currentTopic.slug}/`} class="text-accent hover:underline">
-              {currentTopic.name}
-            </a>
+        {postTopics.length > 0 && (
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <Layers class="h-3.5 w-3.5 text-accent shrink-0" />
+            {postTopics.map((topic) => (
+              <a
+                href={`/topic/${topic.slug}/`}
+                class="rounded border border-accent/30 bg-accent/10 px-2 py-0.5 text-accent hover:bg-accent/15 hover:underline transition-colors"
+              >
+                {topic.name}
+              </a>
+            ))}
           </div>
         )}
 
@@ -151,7 +162,7 @@ const relatedPosts = allPosts
           <ChevronDown class="h-4 w-4 text-muted transition-transform duration-200 summary-chevron" />
         </summary>
         <div class="mt-4 pt-3 border-t border-line/60">
-          <TableOfContents headings={headings} />
+          <TableOfContents headings={headings} showTitle={false} />
         </div>
       </details>
     )}
@@ -178,12 +189,12 @@ const relatedPosts = allPosts
             <Sparkles class="h-4 w-4 text-accent" />
             <span>相关技术分析与延伸阅读</span>
           </h2>
-          {currentTopic && (
+          {primaryTopic && (
             <a
-              href={`/topic/${currentTopic.slug}/`}
+              href={`/topic/${primaryTopic.slug}/`}
               class="text-xs font-mono text-accent hover:underline flex items-center gap-1"
             >
-              <span>查看「{currentTopic.name}」专题全集</span>
+              <span>查看「{primaryTopic.name}」专题全集</span>
               <ArrowRight class="h-3 w-3" />
             </a>
           )}
@@ -278,6 +289,7 @@ const relatedPosts = allPosts
   // Add copy buttons and language badges to code blocks
   document.querySelectorAll<HTMLElement>('.editorial-prose pre').forEach((pre) => {
     const lang = pre.getAttribute('data-language') || '';
+    if (lang === 'mermaid') return;
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block-wrapper my-6 relative group';
     pre.parentNode?.insertBefore(wrapper, pre);
@@ -347,17 +359,33 @@ const relatedPosts = allPosts
 
       function sanitizeMermaid(raw) {
         if (!raw) return '';
-        // 1. Wrap unquoted edge labels |...| with |"..."| so parentheses or slashes don't break Mermaid's parser
-        let code = raw.replace(/\|([^"|\r\n][^|\r\n]*)\|/g, (match, p1) => {
-          const trimmed = p1.trim();
-          if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-            return match;
-          }
-          return '|"' + trimmed.replace(/"/g, '\\"') + '"|';
-        });
+        // 1. Line-by-line: wrap unquoted edge labels after arrows/links (-->|...| etc.) with |"..."|
+        //    so parentheses or slashes don't break Mermaid's parser without misparsing node names between quoted labels.
+        let code = raw
+          .split(/\r?\n/)
+          .map((line) =>
+            line.replace(
+              /(--+>|==+>|-\.+->|---+|--+[xo]|<--+>|[xo]--+[xo])\s*\|([^"|\r\n][^|\r\n]*)\|/g,
+              (match, arrow, label) => {
+                const trimmed = label.trim();
+                if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                  return match;
+                }
+                return `${arrow}|"${trimmed.replace(/"/g, '\\"')}"|`;
+              }
+            )
+          )
+          .join('\n');
 
-        // 2. Escape non-br generic type angle brackets like <Type> inside labels
-        code = code.replace(/<(?!\/?br\s*\/?)([\w]+)>/g, '&lt;$1&gt;');
+        // 2. Escape non-br generic type angle brackets (including multi-arg, wildcards & nested generics)
+        for (let pass = 0; pass < 5; pass++) {
+          const next = code.replace(
+            /<(?!\/?br\s*\/?)([A-Za-z_?](?:&lt;|&gt;|[\w \t,?.[\]])*)>/g,
+            '&lt;$1&gt;'
+          );
+          if (next === code) break;
+          code = next;
+        }
 
         return code;
       }
@@ -367,52 +395,64 @@ const relatedPosts = allPosts
           startOnLoad: false,
           theme: theme === 'dark' ? 'dark' : 'default',
           suppressErrorRendering: true,
-          securityLevel: 'loose',
+          securityLevel: 'strict',
         });
       }
 
       let renderIdx = 0;
-      const initialTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-      initMermaid(initialTheme);
+      let activeTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+      initMermaid(activeTheme);
 
       const diagrams = [];
 
-      mermaidPres.forEach((pre, i) => {
-        const wrapper = pre.closest('.code-block-wrapper') || pre;
-        const rawCode = pre.querySelector('code')?.textContent || '';
+      for (let i = 0; i < mermaidPres.length; i++) {
+        const pre = mermaidPres[i];
+        const rawCode = pre.querySelector('code')?.textContent || pre.textContent || '';
         const graphDef = sanitizeMermaid(rawCode);
-        const container = document.createElement('div');
-        container.className = 'mermaid-diagram my-8 p-4 rounded-xl border border-line bg-surface/30 flex justify-center overflow-x-auto shadow-xs';
-        wrapper.replaceWith(container);
-        diagrams.push({ container, graphDef, baseId: 'mermaid-' + i });
-      });
+        const baseId = 'mermaid-' + i;
+        const id = baseId + '-' + (++renderIdx);
+        try {
+          const { svg } = await mermaid.render(id, graphDef);
+          const container = document.createElement('div');
+          container.className = 'mermaid-diagram my-8 p-4 rounded-xl border border-line bg-surface/30 flex justify-center overflow-x-auto shadow-sm';
+          container.innerHTML = svg;
+          pre.replaceWith(container);
+          diagrams.push({ container, graphDef, baseId });
+        } catch (e) {
+          console.error('Mermaid render error:', e);
+          document.getElementById('d' + id)?.remove();
+        }
+      }
 
-      async function renderAll() {
-        for (const { container, graphDef, baseId } of diagrams) {
-          const id = baseId + '-' + (++renderIdx);
+      async function rerenderDiagrams() {
+        for (const item of diagrams) {
+          const id = item.baseId + '-' + (++renderIdx);
           try {
-            const { svg } = await mermaid.render(id, graphDef);
-            container.innerHTML = svg;
+            const { svg } = await mermaid.render(id, item.graphDef);
+            item.container.innerHTML = svg;
           } catch (e) {
-            console.error('Mermaid render error:', e);
+            console.error('Mermaid re-render error:', e);
             document.getElementById('d' + id)?.remove();
           }
         }
       }
 
-      await renderAll();
-
-      // Listen for data-theme change to re-render diagrams with matched theme
-      const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-            const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-            initMermaid(currentTheme);
-            renderAll();
+      if (diagrams.length > 0) {
+        // Listen for data-theme change to re-render diagrams with matched theme
+        const observer = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+              const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+              if (currentTheme !== activeTheme) {
+                activeTheme = currentTheme;
+                initMermaid(currentTheme);
+                rerenderDiagrams();
+              }
+            }
           }
-        }
-      });
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+      }
     } catch (err) {
       console.error('Failed to load Mermaid module:', err);
     }

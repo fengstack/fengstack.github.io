@@ -10,6 +10,7 @@ import { Search, X } from 'lucide-astro';
   aria-labelledby="searchModalTitle"
 >
   <div class="mx-auto max-w-2xl transform rounded-lg border border-line bg-bg shadow-2xl transition-all">
+    <h2 id="searchModalTitle" class="sr-only">站内文章搜索</h2>
     <!-- Search Input Area -->
     <div class="relative flex items-center border-b border-line px-4 py-3">
       <Search class="h-5 w-5 text-muted shrink-0" />
@@ -36,8 +37,14 @@ import { Search, X } from 'lucide-astro';
       <div id="searchPlaceholder" class="py-12 text-center text-sm text-muted">
         输入关键字搜索博文… 支持标题、摘要及分类标签
       </div>
+      <div id="searchLoading" class="hidden py-12 text-center text-sm text-muted">
+        正在加载搜索索引…
+      </div>
       <div id="searchEmpty" class="hidden py-12 text-center text-sm text-muted">
         未找到包含该关键字的技术文章
+      </div>
+      <div id="searchError" class="hidden py-12 text-center text-sm text-red-600 dark:text-red-400">
+        搜索索引加载失败，请稍后重试
       </div>
       <div id="resultsList" class="flex flex-col gap-1"></div>
     </div>
@@ -65,6 +72,8 @@ import { Search, X } from 'lucide-astro';
 
   let searchIndex: SearchItem[] = [];
   let isIndexLoaded = false;
+  let isIndexFailed = false;
+  let loadPromise: Promise<void> | null = null;
   let selectedIndex = -1;
 
   const modal = document.getElementById('searchModal');
@@ -73,17 +82,57 @@ import { Search, X } from 'lucide-astro';
   const closeBtn = document.getElementById('searchModalClose');
   const resultsList = document.getElementById('resultsList');
   const searchPlaceholder = document.getElementById('searchPlaceholder');
+  const searchLoading = document.getElementById('searchLoading');
   const searchEmpty = document.getElementById('searchEmpty');
+  const searchError = document.getElementById('searchError');
 
-  async function loadSearchIndex() {
+  function showErrorState() {
+    if (resultsList) resultsList.replaceChildren();
+    selectedIndex = -1;
+    searchPlaceholder?.classList.add('hidden');
+    searchLoading?.classList.add('hidden');
+    searchEmpty?.classList.add('hidden');
+    searchError?.classList.remove('hidden');
+  }
+
+  function showLoadingState() {
+    if (resultsList) resultsList.replaceChildren();
+    selectedIndex = -1;
+    searchPlaceholder?.classList.add('hidden');
+    searchEmpty?.classList.add('hidden');
+    searchError?.classList.add('hidden');
+    searchLoading?.classList.remove('hidden');
+  }
+
+  async function loadSearchIndex(): Promise<void> {
     if (isIndexLoaded) return;
-    try {
-      const res = await fetch('/api/search.json');
-      searchIndex = await res.json();
-      isIndexLoaded = true;
-    } catch (e) {
-      console.error('Failed to load search index', e);
-    }
+    if (loadPromise) return loadPromise;
+
+    isIndexFailed = false;
+    searchError?.classList.add('hidden');
+
+    loadPromise = (async () => {
+      try {
+        const res = await fetch('/api/search.json');
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        searchIndex = await res.json();
+        isIndexLoaded = true;
+        isIndexFailed = false;
+        if (input?.value.trim()) {
+          filterAndRender();
+        }
+      } catch (e) {
+        isIndexFailed = true;
+        console.error('Failed to load search index', e);
+        showErrorState();
+      } finally {
+        loadPromise = null;
+      }
+    })();
+
+    return loadPromise;
   }
 
   function openModal() {
@@ -96,6 +145,8 @@ import { Search, X } from 'lucide-astro';
   function closeModal() {
     modal?.classList.add('hidden');
     if (input) input.value = '';
+    searchError?.classList.add('hidden');
+    searchLoading?.classList.add('hidden');
     renderResults([]);
     document.body.style.overflow = '';
   }
@@ -110,7 +161,7 @@ import { Search, X } from 'lucide-astro';
 
   // Global shortcut (Cmd+K / Ctrl+K / Escape)
   window.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       if (modal?.classList.contains('hidden')) {
         openModal();
@@ -124,8 +175,10 @@ import { Search, X } from 'lucide-astro';
 
   function renderResults(items: SearchItem[]) {
     if (!resultsList || !searchPlaceholder || !searchEmpty) return;
-    resultsList.innerHTML = '';
+    resultsList.replaceChildren();
     selectedIndex = -1;
+    searchLoading?.classList.add('hidden');
+    searchError?.classList.add('hidden');
 
     if (!input?.value.trim()) {
       searchPlaceholder.classList.remove('hidden');
@@ -149,32 +202,61 @@ import { Search, X } from 'lucide-astro';
         'search-result-item flex flex-col gap-1 rounded-md p-3 text-left transition-colors hover:bg-surface focus:bg-surface outline-none';
       a.dataset.index = String(idx);
 
-      const tagsHtml = item.tags
-        .map(
-          (t) =>
-            `<span class="rounded bg-surface px-1.5 py-0.5 text-[11px] text-muted">${t}</span>`
-        )
-        .join(' ');
+      const titleEl = document.createElement('div');
+      titleEl.className = 'font-serif font-semibold text-fg text-sm';
+      titleEl.textContent = item.title;
 
-      a.innerHTML = `
-        <div class="font-serif font-semibold text-fg text-sm">${item.title}</div>
-        <div class="line-clamp-2 text-xs text-muted leading-relaxed">${item.description}</div>
-        <div class="mt-1 flex items-center gap-3 text-[11px] text-muted font-mono">
-          <span>${item.date}</span>
-          ${item.readTime ? `<span>· ${item.readTime}</span>` : ''}
-          <div class="flex items-center gap-1">${tagsHtml}</div>
-        </div>
-      `;
+      const descEl = document.createElement('div');
+      descEl.className = 'line-clamp-2 text-xs text-muted leading-relaxed';
+      descEl.textContent = item.description;
 
+      const metaEl = document.createElement('div');
+      metaEl.className = 'mt-1 flex flex-wrap items-center gap-3 text-[11px] text-muted font-mono';
+
+      const dateEl = document.createElement('span');
+      dateEl.textContent = item.date;
+      metaEl.appendChild(dateEl);
+
+      if (item.readTime) {
+        const readTimeEl = document.createElement('span');
+        readTimeEl.textContent = `· ${item.readTime}`;
+        metaEl.appendChild(readTimeEl);
+      }
+
+      const tagsEl = document.createElement('div');
+      tagsEl.className = 'flex flex-wrap items-center gap-1';
+      item.tags.forEach((tag) => {
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'rounded bg-surface px-1.5 py-0.5 text-[11px] text-muted';
+        tagSpan.textContent = tag;
+        tagsEl.appendChild(tagSpan);
+      });
+      metaEl.appendChild(tagsEl);
+
+      a.append(titleEl, descEl, metaEl);
       resultsList.appendChild(a);
     });
   }
 
-  // Input filter
-  input?.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
+  function filterAndRender() {
+    const q = input?.value.trim().toLowerCase() || '';
     if (!q) {
-      renderResults([]);
+      if (isIndexFailed) {
+        showErrorState();
+      } else {
+        renderResults([]);
+      }
+      return;
+    }
+
+    if (isIndexFailed) {
+      showErrorState();
+      return;
+    }
+
+    if (!isIndexLoaded) {
+      showLoadingState();
+      loadSearchIndex();
       return;
     }
 
@@ -186,7 +268,10 @@ import { Search, X } from 'lucide-astro';
     });
 
     renderResults(matched);
-  });
+  }
+
+  // Input filter
+  input?.addEventListener('input', filterAndRender);
 
   // Keyboard navigation within list
   input?.addEventListener('keydown', (e) => {

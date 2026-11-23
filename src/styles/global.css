@@ -286,6 +286,24 @@ html[data-theme="dark"] .editorial-prose .astro-code span {
   background-color: var(--color-surface);
 }
 
+/* Images */
+.editorial-prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.75rem auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Horizontal Rules */
+.editorial-prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  margin: 2.5rem 0;
+}
+
 /* Code actions container */
 .code-block-wrapper {
   position: relative;

@@ -124,7 +124,15 @@ if (fs.existsSync(errorPagePath)) {
     html.includes('content="noindex'),
     '404.html must include noindex meta robots directive'
   );
-  pass('404.html properly marked with noindex');
+  assert(
+    !html.includes('<link rel="canonical"') && !/<link\s+rel=["']canonical["']/i.test(html),
+    '404.html must not contain <link rel="canonical">'
+  );
+  assert(
+    !html.includes('application/ld+json'),
+    '404.html must not contain application/ld+json structured data'
+  );
+  pass('404.html properly marked with noindex and free of canonical/JSON-LD');
 }
 
 // 5. Scan all HTML pages in dist
@@ -149,7 +157,7 @@ const seenDescriptions = new Map();
 let checkedPages = 0;
 
 for (const filePath of htmlFiles) {
-  const relPath = path.relative(DIST_DIR, filePath);
+  const relPath = path.relative(DIST_DIR, filePath).split(path.sep).join('/');
   const html = fs.readFileSync(filePath, 'utf8');
   checkedPages++;
 
@@ -158,8 +166,8 @@ for (const filePath of htmlFiles) {
   assert(titleMatch && titleMatch[1].trim().length > 0, `Page ${relPath} missing or empty <title>`);
   if (titleMatch) {
     const title = titleMatch[1].trim();
-    if (seenTitles.has(title) && !relPath.includes('index.html')) {
-      warn(`Duplicate title "${title}" found in ${relPath} and ${seenTitles.get(title)}`);
+    if (seenTitles.has(title)) {
+      assert(false, `Duplicate title "${title}" found in ${relPath} and ${seenTitles.get(title)}`);
     } else {
       seenTitles.set(title, relPath);
     }
@@ -189,43 +197,50 @@ for (const filePath of htmlFiles) {
   const jsonLdMatches = [...html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)];
   assert(jsonLdMatches.length > 0, `Page ${relPath} missing JSON-LD structured data`);
 
+  const isPostDetailPage = relPath.startsWith('post/') && relPath !== 'post/index.html';
+  let hasBlogPosting = false;
+
   for (const match of jsonLdMatches) {
     try {
       const parsed = JSON.parse(match[1]);
       assert(parsed['@context'] === 'https://schema.org', `JSON-LD in ${relPath} must specify @context https://schema.org`);
 
       // If it's an article page
-      if (relPath.startsWith('post/') && relPath !== 'post/index.html') {
-        if (parsed['@type'] === 'BlogPosting') {
-          assert(Boolean(parsed.headline), `BlogPosting in ${relPath} missing headline`);
-          assert(Boolean(parsed.datePublished), `BlogPosting in ${relPath} missing datePublished`);
-          assert(Boolean(parsed.author), `BlogPosting in ${relPath} missing author`);
-        }
+      if (isPostDetailPage && parsed['@type'] === 'BlogPosting') {
+        hasBlogPosting = true;
+        assert(Boolean(parsed.headline), `BlogPosting in ${relPath} missing headline`);
+        assert(Boolean(parsed.datePublished), `BlogPosting in ${relPath} missing datePublished`);
+        assert(Boolean(parsed.author), `BlogPosting in ${relPath} missing author`);
       }
     } catch (err) {
       assert(false, `Invalid JSON-LD syntax in ${relPath}: ${err.message}`);
     }
   }
 
+  if (isPostDetailPage) {
+    assert(hasBlogPosting, `Article page ${relPath} missing required BlogPosting JSON-LD`);
+  }
+
   // 5. Internal link checking (href="/...")
   const internalLinkMatches = [...html.matchAll(/href="(\/[^"#?]*)"/g)].map(m => m[1]);
   for (const link of internalLinkMatches) {
-    // Ignore static assets like /images/, /fonts/, etc.
-    if (link.startsWith('/images/') || link.startsWith('/fonts/') || link.endsWith('.xml') || link.endsWith('.txt') || link.endsWith('.json')) {
+    // Static assets & non-HTML endpoints (/images/, /fonts/, /_astro/, .xml, .txt, .json, .svg, .png, .css, etc.)
+    const isStaticAsset =
+      link.startsWith('/images/') ||
+      link.startsWith('/fonts/') ||
+      link.startsWith('/_astro/') ||
+      /\.(xml|txt|json|svg|png|jpe?g|webp|gif|ico|css|js|mjs|woff2?|pdf)$/i.test(link);
+
+    if (isStaticAsset) {
       const assetPath = path.join(DIST_DIR, link.replace(/^\//, ''));
       assert(fs.existsSync(assetPath), `Broken asset link ${link} found in ${relPath}`);
       continue;
     }
 
-    const cleanLink = link.replace(/\/$/, '');
-    const possiblePaths = [
-      path.join(DIST_DIR, cleanLink, 'index.html'),
-      path.join(DIST_DIR, `${cleanLink}.html`),
-      path.join(DIST_DIR, cleanLink),
-    ];
+    assert(link.endsWith('/'), `Internal page link ${link} in ${relPath} must end with trailing slash`);
 
-    const exists = possiblePaths.some(p => fs.existsSync(p));
-    assert(exists, `Broken internal link ${link} found in ${relPath}`);
+    const targetPath = path.join(DIST_DIR, link.replace(/^\/|\/$/g, ''), 'index.html');
+    assert(fs.existsSync(targetPath), `Broken internal link ${link} found in ${relPath}`);
   }
 }
 

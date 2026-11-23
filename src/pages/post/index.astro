@@ -1,13 +1,11 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { TOPICS } from '../../data/topics';
+import { SITE } from '../../data/site';
+import { getPublishedPosts } from '../../utils/posts';
 import { Search, Layers } from 'lucide-astro';
 
-const posts = await getCollection('posts', ({ data }) => !data.draft);
-const sortedPosts = posts.sort(
-  (a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime()
-);
+const sortedPosts = await getPublishedPosts('desc');
 
 // Collect all unique tags and counts
 const tagCounts = new Map<string, number>();
@@ -17,7 +15,12 @@ sortedPosts.forEach((p) => {
   });
 });
 
-const allTags = Array.from(tagCounts.entries()).sort((a, b) => b[1] - a[1]);
+const allTags = Array.from(tagCounts.entries()).sort(
+  (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN')
+);
+const highFreqCount = allTags.filter(([, count]) => count >= 2).length;
+const visibleTagLimit = highFreqCount >= 12 ? highFreqCount : Math.min(allTags.length, 16);
+const hasExtraTags = allTags.length > visibleTagLimit;
 
 const breadcrumbs = [
   { name: '首页', url: '/' },
@@ -26,8 +29,8 @@ const breadcrumbs = [
 ---
 
 <BaseLayout
-  title="技术文章与开源博客 · fengstack"
-  description="fengstack 的技术文章与开源博客列表：专注 Java RPC 框架治理、分布式系统与事务（simple-seata）、AI Agent 规范驱动编程实践（SDD/TDD）、数据库与开源实战。"
+  title={`技术文章与开源博客 · ${SITE.name}`}
+  description={`${SITE.name} 的技术文章与开源博客列表：专注 Java RPC 框架治理、分布式系统与事务（simple-seata）、AI Agent 规范驱动编程实践（SDD/TDD）、数据库与开源实战。`}
   breadcrumbs={breadcrumbs}
 >
   <div class="wrap-container py-12">
@@ -41,7 +44,7 @@ const breadcrumbs = [
     <!-- Header -->
     <div class="border-b border-line pb-8">
       <h1 class="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-fg">
-        技术文章 · fengstack
+        技术文章 · {SITE.name}
       </h1>
       <p class="mt-2 text-sm font-mono text-muted">
         posts · 分布式系统、RPC 治理、开源实战与现代 AI Agent 编程实践
@@ -86,15 +89,26 @@ const breadcrumbs = [
           >
             全部 ({sortedPosts.length})
           </button>
-          {allTags.map(([tag, count]) => (
+          {allTags.map(([tag, count], idx) => (
             <button
               type="button"
-              class="tag-pill rounded-md border border-line bg-surface/40 px-2.5 py-1 text-xs font-mono text-muted transition-all hover:border-accent hover:text-fg"
+              class={`tag-pill rounded-md border border-line bg-surface/40 px-2.5 py-1 text-xs font-mono text-muted transition-all hover:border-accent hover:text-fg${idx >= visibleTagLimit ? ' hidden extra-tag-pill' : ''}`}
               data-tag={tag}
             >
               {tag} <span class="text-[10px] opacity-75">({count})</span>
             </button>
           ))}
+          {hasExtraTags && (
+            <button
+              id="toggleExtraTagsBtn"
+              type="button"
+              aria-expanded="false"
+              data-total-tags={allTags.length}
+              class="rounded-md border border-dashed border-line bg-transparent px-2.5 py-1 text-xs font-mono text-accent transition-all hover:border-accent hover:bg-surface/40"
+            >
+              展开全部标签 ({allTags.length})
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -203,4 +217,20 @@ const breadcrumbs = [
   });
 
   searchInput?.addEventListener('input', filterPosts);
+
+  const toggleExtraTagsBtn = document.getElementById('toggleExtraTagsBtn') as HTMLButtonElement | null;
+  const extraTagPills = document.querySelectorAll<HTMLButtonElement>('.extra-tag-pill');
+  let extraTagsExpanded = false;
+
+  toggleExtraTagsBtn?.addEventListener('click', () => {
+    extraTagsExpanded = !extraTagsExpanded;
+    extraTagPills.forEach((pill) => {
+      pill.classList.toggle('hidden', !extraTagsExpanded);
+    });
+    toggleExtraTagsBtn.setAttribute('aria-expanded', String(extraTagsExpanded));
+    const totalTags = toggleExtraTagsBtn.dataset.totalTags || String(tagPills.length - 1);
+    toggleExtraTagsBtn.textContent = extraTagsExpanded
+      ? '收起低频标签'
+      : `展开全部标签 (${totalTags})`;
+  });
 </script>

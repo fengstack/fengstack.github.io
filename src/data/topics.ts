@@ -52,6 +52,7 @@ export const TOPICS: Topic[] = [
       'ai-coding-era-engineer-survival',
       'agent-programming-language-benchmark',
       'agent-programming-sdd-tdd',
+      'macos-terminal-iterm2-ohmyzsh-evolution',
     ],
   },
   {
@@ -60,17 +61,24 @@ export const TOPICS: Topic[] = [
     subtitle: 'Troubleshooting & Open Source',
     description: '生产级深度技术排查与开源社区贡献复盘：剖析 Spring 复杂生命周期调度重入缺陷、OpenObserve 边界缺陷定位，以及 Glogcenter 协程泄漏排查。',
     postSlugs: [
-      'credit-risk-cube-calcite-feature-engine',
-      'credit-fund-loan-routing-settlement-architecture',
-      'credit-risk-engine-multi-kernel-architecture',
-      'credit-thirdparty-gateway-architecture',
       'spring-cloud-gateway-webmvc-sse-stream-abort-rca',
       'spring-cloud-gateway-forwarded-host-lost-rca',
       'geoserver-16g-oom-postmortem',
       'refreshscope-scheduled-duplicate-rca',
-      'simple-seata-at-mode',
       'openobserve-three-prs',
       'glogcenter-two-prs',
+    ],
+  },
+  {
+    slug: 'gis-spatial',
+    name: '遥感 GIS 与空间计算架构',
+    subtitle: 'GIS & Spatial Computing',
+    description: '深入遥感影像元数据分表、高并发 GIS 瓦片代理网关、PostGIS 空间检索优化与 jOOQ 类型安全空间计算实战。',
+    postSlugs: [
+      'gis-tile-proxy-gateway-architecture',
+      'remote-sensing-metadata-sharding-postgis',
+      'geoserver-16g-oom-postmortem',
+      'jooq-postgis-intro',
     ],
   },
 ];

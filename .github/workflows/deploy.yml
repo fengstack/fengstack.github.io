@@ -46,6 +46,13 @@ jobs:
         with:
           path: ./dist
 
+      - name: Upload sitemap.xml artifact for SEO ping
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitemap-xml
+          path: dist/sitemap.xml
+          retention-days: 1
+
   deploy:
     name: Deploy to GitHub Pages
     environment:
@@ -70,6 +77,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Download sitemap.xml artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sitemap-xml
+          path: dist
 
       - name: Broadcast URLs
         env:

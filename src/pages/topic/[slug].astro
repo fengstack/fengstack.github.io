@@ -1,17 +1,15 @@
 ---
-import { getCollection } from 'astro:content';
-import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../data/site';
 import { TOPICS, type Topic } from '../../data/topics';
+import { getPublishedPosts, type PostEntry } from '../../utils/posts';
 import { Layers, ArrowLeft } from 'lucide-astro';
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+  const allPosts = await getPublishedPosts();
 
   return TOPICS.map((topic) => {
-    const posts = allPosts
-      .filter((p) => topic.postSlugs.includes(p.slug))
-      .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+    const posts = allPosts.filter((p) => topic.postSlugs.includes(p.slug));
 
     return {
       params: { slug: topic.slug },
@@ -22,12 +20,12 @@ export async function getStaticPaths() {
 
 interface Props {
   topic: Topic;
-  posts: CollectionEntry<'posts'>[];
+  posts: PostEntry[];
 }
 
 const { topic, posts } = Astro.props;
 
-const pageTitle = `${topic.name} · 技术专题精选 · fengstack 的博客`;
+const pageTitle = `${topic.name} · 技术专题精选 · ${SITE.siteName}`;
 const pageDescription = `${topic.description} 本专题精选收录 fengstack 关于 ${topic.name} 的深度原理剖析、架构演进与实战复盘。`;
 
 const breadcrumbs = [
@@ -36,7 +34,7 @@ const breadcrumbs = [
   { name: topic.name, url: `/topic/${topic.slug}/` },
 ];
 
-const canonicalURL = new URL(`/topic/${topic.slug}/`, Astro.site);
+const canonicalURL = new URL(`/topic/${topic.slug}/`, Astro.site ?? SITE.url);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -49,7 +47,7 @@ const jsonLd = {
     'itemListElement': posts.map((post, index) => ({
       '@type': 'ListItem',
       'position': index + 1,
-      'url': new URL(`/post/${post.slug}/`, Astro.site).toString(),
+      'url': new URL(`/post/${post.slug}/`, Astro.site ?? SITE.url).toString(),
       'name': post.data.title,
     })),
   },

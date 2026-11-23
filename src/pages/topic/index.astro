@@ -1,10 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { TOPICS } from '../../data/topics';
+import { getPublishedPosts } from '../../utils/posts';
 import { ArrowRight, Layers } from 'lucide-astro';
 
-const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const allPosts = await getPublishedPosts();
 
 const breadcrumbs = [
   { name: '首页', url: '/' },

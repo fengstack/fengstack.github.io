@@ -1,109 +1,29 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, PROJECTS, CONTRIBUTIONS } from '../data/site';
+import { getPublishedPosts } from '../utils/posts';
 import { ArrowRight, Github, BookOpen, GitPullRequest, Code2, Server, Database, Bot, GitMerge } from 'lucide-astro';
 
-const allPosts = await getCollection('posts');
-const recentPosts = allPosts
-  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
-  .slice(0, 6);
-
-const projects = [
-  {
-    name: 'small-rpc',
-    description: '基于 Netty 与 Hessian 的轻量级 RPC 治理框架，微内核架构、支持服务治理闭环（熔断、限流、降级、背压）与 Maven Central 发布。',
-    tags: ['Java', 'Netty', 'Hessian', 'SPI', '服务治理'],
-    repo: 'https://github.com/upowerman/small-rpc',
-  },
-  {
-    name: 'jooq-postgis',
-    description: 'jOOQ 与 PostGIS 的集成库，纯 JTS、零 GeoTools 依赖，实现类型安全空间数据库 SQL 查询与复杂地理几何对象映射。',
-    tags: ['Java', 'jOOQ', 'PostGIS', 'JTS', '空间计算'],
-    repo: 'https://github.com/upowerman/jooq-postgis',
-  },
-  {
-    name: 'simple-seata',
-    description: '轻量级教学分布式事务框架，提炼 Seata 精髓，补全内嵌 TC 协调器、全局行锁、防脏写核验与双物理库可观察 AT 模式闭环。',
-    tags: ['Java', '分布式事务', 'Seata AT', 'Druid AST', 'H2'],
-    repo: 'https://github.com/fengstack/simple-seata',
-  },
-];
-
-const contributions = [
-  {
-    repo: 'apache/dolphinscheduler',
-    repoUrl: 'https://github.com/apache/dolphinscheduler',
-    logo: '/images/dolphinscheduler.jpg',
-    badge: '已合并',
-    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    desc: 'Apache 顶级分布式工作流任务调度平台：为任务插件内置参数增加月/周边界占位符（month_first_day、week_first_day 等）携带日期偏移量解析支持，精确计算跨月/跨周基准边界。',
-    prs: [
-      {
-        title: 'PR #18726 · [Feature-16510][TaskPlugin] Support month and week boundary placeholders with date offset (已合并)',
-        url: 'https://github.com/apache/dolphinscheduler/pull/18726',
-        status: 'merged',
-      },
-    ],
-  },
-  {
-    repo: 'openobserve/openobserve',
-    repoUrl: 'https://github.com/openobserve/openobserve',
-    logo: '/images/openobserve.png',
-    badge: '已合并 (2 个 PR)',
-    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    desc: 'Rust 云原生可观测性平台：解决 PromQL 分位数插值边界对齐（对齐 Prometheus 官方标准）与 _around 检索接口小分页越界安全漏洞。',
-    prs: [
-      {
-        title: 'PR #15142 · fix(promql): quantile interpolation keeps infinite bounds like Prometheus (已合并)',
-        url: 'https://github.com/openobserve/openobserve/pull/15142',
-        status: 'merged',
-      },
-      {
-        title: 'PR #15143 · fix(search): clamp _around page size so small or invalid sizes stop expanding (已合并)',
-        url: 'https://github.com/openobserve/openobserve/pull/15143',
-        status: 'merged',
-      },
-    ],
-  },
-  {
-    repo: 'gotoeasy/glogcenter',
-    repoUrl: 'https://github.com/gotoeasy/glogcenter',
-    logo: '/images/glogcenter.png',
-    badge: '已合并',
-    badgeColor: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    desc: '轻量集中式日志中心：排查并修复了集群模式节点通信及转发失效问题，以及特定网络波动下 Goroutine 潜在资源泄漏风险。',
-    prs: [
-      {
-        title: 'PR #92 · 集群模式节点通信与转发失效修复 (已合并)',
-        url: 'https://github.com/gotoeasy/glogcenter/pull/92',
-        status: 'merged',
-      },
-      {
-        title: 'PR #93 · 修复潜在的 Goroutine 资源泄漏问题 (已合并)',
-        url: 'https://github.com/gotoeasy/glogcenter/pull/93',
-        status: 'merged',
-      },
-    ],
-  },
-];
+const allPosts = await getPublishedPosts('desc');
+const recentPosts = allPosts.slice(0, 6);
 ---
 
 <BaseLayout
-  title="fengstack — 软件工程师个人主页与技术博客"
-  description="fengstack 的个人主页与技术博客：软件工程师，专注 RPC 框架治理、分布式系统与事务、现代 AI Agent 规范驱动编程实践（SDD 与 TDD）、jOOQ/PostGIS，分享开源项目与社区实战复盘。"
+  title={SITE.title}
+  description={SITE.description}
 >
   <!-- Hero Section -->
   <section class="border-b border-line bg-surface/20 py-16 sm:py-20">
     <div class="wrap-container">
       <div class="flex flex-col gap-5 max-w-2xl">
         <div class="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-accent">
-          <span>FENGSTACK</span>
+          <span>{SITE.name.toUpperCase()}</span>
           <span class="text-line">/</span>
           <span>SOFTWARE ENGINEER</span>
         </div>
 
         <h1 class="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-fg leading-tight">
-          fengstack
+          {SITE.name}
           <span class="block mt-1 text-xl sm:text-2xl font-normal text-muted">
             软件工程师 · 分布式架构与开源实践
           </span>
@@ -131,7 +51,7 @@ const contributions = [
           </a>
 
           <a
-            href="https://github.com/fengstack"
+            href={SITE.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/60 px-4 py-2 text-sm font-medium text-fg hover:border-accent hover:bg-surface transition-all"
@@ -233,7 +153,7 @@ const contributions = [
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {projects.map((proj) => (
+        {PROJECTS.map((proj) => (
           <article class="flex flex-col justify-between rounded-lg border border-line bg-surface/30 p-5 transition-all hover:border-accent hover:bg-surface/70">
             <div>
               <div class="flex items-center justify-between mb-2">
@@ -284,7 +204,7 @@ const contributions = [
       </div>
 
       <div class="flex flex-col gap-4">
-        {contributions.map((item) => (
+        {CONTRIBUTIONS.map((item) => (
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-line bg-surface/30 p-5 transition-all hover:bg-surface/60">
             <div class="flex items-start gap-4">
               <a href={item.repoUrl} target="_blank" rel="noopener noreferrer" class="shrink-0">

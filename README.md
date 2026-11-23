@@ -36,14 +36,14 @@
 - **框架引擎**：[Astro 5.x](https://astro.build/)，极速静态站点生成（SSG），零客户端 JavaScript 包袱，首屏秒开。
 - **类型安全**：TypeScript 严格模式，基于 Zod 的 Content Collections Schema 强类型约束。
 - **样式系统**：Tailwind CSS + CSS Design Tokens，沉淀一套温润纸白（Light）与深邃炭墨（Dark）的双主题技术出版物视觉体系。
-- **排版与代码**：自托管切片 Noto Serif SC 衬线排版，Shiki 语法高亮（双主题自适应），集成一键复制代码块与浮动目录（TOC Scrollspy）。
+- **排版与代码**：自托管切片 Noto Serif SC 衬线排版与 IBM Plex Mono 等宽字体，Shiki 语法高亮（双主题自适应），集成一键复制代码块与浮动目录（TOC Scrollspy）。
 - **站内搜索**：基于编译时索引（`/api/search.json`）的轻量客户端模态搜索（快捷键 `⌘K` / `Ctrl+K`），支持键盘极速导航与无结果兜底。
 - **SEO & 知识图谱**：
-  - [Schema.org](https://schema.org)（JSON-LD）标准：`Person`、`WebSite`、`BlogPosting` 实体关系建模。
+  - [Schema.org](https://schema.org)（JSON-LD）标准：`Person`、`WebSite`、`BlogPosting`、`CollectionPage`、`BreadcrumbList` 实体关系建模。
   - Open Graph 与 Twitter Card 跨平台社交分享卡片。
-  - 自动生成符合规范的 `sitemap.xml` 与全站 RSS 2.0 订阅源（`/post/index.xml` 和 `/rss.xml`）。
-  - 集成微软 Bing [IndexNow 协议](https://www.indexnow.org/)，构建完成自动将全站 URL 广播至搜索引擎。
-- **自动化 CI/CD**：GitHub Actions（`.github/workflows/deploy.yml`），每次 push 自动执行类型校验、生产编译、发布至 GitHub Pages，并自动触发 IndexNow SEO Ping。
+  - 自动生成符合规范的 `sitemap.xml` 与全站 RSS 2.0 订阅源（`/rss.xml`）。
+  - 集成微软 Bing [IndexNow 协议](https://www.indexnow.org/)与自动化 SEO 质量验收脚本（`scripts/verify-seo.mjs`），发布完成自动将全站 URL 广播至搜索引擎。
+- **自动化 CI/CD**：GitHub Actions（`.github/workflows/deploy.yml`），每次 push 自动执行类型校验、生产编译、SEO 自动化验收、发布至 GitHub Pages，并下载构建产出的 `sitemap.xml` 自动触发 IndexNow SEO Ping。
 
 ---
 
@@ -53,16 +53,15 @@
 fengstack.github.io/
 ├── .github/
 │   └── workflows/
-│       ├── deploy.yml          # GitHub Actions: 自动构建、检查、发布 GitHub Pages 与 SEO Ping
-│       └── seo-push.yml        # IndexNow 手动/备份推送流水线
+│       └── deploy.yml          # GitHub Actions: 自动校验、构建、发布 GitHub Pages 与 SEO Ping
 ├── public/                     # 部署时复制到根目录的纯静态资源
 │   ├── CNAME                   # 自定义域名配置 (blog.yunitytech.top)
 │   ├── robots.txt              # 搜索引擎爬虫抓取规则
 │   ├── BingSiteAuth.xml        # 微软 Bing 站长验证
 │   ├── 75d73fb2...txt          # 微信域名所有权校验
 │   ├── 9f8e4b7a...txt          # IndexNow 密钥验证文件
-│   ├── fonts/                  # 自托管 Noto Serif SC 字体切片 (woff2)
-│   └── images/                 # 头像、Bear 图标、项目与社区 Logo
+│   ├── fonts/                  # 自托管 Noto Serif SC 与 IBM Plex Mono 字体切片 (woff2)
+│   └── images/                 # 头像、Logo、技术架构图与开源社区图标
 ├── src/
 │   ├── components/             # Astro 复用组件
 │   │   ├── BaseHead.astro      # 全局 Head、SEO、OG、Schema.org、主题防闪烁
@@ -73,19 +72,13 @@ fengstack.github.io/
 │   │   └── SearchModal.astro   # ⌘K 站内实时搜索弹窗
 │   ├── content/
 │   │   ├── config.ts           # 文章 Schema 强校验定义 (Zod)
-│   │   └── posts/              # 9 篇真实技术博客 (标准 Markdown)
-│   │       ├── simple-seata-at-mode.md
-│   │       ├── agent-programming-language-benchmark.md
-│   │       ├── agent-programming-sdd-tdd.md
-│   │       ├── small-rpc-v3-governance.md
-│   │       ├── maven-central-publish-guide.md
-│   │       ├── openobserve-three-prs.md
-│   │       ├── glogcenter-two-prs.md
-│   │       ├── jooq-postgis-intro.md
-│   │       └── small-rpc-intro.md
+│   │   └── posts/              # 技术博客源文件（标准 Markdown / MDX）
+│   ├── data/
+│   │   ├── site.ts             # 站点全局配置、开源项目与社区贡献元数据
+│   │   └── topics.ts           # 技术专题分类与关联文章映射
 │   ├── layouts/
 │   │   ├── BaseLayout.astro    # 全站通用布局骨架
-│   │   └── PostLayout.astro    # 技术博文专属排版布局（TOC、代码复制、上下篇）
+│   │   └── PostLayout.astro    # 技术博文专属排版布局（TOC、代码复制、Mermaid、上下篇）
 │   ├── pages/                  # 页面路由
 │   │   ├── index.astro         # 首页（Hero、技术关注点、开源项目、贡献、精选博文）
 │   │   ├── about.astro         # “关于我”
@@ -93,22 +86,29 @@ fengstack.github.io/
 │   │   ├── post/
 │   │   │   ├── index.astro     # 文章聚合列表（时间线、分类与标签实时筛选）
 │   │   │   ├── [...slug].astro # 博文详情动态路由
-│   │   │   └── index.xml.ts    # 原有 RSS 路由兼容 (/post/index.xml)
+│   │   │   └── index.xml.ts    # 兼容旧路径的 RSS 路由 (/post/index.xml)
+│   │   ├── topic/
+│   │   │   ├── index.astro     # 技术专题聚合页 (/topic/)
+│   │   │   └── [slug].astro    # 技术专题详情页 (/topic/<slug>/)
 │   │   ├── api/
 │   │   │   └── search.json.ts  # 搜索索引动态生成端点
 │   │   ├── sitemap.xml.ts      # 站点地图生成器
-│   │   └── rss.xml.ts          # 官方 RSS 2.0 端点
-│   └── styles/
-│       ├── fonts.css           # 本地字体定义
-│       └── global.css          # Editorial 技术出版物全局设计令牌与样式
+│   │   └── rss.xml.ts          # 官方 RSS 2.0 主订阅端点 (/rss.xml)
+│   ├── styles/
+│   │   ├── fonts.css           # 本地字体定义
+│   │   └── global.css          # Editorial 技术出版物全局设计令牌与样式
+│   └── utils/
+│       └── posts.ts            # 已发布文章过滤、确定性排序与专题匹配工具
 ├── scripts/
-│   ├── migrate_posts.py        # HTML 转高保真 Markdown 提取脚本
-│   └── seo-ping.js             # IndexNow 搜索引擎主动广播脚本
+│   ├── verify-seo.mjs          # 构建产物自动化 SEO 质量验收脚本
+│   ├── seo-ping.js             # IndexNow 与百度搜索引擎主动广播脚本
+│   ├── generate-icons.js       # 多尺寸 Favicon 与 Apple Touch Icon 生成脚本
+│   └── setup-terminal.sh       # 开发者终端环境初始化脚本
+├── AGENTS.md                   # AI Agent 与开发者协作规范指南
 ├── astro.config.mjs            # Astro 配置文件
 ├── tailwind.config.mjs         # Tailwind 设计系统扩展配置
 ├── tsconfig.json               # TypeScript 严格模式配置
-├── package.json                # 项目依赖与运行脚本
-└── legacy-archive/             # 历史纯 HTML/JS/CSS 完整备份归档
+└── package.json                # 项目依赖与运行脚本
 ```
 
 ---
@@ -134,10 +134,11 @@ npm run dev
 npm run check
 ```
 
-### 4. 生产构建与预览
+### 4. 生产构建、SEO 验收与预览
 
 ```bash
 npm run build
+npm run seo:check
 npm run preview
 ```
 构建产物输出至 `dist/` 目录，完全由纯静态 HTML、CSS、JS 与 XML 组成。
@@ -179,10 +180,11 @@ git push origin master
 ```
 
 GitHub Actions 会全自动执行：
-1. **代码检查**：TypeScript 类型、Content Collections 元数据校验；
-2. **生产构建**：静态生成 HTML、`sitemap.xml`、RSS Feed、搜索索引；
-3. **安全部署**：通过官方 `actions/deploy-pages` 部署至 GitHub Pages，并自动应用自定义域名 `blog.yunitytech.top`；
-4. **主动收录**：调用 `scripts/seo-ping.js` 将新发布的 URL 自动广播至微软 Bing / IndexNow 搜索引擎。
+1. **代码检查**：TypeScript 类型、Astro 模板与 Content Collections 元数据校验（`npm run check`）；
+2. **生产构建**：静态生成 HTML、`sitemap.xml`、RSS Feed（`/rss.xml`）、搜索索引；
+3. **SEO 质量门禁**：运行 `npm run seo:check` 检查结构化数据、Canonical 与站内链接完整性；
+4. **安全部署**：通过官方 `actions/deploy-pages` 部署至 GitHub Pages，并自动应用自定义域名 `blog.yunitytech.top`；
+5. **主动收录**：下载构建产物中的 `dist/sitemap.xml` 并调用 `scripts/seo-ping.js`，将最新 URL 自动广播至微软 Bing IndexNow（及配置 Token 后的百度接口）。
 
 ---
 
@@ -191,7 +193,7 @@ GitHub Actions 会全自动执行：
 - **个人主页**：[blog.yunitytech.top](https://blog.yunitytech.top/)
 - **GitHub**：[@fengstack](https://github.com/fengstack) / [@upowerman](https://github.com/upowerman)
 - **电子邮箱**：[gyf718@hotmail.com](mailto:gyf718@hotmail.com)
-- **RSS 订阅**：[https://blog.yunitytech.top/post/index.xml](https://blog.yunitytech.top/post/index.xml)
+- **RSS 订阅**：[https://blog.yunitytech.top/rss.xml](https://blog.yunitytech.top/rss.xml)
 
 ---
 

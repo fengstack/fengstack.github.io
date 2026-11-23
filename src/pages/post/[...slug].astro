@@ -1,14 +1,11 @@
 ---
-import { getCollection } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
+import { getPublishedPosts } from '../../utils/posts';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts');
   // Sort from oldest to newest so index 0 is oldest, index N is newest
   // Then "prevPost" is the older post, "nextPost" is the newer post
-  const sortedPosts = posts.sort(
-    (a, b) => a.data.publishDate.getTime() - b.data.publishDate.getTime()
-  );
+  const sortedPosts = await getPublishedPosts('asc');
 
   return sortedPosts.map((post, index) => {
     const prevPost = index > 0 ? sortedPosts[index - 1] : undefined;
