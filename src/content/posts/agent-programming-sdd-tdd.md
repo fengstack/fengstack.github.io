@@ -186,4 +186,4 @@ Subagent-Driven 执行 (主代理做 Tech Lead，派生子代理隔离编码与�
 - [small-rpc 2.0：基于 Netty + Hessian 的轻量级 RPC 框架](../small-rpc-intro/) —— 微内核架构与自研 SPI 扩展机制；
 - [当 jOOQ 遇上 PostGIS：jooq-postgis 诞生记](../jooq-postgis-intro/) —— 严苛类型系统与规范扩展。
 
-**版权与引用声明**：本文为高云峰原创技术文章，首发于个人技术博客 [https://blog.yunitytech.top/](https://blog.yunitytech.top/post/agent-programming-sdd-tdd/)。欢迎技术交流与转载，转载请保留原文出处与完整链接。
+**版权与引用声明**：本文为 fengstack 原创技术文章，首发于个人技术博客 [https://blog.yunitytech.top/](https://blog.yunitytech.top/post/agent-programming-sdd-tdd/)。欢迎技术交流与转载，转载请保留原文出处与完整链接。

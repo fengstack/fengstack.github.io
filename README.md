@@ -1,4 +1,4 @@
-# 高云峰的个人主页与技术博客 (fengstack.github.io)
+# fengstack 的个人主页与技术博客 (fengstack.github.io)
 
 <p align="center">
   <a href="https://blog.yunitytech.top/"><strong>🌐 线上访问：https://blog.yunitytech.top/</strong></a>
@@ -17,7 +17,7 @@
 
 ## 📖 项目简介
 
-本项目是 **高云峰（fengstack / upowerman）** 的个人技术品牌主页与技术博客仓库。
+本项目是 **fengstack（upowerman）** 的个人技术品牌主页与技术博客仓库。
 
 网站采用 **Editorial Technology Publication × Minimal Developer Portfolio**（现代技术出版物与极简工程师个人品牌相结合）的设计哲学。主站基于 **Astro 5 + TypeScript + Tailwind CSS** 构建，采用 Astro Content Collections 统一强类型管理博文，部署于 GitHub Pages，绑定独立域名 [blog.yunitytech.top](https://blog.yunitytech.top/)。
 

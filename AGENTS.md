@@ -6,7 +6,7 @@
 
 ## 1. 项目简介与定位
 
-* **项目名称**：高云峰的个人品牌主页与技术博客 (`fengstack-blog`)
+* **项目名称**：fengstack 的个人品牌主页与技术博客 (`fengstack-blog`)
 * **线上地址**：[https://blog.yunitytech.top/](https://blog.yunitytech.top/)
 * **仓库地址**：[https://github.com/fengstack/fengstack.github.io](https://github.com/fengstack/fengstack.github.io)
 * **默认部署分支**：`master`
@@ -129,7 +129,10 @@ refLink:                     # 可选：文首项目参考外链
 
 ### 5.3 正文排版与写作规范
 1. **中英文排版**：中英文、中文与数字之间自然留出空格；专有名词严格区分大小写（如 `Astro`、`TypeScript`、`Tailwind CSS`、`Netty`、`GitHub`、`jOOQ`、`PostGIS`）。
-2. **架构可视化**：优先使用清晰工整的 ASCII 字符画 / 文本框图展示复杂架构、状态机或调用链路（兼容各端且渲染开销最低），或使用标准 Mermaid 图。
+2. **架构可视化**：优先使用清晰工整的 ASCII 字符画 / 文本框图展示复杂架构、状态机或调用链路（兼容各端且渲染开销最低），或使用标准 Mermaid 图。编写 Mermaid 图时需注意：
+   * 节点文字包含括号、空格或特殊符号时，必须显式用引号包裹（如 `id["节点文本 (说明)"]`）；
+   * 流程图连线边标签必须使用双引号包裹（如 `-->|"1. 描述说明 (附加信息)"|`），避免直接裸写括号或斜杠导致词法解析异常；
+   * 泛型与尖括号避免裸写引起 HTML 标签解析冲突，推荐使用实体字符（如 `&lt;Type&gt;`）。
 3. **代码块规范**：必须显式标注代码语言（如 ````java`、````typescript`、````bash`、````xml`），方便 Shiki 进行语法高亮。
 4. **内部链接**：引用站内文章时，必须遵循 `trailingSlash: 'always'` 规范，使用绝对路径且结尾必须带 `/`（例如 `/post/small-rpc-intro/`），否则会被 `verify-seo.mjs` 判定为死链或产生重定向。
 5. **图片引用**：静态图片统一存放于 `public/images/`，Markdown 中通过 `/images/<file>` 绝对根路径引用，且必须提供有意义的 `alt` 文本。

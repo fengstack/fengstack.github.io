@@ -55,7 +55,7 @@ const relatedPosts = allPosts
 ---
 
 <BaseLayout
-  title={`${title} · 高云峰的博客`}
+  title={`${title} · fengstack 的博客`}
   cleanTitle={title}
   description={description}
   type="article"
@@ -334,31 +334,87 @@ const relatedPosts = allPosts
   bttBtn?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+</script>
 
-  // Mermaid diagram rendering: Shiki uses pre[data-language="mermaid"] > code
-  const mermaidPres = document.querySelectorAll<HTMLPreElement>('pre[data-language="mermaid"]');
-  if (mermaidPres.length > 0) {
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.textContent = `
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-      mermaid.initialize({ startOnLoad: false, theme });
-      document.querySelectorAll('pre[data-language="mermaid"]').forEach(async (pre, i) => {
+<!-- Mermaid diagram client-side dynamic rendering -->
+<script is:inline type="module">
+  (async function() {
+    const mermaidPres = document.querySelectorAll('pre[data-language="mermaid"]');
+    if (!mermaidPres.length) return;
+
+    try {
+      const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+
+      function sanitizeMermaid(raw) {
+        if (!raw) return '';
+        // 1. Wrap unquoted edge labels |...| with |"..."| so parentheses or slashes don't break Mermaid's parser
+        let code = raw.replace(/\|([^"|\r\n][^|\r\n]*)\|/g, (match, p1) => {
+          const trimmed = p1.trim();
+          if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+            return match;
+          }
+          return '|"' + trimmed.replace(/"/g, '\\"') + '"|';
+        });
+
+        // 2. Escape non-br generic type angle brackets like <Type> inside labels
+        code = code.replace(/<(?!\/?br\s*\/?)([\w]+)>/g, '&lt;$1&gt;');
+
+        return code;
+      }
+
+      function initMermaid(theme) {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: theme === 'dark' ? 'dark' : 'default',
+          suppressErrorRendering: true,
+          securityLevel: 'loose',
+        });
+      }
+
+      let renderIdx = 0;
+      const initialTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+      initMermaid(initialTheme);
+
+      const diagrams = [];
+
+      mermaidPres.forEach((pre, i) => {
         const wrapper = pre.closest('.code-block-wrapper') || pre;
-        const graphDef = pre.querySelector('code')?.textContent || '';
-        const id = 'mermaid-' + i;
-        try {
-          const { svg } = await mermaid.render(id, graphDef);
-          const container = document.createElement('div');
-          container.className = 'mermaid-diagram my-6 flex justify-center overflow-x-auto';
-          container.innerHTML = svg;
-          wrapper.replaceWith(container);
-        } catch (e) {
-          console.error('Mermaid render error:', e);
+        const rawCode = pre.querySelector('code')?.textContent || '';
+        const graphDef = sanitizeMermaid(rawCode);
+        const container = document.createElement('div');
+        container.className = 'mermaid-diagram my-8 p-4 rounded-xl border border-line bg-surface/30 flex justify-center overflow-x-auto shadow-xs';
+        wrapper.replaceWith(container);
+        diagrams.push({ container, graphDef, baseId: 'mermaid-' + i });
+      });
+
+      async function renderAll() {
+        for (const { container, graphDef, baseId } of diagrams) {
+          const id = baseId + '-' + (++renderIdx);
+          try {
+            const { svg } = await mermaid.render(id, graphDef);
+            container.innerHTML = svg;
+          } catch (e) {
+            console.error('Mermaid render error:', e);
+            document.getElementById('d' + id)?.remove();
+          }
+        }
+      }
+
+      await renderAll();
+
+      // Listen for data-theme change to re-render diagrams with matched theme
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+            initMermaid(currentTheme);
+            renderAll();
+          }
         }
       });
-    `;
-    document.body.appendChild(script);
-  }
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    } catch (err) {
+      console.error('Failed to load Mermaid module:', err);
+    }
+  })();
 </script>

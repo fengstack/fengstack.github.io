@@ -1,6 +1,6 @@
-# 高云峰的个人主页与博客 · 全网搜索引擎收录实战指南
+# fengstack 的个人主页与博客 · 全网搜索引擎收录实战指南
 
-本指南旨在帮助您的网站（[https://blog.yunitytech.top/](https://blog.yunitytech.top/)）在 **Google、百度、微软 Bing** 等国内外搜索引擎中以最快速度被收录，并在搜索 **“高云峰”** 时精准排在前列。
+本指南旨在帮助您的网站（[https://blog.yunitytech.top/](https://blog.yunitytech.top/)）在 **Google、百度、微软 Bing** 等国内外搜索引擎中以最快速度被收录，并在搜索 **“fengstack”** 时精准排在前列。
 
 ---
 
@@ -9,7 +9,7 @@
 2. [Google Search Console 提交与收录](#二google-search-console-提交与收录)
 3. [微软 Bing 站长平台与 IndexNow 实时推送](#三微软-bing-站长平台与-indexnow-实时推送)
 4. [百度搜索资源平台与 API 主动推送](#四百度搜索资源平台与-api-主动推送)
-5. [搜索“高云峰”登顶首页的关键：外链与实体绑定](#五搜索高云峰登顶首页的关键外链与实体绑定)
+5. [搜索“fengstack”登顶首页的关键：外链与实体绑定](#五搜索fengstack登顶首页的关键外链与实体绑定)
 6. [日常更新与自动推送维护](#六日常更新与自动推送维护)
 
 ---
@@ -18,11 +18,11 @@
 
 项目中已经完成了所有核心 SEO 基础设施的搭建：
 
-- **H1 与 Title 实体强化**：全站 `<title>`、`<h1>`、导航 Logo 锚文本全面围绕“高云峰”进行了权重集中。
+- **H1 与 Title 实体强化**：全站 `<title>`、`<h1>`、导航 Logo 锚文本全面围绕“fengstack”进行了权重集中。
 - **爬虫放行规则 (`robots.txt`)**：完整支持 Googlebot、Bingbot、Baiduspider、360Spider、Sogou、Bytespider 等。
 - **全站站点地图 (`sitemap.xml`)**：收录首页、博文列表及所有文章，权重与更新周期分级设定。
 - **结构化知识图谱 (Schema.org / JSON-LD)**：
-  - 首页配置了符合 Google 规范的 `Person`（高云峰）与 `WebSite` 实体声明，绑定了 GitHub 社交主页。
+  - 首页配置了符合 Google 规范的 `Person`（fengstack）与 `WebSite` 实体声明，绑定了 GitHub 社交主页。
   - 博文详情页配置了 `BlogPosting`，文章列表页配置了 `CollectionPage` 和 `BreadcrumbList`（面包屑）。
 - **IndexNow 实时推送协议**：已生成验证文件 `9f8e4b7a1c2d3e4f5a6b7c8d9e0f1a2b.txt` 与推送脚本 `scripts/seo-ping.js`。
 - **站长验证代码预留**：`index.html` 的 `<head>` 中已预留 Google、Bing、百度、360 的验证 meta 标签。
@@ -98,9 +98,9 @@ Bing 覆盖了所有 Windows/Edge 默认搜索以及雅虎（Yahoo）搜索，�
 
 ---
 
-## 五、搜索“高云峰”登顶首页的关键：外链与实体绑定
+## 五、搜索“fengstack”登顶首页的关键：外链与实体绑定
 
-搜索引擎在计算“高云峰”是谁的网站时，**反向链接（Backlinks）与锚文本（Anchor Text）** 是权重最高的决定性因素。
+搜索引擎在计算“fengstack”是谁的网站时，**反向链接（Backlinks）与锚文本（Anchor Text）** 是权重最高的决定性因素。
 
 请务必按以下步骤建立权威反链（这会让您的域名权重呈几何倍数增长）：
 
@@ -110,23 +110,23 @@ Bing 覆盖了所有 Windows/Edge 默认搜索以及雅虎（Yahoo）搜索，�
 - 在您的个人主页 README 仓库（`https://github.com/fengstack/fengstack`）中，添加一段介绍：
   ```markdown
   ### 博客与个人主页
-  欢迎访问 [高云峰的技术博客与个人主页](https://blog.yunitytech.top/)，记录 RPC 架构、数据库与开源贡献。
+  欢迎访问 [fengstack 的技术博客与个人主页](https://blog.yunitytech.top/)，记录 RPC 架构、数据库与开源贡献。
   ```
-  > **关键点**：链接文字必须明确包含 **“高云峰”**，这就是告诉搜索引擎该网址对应“高云峰”。
+  > **关键点**：链接文字必须明确包含 **“fengstack”**，这就是告诉搜索引擎该网址对应“fengstack”。
 
 ### 2. 开源项目仓库 README（small-rpc / jooq-postgis 等）
 - 在您的代表作项目 README 头部或底部（如 `About the Author`）：
   ```markdown
   ## 作者
-  由 [高云峰](https://blog.yunitytech.top/) 开发与维护。
+  由 [fengstack](https://blog.yunitytech.top/) 开发与维护。
   ```
 
 ### 3. 技术社区与社交账号反链
-- 在您活跃的技术社区个人资料中留下主页链接（链接文本均建议设置为 **“高云峰”** 或 **“高云峰的博客”**）：
+- 在您活跃的技术社区个人资料中留下主页链接（链接文本均建议设置为 **“fengstack”** 或 **“fengstack 的博客”**）：
   - 掘金 / 知乎 / 博客园 / CSDN / 简书 / V2EX
   - Twitter (X) / LinkedIn
   - 发表技术文章（如在掘金分享 small-rpc）时，文末附带：
-    *“本文首发于 [高云峰的个人技术博客](https://blog.yunitytech.top/)”*。
+    *“本文首发于 [fengstack 的个人技术博客](https://blog.yunitytech.top/)”*。
 
 ---
 
@@ -148,4 +148,4 @@ Bing 覆盖了所有 Windows/Edge 默认搜索以及雅虎（Yahoo）搜索，�
    git push origin master
    ```
 
-按照上述步骤操作后，Google、Bing 通常在 **1~3 天** 内完成收录，百度在 **1~2 周** 左右建立首批索引。随着 GitHub 及各大外链生效，搜索 **“高云峰”** 便会迅速跻身前列！
+按照上述步骤操作后，Google、Bing 通常在 **1~3 天** 内完成收录，百度在 **1~2 周** 左右建立首批索引。随着 GitHub 及各大外链生效，搜索 **“fengstack”** 便会迅速跻身前列！

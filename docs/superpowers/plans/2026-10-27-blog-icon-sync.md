@@ -79,9 +79,9 @@
   - 更新 `<link rel="icon" type="image/png" href="/favicon.png" />`
   - 更新 `logoImageURL` 默认指向 `/images/logo.png`
 - [ ] **Step 2: 修改 `src/components/Header.astro`**
-  - 将导航栏左上角品牌图更新为 `<img src="/images/logo.svg" alt="高云峰" width="24" height="24" class="h-6 w-6 rounded-md object-contain" />`
+  - 将导航栏左上角品牌图更新为 `<img src="/images/logo.svg" alt="fengstack" width="24" height="24" class="h-6 w-6 rounded-md object-contain" />`
 - [ ] **Step 3: 修改 `src/pages/about.astro`**
-  - 更新关于页头像为新品牌图标 `<img src="/images/logo.png" alt="高云峰" width="80" height="80" class="h-20 w-20 rounded-2xl border border-line object-contain bg-surface/50 p-1.5 shadow-sm" />`
+  - 更新关于页头像为新品牌图标 `<img src="/images/logo.png" alt="fengstack" width="80" height="80" class="h-20 w-20 rounded-2xl border border-line object-contain bg-surface/50 p-1.5 shadow-sm" />`
 
 ---
 

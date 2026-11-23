@@ -14,9 +14,9 @@ interface Props {
 }
 
 const {
-  title = '高云峰 — 软件工程师个人主页与技术博客',
+  title = 'fengstack — 软件工程师个人主页与技术博客',
   cleanTitle,
-  description = '高云峰（fengstack）的个人主页与技术博客：软件工程师，专注 RPC 框架、现代 AI Agent 编程实践（SDD 与 TDD 规范驱动）、jOOQ/PostGIS，分享开源项目与社区实战复盘。',
+  description = 'fengstack 的个人主页与技术博客：软件工程师，专注 RPC 框架、现代 AI Agent 编程实践（SDD 与 TDD 规范驱动）、jOOQ/PostGIS，分享开源项目与社区实战复盘。',
   image = '/images/avatar.png',
   type = 'website',
   publishDate,
@@ -30,7 +30,7 @@ const {
 const rawCanonical = canonicalURL ? canonicalURL.toString() : new URL(Astro.url.pathname, Astro.site).toString();
 const finalCanonical = rawCanonical.endsWith('/') || rawCanonical.includes('.') ? rawCanonical : `${rawCanonical}/`;
 
-const siteTitle = title.includes('高云峰') ? title : `${title} · 高云峰的博客`;
+const siteTitle = title.includes('fengstack') ? title : `${title} · fengstack 的博客`;
 const fullImageURL = new URL(image, Astro.site).toString();
 const logoImageURL = new URL('/images/logo.png', Astro.site).toString();
 const finalModifiedDate = updatedDate || publishDate;
@@ -42,8 +42,8 @@ const finalModifiedDate = updatedDate || publishDate;
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="alternate" type="application/rss+xml" title="高云峰的技术文章" href="/post/index.xml" />
-<link rel="alternate" type="application/rss+xml" title="高云峰的技术文章 (RSS)" href="/rss.xml" />
+<link rel="alternate" type="application/rss+xml" title="fengstack 的技术文章" href="/post/index.xml" />
+<link rel="alternate" type="application/rss+xml" title="fengstack 的技术文章 (RSS)" href="/rss.xml" />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={finalCanonical} />
@@ -52,8 +52,8 @@ const finalModifiedDate = updatedDate || publishDate;
 <title>{siteTitle}</title>
 <meta name="title" content={siteTitle} />
 <meta name="description" content={description} />
-<meta name="author" content="高云峰" />
-<meta name="keywords" content={articleTags.length > 0 ? articleTags.join(', ') : '软件工程师, 高云峰, 技术博客, AI 编程, Java, Go, RPC, Netty, jOOQ, PostGIS, SDD, TDD, Code Review'} />
+<meta name="author" content="fengstack" />
+<meta name="keywords" content={articleTags.length > 0 ? articleTags.join(', ') : '软件工程师, fengstack, 技术博客, AI 编程, Java, Go, RPC, Netty, jOOQ, PostGIS, SDD, TDD, Code Review'} />
 {noindex ? (
   <meta name="robots" content="noindex, follow" />
 ) : (
@@ -70,7 +70,7 @@ const finalModifiedDate = updatedDate || publishDate;
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
 <meta property="og:url" content={finalCanonical} />
-<meta property="og:site_name" content="高云峰的博客" />
+<meta property="og:site_name" content="fengstack 的博客" />
 <meta property="og:title" content={siteTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={fullImageURL} />
@@ -112,7 +112,7 @@ const finalModifiedDate = updatedDate || publishDate;
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": cleanTitle || title.replace(/ · 高云峰的博客$/, '').replace(/ — 软件工程师个人主页与技术博客$/, ''),
+    "headline": cleanTitle || title.replace(/ · fengstack 的博客$/, '').replace(/ — 软件工程师个人主页与技术博客$/, ''),
     "description": description,
     "image": fullImageURL,
     "keywords": articleTags.length > 0 ? articleTags.join(', ') : undefined,
@@ -122,12 +122,12 @@ const finalModifiedDate = updatedDate || publishDate;
     "inLanguage": "zh-CN",
     "author": {
       "@type": "Person",
-      "name": "高云峰",
+      "name": "fengstack",
       "url": "https://blog.yunitytech.top/"
     },
     "publisher": {
       "@type": "Person",
-      "name": "高云峰",
+      "name": "fengstack",
       "url": "https://blog.yunitytech.top/",
       "logo": {
         "@type": "ImageObject",
@@ -146,12 +146,12 @@ const finalModifiedDate = updatedDate || publishDate;
       {
         "@type": "Person",
         "@id": "https://blog.yunitytech.top/#person",
-        "name": "高云峰",
-        "alternateName": ["fengstack", "upowerman"],
+        "name": "fengstack",
+        "alternateName": ["upowerman"],
         "url": "https://blog.yunitytech.top/",
         "email": "mailto:gyf718@hotmail.com",
         "jobTitle": "软件工程师",
-        "description": "高云峰，软件工程师，开源项目 small-rpc、jooq-postgis 作者，关注分布式 RPC、开源数据库与 AI 工程化。",
+        "description": "fengstack，软件工程师，开源项目 small-rpc、jooq-postgis 作者，关注分布式 RPC、开源数据库与 AI 工程化。",
         "sameAs": [
           "https://github.com/fengstack",
           "https://github.com/upowerman"
@@ -161,8 +161,8 @@ const finalModifiedDate = updatedDate || publishDate;
       {
         "@type": "WebSite",
         "@id": "https://blog.yunitytech.top/#website",
-        "name": "高云峰的博客",
-        "alternateName": "高云峰个人主页",
+        "name": "fengstack 的博客",
+        "alternateName": "fengstack 个人主页",
         "url": "https://blog.yunitytech.top/",
         "inLanguage": "zh-CN",
         "author": { "@id": "https://blog.yunitytech.top/#person" }

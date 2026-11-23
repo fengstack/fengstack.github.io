@@ -2,7 +2,7 @@
 
 ## 1. 目标与背景 (Intent & The Why)
 - **背景**：博客当前使用 `public/images/bear.png`（小熊形象）作为 Favicon、顶部导航栏 Logo 和关于页头像。
-- **目标**：彻底告别小熊形象，采用契合“软件技术改变世界”宏大主题的高质感现代工程图标，呼应个人品牌 `fengstack`（高云峰）及核心领域（分布式 RPC 治理、AI Agent SDD/TDD 规范驱动、空间计算）。
+- **目标**：彻底告别小熊形象，采用契合“软件技术改变世界”宏大主题的高质感现代工程图标，呼应个人品牌 `fengstack` 及核心领域（分布式 RPC 治理、AI Agent SDD/TDD 规范驱动、空间计算）。
 - **非目标 (Non-goals)**：不更改博客现有的布局框架与配色体系，新图标无缝融入现有“Editorial Technology Publication”的板岩蓝风格。
 
 ## 2. 方案权衡与最终决策 (Approaches)

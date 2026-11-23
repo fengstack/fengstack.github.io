@@ -65,7 +65,7 @@ flowchart TD
         subgraph Evaluator["Calcite 内存计算引擎 (credit-risk-cube-evaluator)"]
             CalciteEvaluator["CalciteEvaluator (Evaluator 统一门面)"]
             DatasourceCache["CALCITE_DATASOURCE_CACHE (Guava Cache 48h)"]
-            ConnectionPool["GenericObjectPool<CalcitePoolConnection> (连接池)"]
+            ConnectionPool["GenericObjectPool&lt;CalcitePoolConnection&gt; (连接池)"]
             InternalEvaluator["InternalCalciteEvaluator (单次请求计算上下文)"]
             UDF_Registry["UDF / UDAF 注册中心 (标量函数 + P95 等聚合函数)"]
         end
@@ -76,18 +76,18 @@ flowchart TD
         DataSupply["主数据与贷前补全 (credit-artemis-datasupply)"]
     end
 
-    RiskEngine -->|1. POST /cube/evaluation (包含场景所需变量组列表)| EvaluationAppService
-    EvaluationAppService -->|2. 按需拉取缺失数据源| DataSourceService
-    DataSourceService -->|3. Feign 调用| TP_Gateway
-    DataSourceService -->|4. Feign 调用| DataSupply
-    EvaluationAppService -->|5. 触发并行计算| ThreadPool
-    ThreadPool -->|6. 提交变量组求值任务| CalciteEvaluator
-    CalciteEvaluator -->|7. 获取/构建数据源配置| DatasourceCache
-    CalciteEvaluator -->|8. borrowObject 借出内存连接| ConnectionPool
-    ConnectionPool -->|9. 执行内存表数据装载与 SQL 衍生求解| InternalEvaluator
-    InternalEvaluator -->|10. 调用注册算子求值| UDF_Registry
-    CalciteEvaluator -->|11. returnObject 归还连接并执行 clearSqls 清空数据| ConnectionPool
-    EvaluationAppService -->|12. 组装标准特征字典并落库 MongoDB 快照| RiskEngine
+    RiskEngine -->|"1. POST /cube/evaluation (包含场景所需变量组列表)"| EvaluationAppService
+    EvaluationAppService -->|"2. 按需拉取缺失数据源"| DataSourceService
+    DataSourceService -->|"3. Feign 调用"| TP_Gateway
+    DataSourceService -->|"4. Feign 调用"| DataSupply
+    EvaluationAppService -->|"5. 触发并行计算"| ThreadPool
+    ThreadPool -->|"6. 提交变量组求值任务"| CalciteEvaluator
+    CalciteEvaluator -->|"7. 获取/构建数据源配置"| DatasourceCache
+    CalciteEvaluator -->|"8. borrowObject 借出内存连接"| ConnectionPool
+    ConnectionPool -->|"9. 执行内存表数据装载与 SQL 衍生求解"| InternalEvaluator
+    InternalEvaluator -->|"10. 调用注册算子求值"| UDF_Registry
+    CalciteEvaluator -->|"11. returnObject 归还连接并执行 clearSqls 清空数据"| ConnectionPool
+    EvaluationAppService -->|"12. 组装标准特征字典并落库 MongoDB 快照"| RiskEngine
 ```
 
 ---

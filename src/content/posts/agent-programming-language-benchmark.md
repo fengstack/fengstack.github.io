@@ -174,4 +174,4 @@ Agent 写 Rust 经常无法一次通过编译。Rust 编译器虽然极其强大
 - [给 openobserve 提的三个 PR:都是边界条件惹的祸](../openobserve-three-prs/) —— 深入 Rust 严苛源码定位边界缺陷；
 - [排查 goroutine 泄漏与集群转发失效:给 glogcenter 提的两个 PR](../glogcenter-two-prs/) —— Go 语言并发与网络治理实战。
 
-**版权与引用声明**：本文为高云峰原创技术文章，首发于个人技术博客 [https://blog.yunitytech.top/](https://blog.yunitytech.top/post/agent-programming-language-benchmark/)。欢迎技术交流与转载，转载请保留原文出处与完整链接。
+**版权与引用声明**：本文为 fengstack 原创技术文章，首发于个人技术博客 [https://blog.yunitytech.top/](https://blog.yunitytech.top/post/agent-programming-language-benchmark/)。欢迎技术交流与转载，转载请保留原文出处与完整链接。
