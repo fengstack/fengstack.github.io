@@ -128,9 +128,12 @@ const relatedPosts = allPosts
           <div class="flex items-center gap-1.5 flex-wrap">
             <Tag class="h-3.5 w-3.5" />
             {tags.map((tag) => (
-              <span class="rounded bg-surface px-2 py-0.5 text-muted hover:text-fg">
+              <a
+                href={`/post/?tag=${encodeURIComponent(tag)}`}
+                class="rounded border border-transparent bg-tag-bg px-2 py-0.5 text-tag-fg hover:border-accent hover:text-accent transition-colors"
+              >
                 {tag}
-              </span>
+              </a>
             ))}
           </div>
         )}
@@ -176,7 +179,7 @@ const relatedPosts = allPosts
       </article>
 
       <!-- Desktop Sidebar TOC -->
-      <aside class="hidden lg:block sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+      <aside class="desktop-toc-aside hidden lg:block sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
         <TableOfContents headings={headings} />
       </aside>
     </div>
@@ -229,19 +232,24 @@ const relatedPosts = allPosts
     )}
 
     <!-- Prev & Next Article Navigation -->
-    <nav class="mt-12 border-t border-line pt-8" aria-label="上一篇与下一篇文章">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <nav class="mt-10 border-t border-line pt-7" aria-label="上一篇与下一篇文章">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {prevPost ? (
           <a
             href={`/post/${prevPost.slug}/`}
             rel="prev"
-            class="group flex flex-col gap-1 rounded-lg border border-line bg-surface/30 p-4 transition-all hover:border-accent hover:bg-surface/80"
+            class="group flex flex-col gap-1.5 border-l-2 border-line pl-4 py-1 transition-colors hover:border-accent"
           >
-            <span class="flex items-center gap-1 text-xs font-mono text-muted group-hover:text-accent">
+            <span class="flex items-center gap-1.5 text-xs font-mono text-muted group-hover:text-accent">
               <ArrowLeft class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
               <span>上一篇</span>
+              {series && prevPost.data.series?.name === series.name && (
+                <span class="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-sans text-accent">
+                  同系列
+                </span>
+              )}
             </span>
-            <span class="font-serif text-sm font-semibold text-fg line-clamp-2">
+            <span class="font-serif text-sm font-semibold text-fg group-hover:text-accent transition-colors line-clamp-2">
               {prevPost.data.title}
             </span>
           </a>
@@ -251,13 +259,18 @@ const relatedPosts = allPosts
           <a
             href={`/post/${nextPost.slug}/`}
             rel="next"
-            class="group flex flex-col gap-1 sm:items-end text-left sm:text-right rounded-lg border border-line bg-surface/30 p-4 transition-all hover:border-accent hover:bg-surface/80"
+            class="group flex flex-col gap-1.5 sm:items-end text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-2 border-line pl-4 sm:pl-0 sm:pr-4 py-1 transition-colors hover:border-accent"
           >
-            <span class="flex items-center gap-1 text-xs font-mono text-muted group-hover:text-accent">
+            <span class="flex items-center gap-1.5 text-xs font-mono text-muted group-hover:text-accent">
+              {series && nextPost.data.series?.name === series.name && (
+                <span class="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-sans text-accent">
+                  同系列
+                </span>
+              )}
               <span>下一篇</span>
               <ArrowRight class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
-            <span class="font-serif text-sm font-semibold text-fg line-clamp-2">
+            <span class="font-serif text-sm font-semibold text-fg group-hover:text-accent transition-colors line-clamp-2">
               {nextPost.data.title}
             </span>
           </a>
@@ -274,6 +287,24 @@ const relatedPosts = allPosts
     >
       <ChevronUp class="h-5 w-5" />
     </button>
+
+    <!-- Lightbox dialog for images and Mermaid diagrams -->
+    <dialog id="mediaLightbox" class="media-lightbox" aria-label="图片与图表放大预览">
+      <div class="media-lightbox-shell">
+        <div class="media-lightbox-topbar">
+          <span id="mediaLightboxCaption" class="text-xs font-mono text-muted truncate"></span>
+          <button
+            id="mediaLightboxClose"
+            type="button"
+            class="rounded border border-line bg-bg px-2.5 py-1 text-xs font-mono text-muted hover:border-accent hover:text-fg transition-colors shrink-0"
+            aria-label="关闭预览"
+          >
+            关闭 (ESC)
+          </button>
+        </div>
+        <div id="mediaLightboxBody" class="media-lightbox-body"></div>
+      </div>
+    </dialog>
   </div>
 </BaseLayout>
 
@@ -286,52 +317,262 @@ const relatedPosts = allPosts
     });
   });
 
-  // Add copy buttons and language badges to code blocks
-  document.querySelectorAll<HTMLElement>('.editorial-prose pre').forEach((pre) => {
-    const lang = pre.getAttribute('data-language') || '';
-    if (lang === 'mermaid') return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'code-block-wrapper my-6 relative group';
-    pre.parentNode?.insertBefore(wrapper, pre);
-    wrapper.appendChild(pre);
+  // Add hover anchor links (#) to article headings
+  document
+    .querySelectorAll<HTMLElement>('#articleBody h2[id], #articleBody h3[id], #articleBody h4[id]')
+    .forEach((heading) => {
+      if (heading.querySelector('.heading-anchor')) return;
+      const anchor = document.createElement('a');
+      anchor.className = 'heading-anchor';
+      anchor.href = `#${heading.id}`;
+      anchor.setAttribute('aria-label', '复制本节链接');
+      anchor.title = '点击定位并复制本节链接';
+      anchor.textContent = '#';
 
-    const actionsBar = document.createElement('div');
-    actionsBar.className = 'absolute top-2.5 right-3 flex items-center gap-2 z-10';
+      anchor.addEventListener('click', async () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}#${heading.id}`;
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          anchor.textContent = '✓';
+          anchor.classList.add('is-copied');
+          setTimeout(() => {
+            anchor.textContent = '#';
+            anchor.classList.remove('is-copied');
+          }, 1500);
+        } catch {
+          // Allow native hash navigation without interrupting
+        }
+      });
 
-    if (lang && lang !== 'text') {
-      const badge = document.createElement('span');
-      badge.className = 'code-action-badge';
-      badge.innerText = lang;
-      actionsBar.appendChild(badge);
+      heading.appendChild(anchor);
+    });
+
+  // Media Lightbox dialog helpers
+  const lightbox = document.getElementById('mediaLightbox') as HTMLDialogElement | null;
+  const lightboxBody = document.getElementById('mediaLightboxBody');
+  const lightboxCaption = document.getElementById('mediaLightboxCaption');
+  const lightboxClose = document.getElementById('mediaLightboxClose');
+
+  function openMediaLightbox(detail: {
+    type: 'image' | 'mermaid';
+    src?: string;
+    alt?: string;
+    svg?: string;
+    caption?: string;
+  }) {
+    if (!lightbox || !lightboxBody || !lightboxCaption) return;
+    lightboxBody.replaceChildren();
+
+    if (detail.type === 'image' && detail.src) {
+      lightbox.classList.remove('is-mermaid');
+      const img = document.createElement('img');
+      img.src = detail.src;
+      img.alt = detail.alt || '';
+      img.className = 'media-lightbox-img';
+      lightboxBody.appendChild(img);
+      lightboxCaption.textContent = detail.alt || '图片预览';
+    } else if (detail.type === 'mermaid' && detail.svg) {
+      lightbox.classList.add('is-mermaid');
+      const svgWrap = document.createElement('div');
+      svgWrap.className = 'media-lightbox-svg';
+      svgWrap.innerHTML = detail.svg;
+      const svgEl = svgWrap.querySelector('svg');
+      if (svgEl) {
+        svgEl.removeAttribute('height');
+        svgEl.style.maxWidth = '100%';
+        svgEl.style.maxHeight = '76vh';
+        svgEl.style.width = '100%';
+        svgEl.style.height = 'auto';
+      }
+      lightboxBody.appendChild(svgWrap);
+      lightboxCaption.textContent = detail.caption || '架构流程图预览';
     }
 
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'code-copy-btn';
-    copyBtn.setAttribute('type', 'button');
-    copyBtn.setAttribute('aria-label', '复制代码');
-    copyBtn.innerText = '复制';
+    if (!lightbox.open) {
+      lightbox.showModal();
+    }
+  }
 
-    copyBtn.addEventListener('click', async () => {
-      const code = pre.querySelector('code')?.innerText || pre.innerText;
-      try {
-        await navigator.clipboard.writeText(code);
-        copyBtn.innerText = '已复制!';
-        copyBtn.classList.add('text-accent');
-        setTimeout(() => {
-          copyBtn.innerText = '复制';
-          copyBtn.classList.remove('text-accent');
-        }, 2000);
-      } catch (err) {
-        copyBtn.innerText = '失败';
-        setTimeout(() => {
-          copyBtn.innerText = '复制';
-        }, 2000);
+  function closeMediaLightbox() {
+    if (!lightbox || !lightbox.open) return;
+    lightbox.close();
+    lightbox.classList.remove('is-mermaid');
+    lightboxBody?.replaceChildren();
+  }
+
+  lightboxClose?.addEventListener('click', closeMediaLightbox);
+  lightbox?.addEventListener('click', (e) => {
+    if (e.target === lightbox) {
+      closeMediaLightbox();
+    }
+  });
+  lightbox?.addEventListener('close', () => {
+    lightbox.classList.remove('is-mermaid');
+    lightboxBody?.replaceChildren();
+  });
+
+  window.addEventListener('media:open', (e) => {
+    const customEvent = e as CustomEvent;
+    if (customEvent.detail) {
+      openMediaLightbox(customEvent.detail);
+    }
+  });
+
+  // Wrap article images in figure/figcaption and enable lightbox zoom
+  document.querySelectorAll<HTMLImageElement>('#articleBody img').forEach((img) => {
+    if (img.closest('.mermaid-diagram') || img.closest('figure') || img.closest('a')) return;
+
+    const figure = document.createElement('figure');
+    figure.className = 'editorial-figure';
+    img.parentNode?.insertBefore(figure, img);
+    figure.appendChild(img);
+
+    const altText = img.getAttribute('alt')?.trim() || '';
+    if (altText) {
+      const caption = document.createElement('figcaption');
+      caption.className = 'editorial-figcaption';
+      caption.textContent = altText;
+      figure.appendChild(caption);
+    }
+
+    img.classList.add('cursor-zoom-in');
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', altText ? `放大查看图片：${altText}` : '放大查看图片');
+
+    const openZoom = () => {
+      openMediaLightbox({
+        type: 'image',
+        src: img.currentSrc || img.src,
+        alt: altText,
+      });
+    };
+
+    img.addEventListener('click', openZoom);
+    img.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openZoom();
+      }
+    });
+  });
+
+  // Add unified header bar (language badge, conditional wide-view toggle, copy button) to code blocks
+  const codePres = Array.from(document.querySelectorAll<HTMLElement>('.editorial-prose pre')).filter(
+    (pre) => (pre.getAttribute('data-language') || '') !== 'mermaid'
+  );
+
+  if (codePres.length > 0) {
+    const codeBackdrop = document.createElement('div');
+    codeBackdrop.className = 'code-expand-backdrop hidden';
+    document.body.appendChild(codeBackdrop);
+
+    let activeExpanded: { wrapper: HTMLElement; btn: HTMLButtonElement } | null = null;
+    const expandCheckers: Array<() => void> = [];
+
+    const collapseExpanded = () => {
+      if (!activeExpanded) return;
+      activeExpanded.wrapper.classList.remove('is-expanded');
+      activeExpanded.btn.textContent = '宽屏';
+      activeExpanded.btn.setAttribute('aria-expanded', 'false');
+      codeBackdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+      const currentChecker = expandCheckers;
+      activeExpanded = null;
+      currentChecker.forEach((fn) => fn());
+    };
+
+    codeBackdrop.addEventListener('click', collapseExpanded);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && activeExpanded) {
+        collapseExpanded();
       }
     });
 
-    actionsBar.appendChild(copyBtn);
-    wrapper.appendChild(actionsBar);
-  });
+    codePres.forEach((pre) => {
+      const lang = pre.getAttribute('data-language') || '';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrapper';
+
+      const header = document.createElement('div');
+      header.className = 'code-block-header';
+
+      const badge = document.createElement('span');
+      badge.className = 'code-action-badge';
+      badge.textContent =
+        lang === 'text' ? 'diagram · text' : lang && lang !== 'plaintext' ? lang : 'code';
+      header.appendChild(badge);
+
+      const actionsBar = document.createElement('div');
+      actionsBar.className = 'code-block-actions';
+
+      const expandBtn = document.createElement('button');
+      expandBtn.className = 'code-expand-btn hidden';
+      expandBtn.setAttribute('type', 'button');
+      expandBtn.setAttribute('aria-expanded', 'false');
+      expandBtn.setAttribute('aria-label', '切换代码块宽屏查看');
+      expandBtn.textContent = '宽屏';
+
+      const syncExpandBtn = () => {
+        const isExpanded = wrapper.classList.contains('is-expanded');
+        const hasOverflow = pre.scrollWidth > pre.clientWidth + 4;
+        expandBtn.classList.toggle('hidden', !isExpanded && !hasOverflow);
+      };
+
+      expandBtn.addEventListener('click', () => {
+        if (wrapper.classList.contains('is-expanded')) {
+          collapseExpanded();
+          return;
+        }
+        if (activeExpanded) {
+          collapseExpanded();
+        }
+        wrapper.classList.add('is-expanded');
+        expandBtn.textContent = '收起';
+        expandBtn.setAttribute('aria-expanded', 'true');
+        codeBackdrop.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        activeExpanded = { wrapper, btn: expandBtn };
+      });
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'code-copy-btn';
+      copyBtn.setAttribute('type', 'button');
+      copyBtn.setAttribute('aria-label', '复制代码');
+      copyBtn.textContent = '复制';
+
+      copyBtn.addEventListener('click', async () => {
+        const code = pre.querySelector('code')?.innerText || pre.innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          copyBtn.textContent = '已复制';
+          copyBtn.classList.add('text-accent', 'border-accent');
+          setTimeout(() => {
+            copyBtn.textContent = '复制';
+            copyBtn.classList.remove('text-accent', 'border-accent');
+          }, 2000);
+        } catch {
+          copyBtn.textContent = '失败';
+          setTimeout(() => {
+            copyBtn.textContent = '复制';
+          }, 2000);
+        }
+      });
+
+      actionsBar.append(expandBtn, copyBtn);
+      header.appendChild(actionsBar);
+
+      pre.parentNode?.insertBefore(wrapper, pre);
+      wrapper.append(header, pre);
+
+      expandCheckers.push(syncExpandBtn);
+      syncExpandBtn();
+    });
+
+    const syncAllExpandButtons = () => expandCheckers.forEach((fn) => fn());
+    window.addEventListener('resize', syncAllExpandButtons, { passive: true });
+    document.fonts?.ready.then(syncAllExpandButtons);
+  }
 
   // Back to top scroll button
   const bttBtn = document.getElementById('backToTopBtn');
@@ -414,22 +655,48 @@ const relatedPosts = allPosts
         try {
           const { svg } = await mermaid.render(id, graphDef);
           const container = document.createElement('div');
-          container.className = 'mermaid-diagram my-8 p-4 rounded-xl border border-line bg-surface/30 flex justify-center overflow-x-auto shadow-sm';
-          container.innerHTML = svg;
+          container.className = 'mermaid-diagram relative group my-8 p-4 rounded-xl border border-line bg-surface/30 shadow-sm';
+
+          const zoomBtn = document.createElement('button');
+          zoomBtn.type = 'button';
+          zoomBtn.className = 'mermaid-zoom-btn';
+          zoomBtn.textContent = '放大';
+          zoomBtn.setAttribute('aria-label', '放大查看流程图');
+
+          const svgWrap = document.createElement('div');
+          svgWrap.className = 'mermaid-svg-wrap flex justify-center overflow-x-auto';
+          svgWrap.innerHTML = svg;
+
+          zoomBtn.addEventListener('click', () => {
+            window.dispatchEvent(
+              new CustomEvent('media:open', {
+                detail: {
+                  type: 'mermaid',
+                  svg: svgWrap.innerHTML,
+                  caption: '架构流程图预览',
+                },
+              })
+            );
+          });
+
+          container.append(zoomBtn, svgWrap);
           pre.replaceWith(container);
-          diagrams.push({ container, graphDef, baseId });
+          diagrams.push({ svgWrap, graphDef, baseId });
         } catch (e) {
           console.error('Mermaid render error:', e);
+          pre.setAttribute('data-mermaid-error', 'true');
           document.getElementById('d' + id)?.remove();
         }
       }
+
+      window.dispatchEvent(new Event('article:layout-change'));
 
       async function rerenderDiagrams() {
         for (const item of diagrams) {
           const id = item.baseId + '-' + (++renderIdx);
           try {
             const { svg } = await mermaid.render(id, item.graphDef);
-            item.container.innerHTML = svg;
+            item.svgWrap.innerHTML = svg;
           } catch (e) {
             console.error('Mermaid re-render error:', e);
             document.getElementById('d' + id)?.remove();
@@ -455,6 +722,7 @@ const relatedPosts = allPosts
       }
     } catch (err) {
       console.error('Failed to load Mermaid module:', err);
+      mermaidPres.forEach((pre) => pre.setAttribute('data-mermaid-error', 'true'));
     }
   })();
 </script>

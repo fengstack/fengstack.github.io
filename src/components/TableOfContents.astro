@@ -19,12 +19,14 @@ const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
         <span>目录 · Table of Contents</span>
       </div>
     )}
-    <ul class="flex flex-col gap-2 border-l border-line pl-3 text-muted">
+    <ul class="flex flex-col gap-1 border-l border-line text-muted">
       {filteredHeadings.map((h) => (
-        <li class={`transition-colors ${h.depth === 3 ? 'pl-3.5 text-[11px]' : 'font-medium'}`}>
+        <li class="relative">
           <a
             href={`#${h.slug}`}
-            class="toc-link block py-1 hover:text-fg transition-colors line-clamp-2 leading-snug"
+            class={`toc-link block py-1 pr-1 -ml-px border-l-2 border-transparent hover:text-fg transition-colors line-clamp-2 leading-snug ${
+              h.depth === 3 ? 'pl-6 text-[11px]' : 'pl-3 font-medium'
+            }`}
             data-slug={h.slug}
           >
             {h.text}
@@ -36,43 +38,94 @@ const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 )}
 
 <script>
-  // Active TOC heading scrollspy
-  const links = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('.toc-link'));
   if (links.length > 0) {
     const headingElements = Array.from(
       new Set(
-        Array.from(links)
-          .map((link) => {
-            const slug = link.dataset.slug;
-            return slug ? document.getElementById(slug) : null;
-          })
+        links
+          .map((link) => (link.dataset.slug ? document.getElementById(link.dataset.slug) : null))
           .filter((el): el is HTMLElement => el !== null)
       )
     );
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            links.forEach((link) => {
-              if (link.dataset.slug === id) {
-                link.classList.add('text-accent', 'font-semibold');
-                link.classList.remove('text-muted');
-              } else {
-                link.classList.remove('text-accent', 'font-semibold');
-                link.classList.add('text-muted');
-              }
-            });
-          }
-        });
-      },
-      {
-        rootMargin: '-80px 0% -70% 0%',
-        threshold: 0,
-      }
-    );
+    const SCROLL_OFFSET = 115;
+    let currentSlug = '';
+    let rafPending = false;
 
-    headingElements.forEach((h) => observer.observe(h));
+    function getActiveSlug(): string {
+      if (headingElements.length === 0) return '';
+
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 24;
+      if (atBottom) {
+        return headingElements[headingElements.length - 1].id;
+      }
+
+      let active = '';
+      for (const el of headingElements) {
+        if (el.getBoundingClientRect().top <= SCROLL_OFFSET) {
+          active = el.id;
+        } else {
+          break;
+        }
+      }
+      return active;
+    }
+
+    function scrollDesktopAsideToActive(slug: string) {
+      if (!slug) return;
+      const activeDesktopLink = links.find(
+        (link) => link.dataset.slug === slug && link.closest('aside')?.offsetParent !== null
+      );
+      const aside = activeDesktopLink?.closest('aside');
+      if (!activeDesktopLink || !aside || aside.scrollHeight <= aside.clientHeight) return;
+
+      const linkRect = activeDesktopLink.getBoundingClientRect();
+      const asideRect = aside.getBoundingClientRect();
+      const padding = 28;
+
+      if (linkRect.top < asideRect.top + padding || linkRect.bottom > asideRect.bottom - padding) {
+        const targetTop =
+          aside.scrollTop +
+          (linkRect.top - asideRect.top) -
+          aside.clientHeight / 2 +
+          linkRect.height / 2;
+        aside.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      }
+    }
+
+    function updateActiveHeading() {
+      rafPending = false;
+      const nextSlug = getActiveSlug();
+      if (nextSlug === currentSlug) return;
+      currentSlug = nextSlug;
+
+      links.forEach((link) => {
+        const isActive = Boolean(nextSlug) && link.dataset.slug === nextSlug;
+        link.classList.toggle('text-accent', isActive);
+        link.classList.toggle('font-semibold', isActive);
+        link.classList.toggle('border-accent', isActive);
+        link.classList.toggle('text-muted', !isActive);
+        link.classList.toggle('border-transparent', !isActive);
+        if (isActive) {
+          link.setAttribute('aria-current', 'location');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      });
+
+      scrollDesktopAsideToActive(nextSlug);
+    }
+
+    const scheduleUpdate = () => {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(updateActiveHeading);
+    };
+
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate, { passive: true });
+    window.addEventListener('article:layout-change', scheduleUpdate);
+    updateActiveHeading();
   }
 </script>

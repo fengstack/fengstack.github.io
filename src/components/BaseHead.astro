@@ -76,8 +76,7 @@ const headline =
 <meta name="msvalidate.01" content="C881F074467FD6757DFB5E6C8EE1B7DB" />
 
 <!-- Theme color -->
-<meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
+<meta id="themeColorMeta" name="theme-color" content="#FAF9F6" />
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
@@ -183,13 +182,15 @@ const headline =
 <!-- Prevent Dark Mode Flicker (FOUC) -->
 <script is:inline>
   (function () {
+    document.documentElement.classList.add('js-enabled');
     const stored = localStorage.getItem('gw-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme = stored || (prefersDark ? 'dark' : 'light');
-    if (theme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
+    const isDark = theme === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    const metaTheme = document.getElementById('themeColorMeta');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', isDark ? '#141413' : '#FAF9F6');
     }
   })();
 </script>

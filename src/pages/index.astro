@@ -84,12 +84,12 @@ const recentPosts = allPosts.slice(0, 6);
             扎实的 Java 生态与网络协议基底，熟练掌握 Netty 4、线程模型优化与微内核扩展；同时具备 Vue 3 与 TypeScript 现代化前端全栈工程交付能力。
           </p>
           <div class="flex flex-wrap gap-1.5 font-mono text-xs">
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Java 8~21</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Spring Boot</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Netty</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Vue 3</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">TypeScript</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Node.js</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Java 8~21</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Spring Boot</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Netty</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Vue 3</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">TypeScript</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Node.js</span>
           </div>
         </div>
 
@@ -102,10 +102,10 @@ const recentPosts = allPosts.slice(0, 6);
             深入探索 RPC 消费端治理闭环（滑动窗口熔断、令牌桶限流、降级 Fallback、背压），剖析分布式事务 2PC 与 Seata AT 模式。
           </p>
           <div class="flex flex-wrap gap-1.5 font-mono text-xs">
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">分布式事务 AT</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">RPC 微内核</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">熔断限流</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">消息队列</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">分布式事务 AT</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">RPC 微内核</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">熔断限流</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">消息队列</span>
           </div>
         </div>
 
@@ -118,10 +118,10 @@ const recentPosts = allPosts.slice(0, 6);
             PostgreSQL 与 PostGIS 深度实战，基于 JTS 封装轻量类型安全空间绑定库；精通 jOOQ 类型安全 SQL 编程与关系数据库调优。
           </p>
           <div class="flex flex-wrap gap-1.5 font-mono text-xs">
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">PostGIS</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">jOOQ</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">JTS Geometry</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">MySQL / PG</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">PostGIS</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">jOOQ</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">JTS Geometry</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">MySQL / PG</span>
           </div>
         </div>
 
@@ -134,10 +134,10 @@ const recentPosts = allPosts.slice(0, 6);
             践行由自然语言直觉向工程确定性演进的开发体系：以 SDD 规范为意图约束，以 TDD 与静态类型系统为客观机器裁判。
           </p>
           <div class="flex flex-wrap gap-1.5 font-mono text-xs">
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">双轨 SDD</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">TDD 机器评判</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Token 经济学</span>
-            <span class="rounded bg-surface px-2 py-0.5 text-muted">Go / Python / Rust</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">双轨 SDD</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">TDD 机器评判</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Token 经济学</span>
+            <span class="rounded bg-tag-bg px-2 py-0.5 text-tag-fg">Go / Python / Rust</span>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@ const recentPosts = allPosts.slice(0, 6);
             <div>
               <div class="flex flex-wrap gap-1 font-mono text-[11px] mb-3">
                 {proj.tags.map((t) => (
-                  <span class="rounded bg-surface px-1.5 py-0.5 text-muted">
+                  <span class="rounded bg-tag-bg px-1.5 py-0.5 text-tag-fg">
                     {t}
                   </span>
                 ))}
@@ -211,7 +211,7 @@ const recentPosts = allPosts.slice(0, 6);
                 <img
                   src={item.logo}
                   alt={item.repo}
-                  class="h-12 w-12 rounded-lg object-contain border border-line bg-white p-1"
+                  class="h-12 w-12 rounded-lg object-contain border border-line bg-white/95 dark:bg-white/85 p-1"
                   loading="lazy"
                 />
               </a>
@@ -307,9 +307,12 @@ const recentPosts = allPosts.slice(0, 6);
 
                 <div class="mt-1 flex flex-wrap items-center gap-1.5">
                   {post.data.tags.map((t) => (
-                    <span class="rounded bg-surface px-2 py-0.5 text-[11px] text-muted font-mono">
+                    <a
+                      href={`/post/?tag=${encodeURIComponent(t)}`}
+                      class="rounded border border-transparent bg-tag-bg px-2 py-0.5 text-[11px] text-tag-fg font-mono hover:border-accent hover:text-accent transition-colors"
+                    >
                       {t}
-                    </span>
+                    </a>
                   ))}
                 </div>
               </div>

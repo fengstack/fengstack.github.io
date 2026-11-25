@@ -68,6 +68,7 @@ import { Search, X } from 'lucide-astro';
     date: string;
     tags: string[];
     readTime?: string;
+    series?: string;
   }
 
   let searchIndex: SearchItem[] = [];
@@ -75,6 +76,7 @@ import { Search, X } from 'lucide-astro';
   let isIndexFailed = false;
   let loadPromise: Promise<void> | null = null;
   let selectedIndex = -1;
+  let lastFocusedElement: HTMLElement | null = null;
 
   const modal = document.getElementById('searchModal');
   const input = document.getElementById('modalSearchInput') as HTMLInputElement | null;
@@ -136,6 +138,7 @@ import { Search, X } from 'lucide-astro';
   }
 
   function openModal() {
+    lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modal?.classList.remove('hidden');
     loadSearchIndex();
     setTimeout(() => input?.focus(), 50);
@@ -147,8 +150,12 @@ import { Search, X } from 'lucide-astro';
     if (input) input.value = '';
     searchError?.classList.add('hidden');
     searchLoading?.classList.add('hidden');
-    renderResults([]);
+    renderResults([], []);
     document.body.style.overflow = '';
+    if (lastFocusedElement && document.contains(lastFocusedElement) && lastFocusedElement !== document.body) {
+      lastFocusedElement.focus();
+    }
+    lastFocusedElement = null;
   }
 
   triggerBtn?.addEventListener('click', openModal);
@@ -157,6 +164,28 @@ import { Search, X } from 'lucide-astro';
   // Close when clicking backdrop
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
+  });
+
+  // Focus trap inside modal dialog
+  modal?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || modal.classList.contains('hidden')) return;
+    const focusables = Array.from(
+      modal.querySelectorAll<HTMLElement>(
+        'input:not([disabled]), button:not([disabled]), a[href]'
+      )
+    ).filter((el) => el.offsetParent !== null);
+
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 
   // Global shortcut (Cmd+K / Ctrl+K / Escape)
@@ -173,7 +202,33 @@ import { Search, X } from 'lucide-astro';
     }
   });
 
-  function renderResults(items: SearchItem[]) {
+  function appendHighlightedText(parent: HTMLElement, text: string, tokens: string[]) {
+    if (!tokens.length || !text) {
+      parent.textContent = text;
+      return;
+    }
+    const uniqueTokens = Array.from(new Set(tokens)).sort((a, b) => b.length - a.length);
+    const escaped = uniqueTokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+
+    let lastIdx = 0;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIdx) {
+        parent.appendChild(document.createTextNode(text.slice(lastIdx, match.index)));
+      }
+      const mark = document.createElement('mark');
+      mark.className = 'rounded-sm bg-accent/20 text-accent px-0.5 font-semibold';
+      mark.textContent = match[0];
+      parent.appendChild(mark);
+      lastIdx = regex.lastIndex;
+    }
+    if (lastIdx < text.length) {
+      parent.appendChild(document.createTextNode(text.slice(lastIdx)));
+    }
+  }
+
+  function renderResults(items: SearchItem[], tokens: string[]) {
     if (!resultsList || !searchPlaceholder || !searchEmpty) return;
     resultsList.replaceChildren();
     selectedIndex = -1;
@@ -204,11 +259,11 @@ import { Search, X } from 'lucide-astro';
 
       const titleEl = document.createElement('div');
       titleEl.className = 'font-serif font-semibold text-fg text-sm';
-      titleEl.textContent = item.title;
+      appendHighlightedText(titleEl, item.title, tokens);
 
       const descEl = document.createElement('div');
       descEl.className = 'line-clamp-2 text-xs text-muted leading-relaxed';
-      descEl.textContent = item.description;
+      appendHighlightedText(descEl, item.description, tokens);
 
       const metaEl = document.createElement('div');
       metaEl.className = 'mt-1 flex flex-wrap items-center gap-3 text-[11px] text-muted font-mono';
@@ -223,12 +278,19 @@ import { Search, X } from 'lucide-astro';
         metaEl.appendChild(readTimeEl);
       }
 
+      if (item.series) {
+        const seriesEl = document.createElement('span');
+        seriesEl.className = 'rounded bg-accent/10 px-1.5 py-0.5 font-sans text-[11px] text-accent';
+        appendHighlightedText(seriesEl, item.series, tokens);
+        metaEl.appendChild(seriesEl);
+      }
+
       const tagsEl = document.createElement('div');
       tagsEl.className = 'flex flex-wrap items-center gap-1';
       item.tags.forEach((tag) => {
         const tagSpan = document.createElement('span');
-        tagSpan.className = 'rounded bg-surface px-1.5 py-0.5 text-[11px] text-muted';
-        tagSpan.textContent = tag;
+        tagSpan.className = 'rounded bg-tag-bg px-1.5 py-0.5 text-[11px] text-tag-fg';
+        appendHighlightedText(tagSpan, tag, tokens);
         tagsEl.appendChild(tagSpan);
       });
       metaEl.appendChild(tagsEl);
@@ -238,13 +300,42 @@ import { Search, X } from 'lucide-astro';
     });
   }
 
+  function scoreSearchItem(item: SearchItem, fullQuery: string, tokens: string[]): number {
+    const titleLower = item.title.toLowerCase();
+    const descLower = item.description.toLowerCase();
+    const seriesLower = (item.series || '').toLowerCase();
+    const tagsLower = item.tags.map((t) => t.toLowerCase());
+
+    let totalScore = 0;
+
+    for (const token of tokens) {
+      let tokenScore = 0;
+      if (titleLower.includes(token)) tokenScore += 8;
+      if (tagsLower.some((t) => t.includes(token))) tokenScore += 6;
+      if (seriesLower.includes(token)) tokenScore += 5;
+      if (descLower.includes(token)) tokenScore += 2;
+
+      if (tokenScore === 0) return 0;
+      totalScore += tokenScore;
+    }
+
+    if (titleLower.includes(fullQuery)) {
+      totalScore += titleLower.startsWith(fullQuery) ? 16 : 12;
+    } else if (tagsLower.some((t) => t === fullQuery)) {
+      totalScore += 10;
+    }
+
+    return totalScore;
+  }
+
   function filterAndRender() {
-    const q = input?.value.trim().toLowerCase() || '';
-    if (!q) {
+    const raw = input?.value.trim().toLowerCase() || '';
+    const tokens = raw.split(/\s+/).filter(Boolean);
+    if (!raw || tokens.length === 0) {
       if (isIndexFailed) {
         showErrorState();
       } else {
-        renderResults([]);
+        renderResults([], []);
       }
       return;
     }
@@ -260,14 +351,13 @@ import { Search, X } from 'lucide-astro';
       return;
     }
 
-    const matched = searchIndex.filter((item) => {
-      const titleMatch = item.title.toLowerCase().includes(q);
-      const descMatch = item.description.toLowerCase().includes(q);
-      const tagMatch = item.tags.some((t) => t.toLowerCase().includes(q));
-      return titleMatch || descMatch || tagMatch;
-    });
+    const matched = searchIndex
+      .map((item) => ({ item, score: scoreSearchItem(item, raw, tokens) }))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((entry) => entry.item);
 
-    renderResults(matched);
+    renderResults(matched, tokens);
   }
 
   // Input filter

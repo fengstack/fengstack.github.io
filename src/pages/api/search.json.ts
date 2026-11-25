@@ -9,6 +9,7 @@ export async function GET() {
     date: post.data.publishDate.toISOString().slice(0, 10),
     tags: post.data.tags,
     readTime: post.data.readTime,
+    series: post.data.series?.name,
   }));
 
   return new Response(JSON.stringify(searchIndex), {

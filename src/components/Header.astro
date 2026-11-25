@@ -16,7 +16,7 @@ const isPost = pathname.startsWith('/post');
     </a>
 
     <!-- Desktop Navigation -->
-    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-muted">
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-muted whitespace-nowrap">
       <a href="/about/" class={`transition-colors hover:text-fg ${isAbout ? 'text-fg font-semibold' : ''}`}>
         关于我
       </a>
@@ -24,7 +24,7 @@ const isPost = pathname.startsWith('/post');
         技术栈
       </a>
       <a href="/#projects" class="transition-colors hover:text-fg">
-        项目
+        开源项目
       </a>
       <a href="/#contribs" class="transition-colors hover:text-fg">
         开源贡献
@@ -48,7 +48,7 @@ const isPost = pathname.startsWith('/post');
       >
         <Search class="h-3.5 w-3.5" />
         <span class="hidden sm:inline">搜索…</span>
-        <kbd class="hidden sm:inline-block rounded border border-line bg-bg px-1 py-0.5 text-[10px] font-mono text-muted">⌘K</kbd>
+        <kbd id="searchShortcutKey" class="hidden sm:inline-block rounded border border-line bg-bg px-1 py-0.5 text-[10px] font-mono text-muted">⌘K</kbd>
       </button>
 
       <!-- Theme Toggle -->
@@ -79,7 +79,7 @@ const isPost = pathname.startsWith('/post');
   <!-- Mobile Dropdown Navigation -->
   <div id="mobileMenu" class="hidden md:hidden border-b border-line bg-bg px-6 py-4 transition-all">
     <nav class="flex flex-col gap-3.5 text-base font-medium text-muted">
-      <a href="/about/" class={`transition-colors hover:text-fg ${isAbout ? 'text-fg font-semibold' : ''}`}>
+      <a href="/about/" class={`transition-colors hover:text-fg mobile-nav-link ${isAbout ? 'text-fg font-semibold' : ''}`}>
         关于我
       </a>
       <a href="/#skills" class="transition-colors hover:text-fg mobile-nav-link">
@@ -92,10 +92,10 @@ const isPost = pathname.startsWith('/post');
         开源贡献
       </a>
       <a href="/topic/" class={`transition-colors hover:text-fg mobile-nav-link ${isTopic ? 'text-fg font-semibold' : ''}`}>
-        技术专题
+        专题
       </a>
-      <a href="/post/" class={`transition-colors hover:text-fg ${isPost ? 'text-fg font-semibold' : ''}`}>
-        技术文章
+      <a href="/post/" class={`transition-colors hover:text-fg mobile-nav-link ${isPost ? 'text-fg font-semibold' : ''}`}>
+        文章
       </a>
     </nav>
   </div>
@@ -105,6 +105,18 @@ const isPost = pathname.startsWith('/post');
 </header>
 
 <script>
+  // Cross-platform search shortcut label
+  const shortcutKbd = document.getElementById('searchShortcutKey');
+  if (shortcutKbd) {
+    const platform =
+      (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ||
+      navigator.userAgent ||
+      '';
+    if (!/mac|iphone|ipad|ipod/i.test(platform)) {
+      shortcutKbd.textContent = 'Ctrl K';
+    }
+  }
+
   // Reading Progress Bar
   const progressBar = document.getElementById('readingProgress');
   const article = document.getElementById('articleBody');
@@ -112,20 +124,15 @@ const isPost = pathname.startsWith('/post');
     const updateProgress = () => {
       const rect = article.getBoundingClientRect();
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const articleTop = rect.top + scrollTop - 120;
-      const articleHeight = article.offsetHeight;
-      const windowHeight = window.innerHeight;
-
-      if (scrollTop < articleTop) {
-        progressBar.style.width = '0%';
-      } else {
-        const scrolled = scrollTop - articleTop;
-        const total = articleHeight - windowHeight + 200;
-        const pct = Math.min(100, Math.max(0, (scrolled / Math.max(1, total)) * 100));
-        progressBar.style.width = `${pct}%`;
-      }
+      const articleStart = rect.top + scrollTop - 80;
+      const articleEnd = rect.top + scrollTop + article.offsetHeight - window.innerHeight * 0.75;
+      const scrollable = Math.max(1, articleEnd - articleStart);
+      const pct = Math.min(100, Math.max(0, ((scrollTop - articleStart) / scrollable) * 100));
+      progressBar.style.width = `${pct}%`;
     };
     window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress, { passive: true });
+    window.addEventListener('article:layout-change', updateProgress);
     updateProgress();
   }
 
@@ -134,13 +141,11 @@ const isPost = pathname.startsWith('/post');
   themeBtn?.addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const nextTheme = isDark ? 'light' : 'dark';
-    if (nextTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('gw-theme', 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('gw-theme', 'light');
-    }
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('gw-theme', nextTheme);
+    document
+      .getElementById('themeColorMeta')
+      ?.setAttribute('content', nextTheme === 'dark' ? '#141413' : '#FAF9F6');
   });
 
   // Mobile menu toggle
@@ -148,6 +153,14 @@ const isPost = pathname.startsWith('/post');
   const mobileMenu = document.getElementById('mobileMenu');
   const iconOpen = document.getElementById('menuIconOpen');
   const iconClose = document.getElementById('menuIconClose');
+
+  const closeMobileMenu = () => {
+    if (!mobileMenu || mobileMenu.classList.contains('hidden')) return;
+    mobileMenu.classList.add('hidden');
+    iconOpen?.classList.remove('hidden');
+    iconClose?.classList.add('hidden');
+    mobileBtn?.setAttribute('aria-expanded', 'false');
+  };
 
   mobileBtn?.addEventListener('click', () => {
     const isExpanded = mobileBtn.getAttribute('aria-expanded') === 'true';
@@ -157,13 +170,20 @@ const isPost = pathname.startsWith('/post');
     iconClose?.classList.toggle('hidden');
   });
 
-  // Close mobile menu when hash link is clicked
   document.querySelectorAll('.mobile-nav-link').forEach((link) => {
-    link.addEventListener('click', () => {
-      mobileMenu?.classList.add('hidden');
-      iconOpen?.classList.remove('hidden');
-      iconClose?.classList.add('hidden');
-      mobileBtn?.setAttribute('aria-expanded', 'false');
-    });
+    link.addEventListener('click', closeMobileMenu);
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as Node | null;
+    if (target && !mobileMenu?.contains(target) && !mobileBtn?.contains(target)) {
+      closeMobileMenu();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeMobileMenu();
+    }
   });
 </script>

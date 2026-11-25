@@ -84,7 +84,7 @@ const breadcrumbs = [
         <div class="flex flex-wrap items-center gap-2 pt-1" id="tagFilterContainer">
           <button
             type="button"
-            class="tag-pill active rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-mono text-fg transition-all hover:border-accent"
+            class="tag-pill active rounded-md border border-accent bg-accent/10 px-2.5 py-1 text-xs font-mono font-semibold text-accent transition-all hover:border-accent"
             data-tag="all"
           >
             全部 ({sortedPosts.length})
@@ -92,7 +92,7 @@ const breadcrumbs = [
           {allTags.map(([tag, count], idx) => (
             <button
               type="button"
-              class={`tag-pill rounded-md border border-line bg-surface/40 px-2.5 py-1 text-xs font-mono text-muted transition-all hover:border-accent hover:text-fg${idx >= visibleTagLimit ? ' hidden extra-tag-pill' : ''}`}
+              class={`tag-pill rounded-md border border-line bg-tag-bg/60 px-2.5 py-1 text-xs font-mono text-tag-fg transition-all hover:border-accent hover:text-fg${idx >= visibleTagLimit ? ' hidden extra-tag-pill' : ''}`}
               data-tag={tag}
             >
               {tag} <span class="text-[10px] opacity-75">({count})</span>
@@ -109,6 +109,18 @@ const breadcrumbs = [
               展开全部标签 ({allTags.length})
             </button>
           )}
+        </div>
+
+        <!-- Active Filter Status Bar -->
+        <div id="filterStatusBar" class="hidden flex flex-wrap items-center justify-between gap-2 rounded-md border border-line bg-surface/40 px-3 py-2 text-xs font-mono text-muted">
+          <span id="filterStatusText"></span>
+          <button
+            id="resetFiltersBtn"
+            type="button"
+            class="text-accent hover:underline"
+          >
+            重置筛选
+          </button>
         </div>
       </div>
     </div>
@@ -152,9 +164,13 @@ const breadcrumbs = [
 
                 <div class="mt-2 flex flex-wrap items-center gap-1.5">
                   {post.data.tags.map((t) => (
-                    <span class="rounded bg-surface px-2 py-0.5 text-xs text-muted font-mono">
+                    <a
+                      href={`/post/?tag=${encodeURIComponent(t)}`}
+                      data-inline-tag={t}
+                      class="inline-tag-link rounded border border-transparent bg-tag-bg px-2 py-0.5 text-xs text-tag-fg font-mono hover:border-accent hover:text-accent transition-colors"
+                    >
                       {t}
-                    </span>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -168,13 +184,68 @@ const breadcrumbs = [
 
 <script>
   let activeTag = 'all';
+  let extraTagsExpanded = false;
+
   const searchInput = document.getElementById('listSearchInput') as HTMLInputElement | null;
+  const tagFilterContainer = document.getElementById('tagFilterContainer');
   const tagPills = document.querySelectorAll<HTMLButtonElement>('.tag-pill');
   const postItems = document.querySelectorAll<HTMLElement>('.post-item');
   const noMatchMsg = document.getElementById('noMatchMessage');
+  const filterStatusBar = document.getElementById('filterStatusBar');
+  const filterStatusText = document.getElementById('filterStatusText');
+  const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+  const toggleExtraTagsBtn = document.getElementById('toggleExtraTagsBtn') as HTMLButtonElement | null;
+  const extraTagPills = document.querySelectorAll<HTMLButtonElement>('.extra-tag-pill');
 
-  function filterPosts() {
-    const q = searchInput?.value.trim().toLowerCase() || '';
+  function setExtraTagsExpanded(expanded: boolean) {
+    extraTagsExpanded = expanded;
+    extraTagPills.forEach((pill) => {
+      pill.classList.toggle('hidden', !extraTagsExpanded);
+    });
+    if (toggleExtraTagsBtn) {
+      toggleExtraTagsBtn.setAttribute('aria-expanded', String(extraTagsExpanded));
+      const totalTags = toggleExtraTagsBtn.dataset.totalTags || String(tagPills.length - 1);
+      toggleExtraTagsBtn.textContent = extraTagsExpanded
+        ? '收起低频标签'
+        : `展开全部标签 (${totalTags})`;
+    }
+  }
+
+  function syncUrlState() {
+    const url = new URL(window.location.href);
+    const q = searchInput?.value.trim() || '';
+
+    if (activeTag !== 'all') {
+      url.searchParams.set('tag', activeTag);
+    } else {
+      url.searchParams.delete('tag');
+    }
+
+    if (q) {
+      url.searchParams.set('q', q);
+    } else {
+      url.searchParams.delete('q');
+    }
+
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }
+
+  function updatePillStyles(selectedTag: string) {
+    tagPills.forEach((pill) => {
+      const isSelected = (pill.dataset.tag || 'all').toLowerCase() === selectedTag.toLowerCase();
+      if (isSelected) {
+        pill.classList.add('active', 'border-accent', 'bg-accent/10', 'text-accent', 'font-semibold');
+        pill.classList.remove('border-line', 'bg-tag-bg/60', 'text-tag-fg');
+      } else {
+        pill.classList.remove('active', 'border-accent', 'bg-accent/10', 'text-accent', 'font-semibold');
+        pill.classList.add('border-line', 'bg-tag-bg/60', 'text-tag-fg');
+      }
+    });
+  }
+
+  function filterPosts(syncUrl = true) {
+    const rawQuery = searchInput?.value.trim() || '';
+    const q = rawQuery.toLowerCase();
     let visibleCount = 0;
 
     postItems.forEach((item) => {
@@ -198,39 +269,79 @@ const breadcrumbs = [
     } else {
       noMatchMsg?.classList.add('hidden');
     }
+
+    const hasFilter = activeTag !== 'all' || Boolean(q);
+    if (filterStatusBar && filterStatusText) {
+      if (hasFilter) {
+        const parts: string[] = [];
+        if (activeTag !== 'all') parts.push(`标签「${activeTag}」`);
+        if (rawQuery) parts.push(`关键词「${rawQuery}」`);
+        filterStatusText.textContent = `当前筛选：${parts.join(' + ')} · 共 ${visibleCount} 篇`;
+        filterStatusBar.classList.remove('hidden');
+      } else {
+        filterStatusBar.classList.add('hidden');
+      }
+    }
+
+    if (syncUrl) {
+      syncUrlState();
+    }
   }
 
-  // Tag button clicks
+  function selectTag(rawTag: string, syncUrl = true) {
+    const normalized = rawTag.trim().toLowerCase();
+    const matchedPill = Array.from(tagPills).find(
+      (p) => (p.dataset.tag || 'all').toLowerCase() === normalized
+    );
+
+    activeTag = matchedPill?.dataset.tag || 'all';
+    if (matchedPill?.classList.contains('extra-tag-pill') && !extraTagsExpanded) {
+      setExtraTagsExpanded(true);
+    }
+
+    updatePillStyles(activeTag);
+    filterPosts(syncUrl);
+  }
+
+  // Tag pill clicks
   tagPills.forEach((pill) => {
     pill.addEventListener('click', () => {
-      tagPills.forEach((p) => {
-        p.classList.remove('active', 'text-fg', 'bg-surface');
-        p.classList.add('text-muted', 'bg-surface/40');
-      });
-
-      pill.classList.add('active', 'text-fg', 'bg-surface');
-      pill.classList.remove('text-muted', 'bg-surface/40');
-
-      activeTag = pill.dataset.tag || 'all';
-      filterPosts();
+      selectTag(pill.dataset.tag || 'all');
     });
   });
 
-  searchInput?.addEventListener('input', filterPosts);
+  // Inline post tag clicks
+  document.querySelectorAll<HTMLAnchorElement>('.inline-tag-link').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const targetTag = link.dataset.inlineTag;
+      if (!targetTag) return;
+      e.preventDefault();
+      selectTag(targetTag);
+      tagFilterContainer?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
 
-  const toggleExtraTagsBtn = document.getElementById('toggleExtraTagsBtn') as HTMLButtonElement | null;
-  const extraTagPills = document.querySelectorAll<HTMLButtonElement>('.extra-tag-pill');
-  let extraTagsExpanded = false;
+  searchInput?.addEventListener('input', () => filterPosts(true));
 
   toggleExtraTagsBtn?.addEventListener('click', () => {
-    extraTagsExpanded = !extraTagsExpanded;
-    extraTagPills.forEach((pill) => {
-      pill.classList.toggle('hidden', !extraTagsExpanded);
-    });
-    toggleExtraTagsBtn.setAttribute('aria-expanded', String(extraTagsExpanded));
-    const totalTags = toggleExtraTagsBtn.dataset.totalTags || String(tagPills.length - 1);
-    toggleExtraTagsBtn.textContent = extraTagsExpanded
-      ? '收起低频标签'
-      : `展开全部标签 (${totalTags})`;
+    setExtraTagsExpanded(!extraTagsExpanded);
   });
+
+  resetFiltersBtn?.addEventListener('click', () => {
+    if (searchInput) searchInput.value = '';
+    selectTag('all');
+  });
+
+  // Hydrate initial filter state from URL query (?tag=...&q=...)
+  const initialParams = new URLSearchParams(window.location.search);
+  const initialQuery = initialParams.get('q');
+  const initialTag = initialParams.get('tag');
+  if (initialQuery && searchInput) {
+    searchInput.value = initialQuery;
+  }
+  if (initialTag) {
+    selectTag(initialTag, false);
+  } else if (initialQuery) {
+    filterPosts(false);
+  }
 </script>

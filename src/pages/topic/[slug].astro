@@ -122,9 +122,12 @@ const jsonLd = {
 
                 <div class="mt-2 flex flex-wrap items-center gap-1.5">
                   {post.data.tags.map((t) => (
-                    <span class="rounded bg-surface px-2 py-0.5 text-xs text-muted font-mono">
+                    <a
+                      href={`/post/?tag=${encodeURIComponent(t)}`}
+                      class="rounded border border-transparent bg-tag-bg px-2 py-0.5 text-xs text-tag-fg font-mono hover:border-accent hover:text-accent transition-colors"
+                    >
                       {t}
-                    </span>
+                    </a>
                   ))}
                 </div>
               </article>
