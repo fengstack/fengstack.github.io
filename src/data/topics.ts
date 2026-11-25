@@ -81,4 +81,13 @@ export const TOPICS: Topic[] = [
       'jooq-postgis-intro',
     ],
   },
+  {
+    slug: 'cloud-native-delivery',
+    name: '云原生与工程交付',
+    subtitle: 'Cloud-Native & CI/CD Delivery',
+    description: '聚焦中小规模生产环境的计算资源池化与持续交付体系：涵盖 K3s 轻量集群拓扑、GitLab CI 与 Helm 自动化流水线、容器资源配额治理、无损滚动发布及基础设施运维实践。',
+    postSlugs: [
+      'docker-to-k3s-cicd-migration',
+    ],
+  },
 ];

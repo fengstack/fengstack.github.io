@@ -5,6 +5,7 @@ import { TOPICS, type Topic } from '../data/topics';
 export type PostEntry = CollectionEntry<'posts'>;
 
 const TOPIC_PRIORITY = [
+  'cloud-native-delivery',
   'rpc-governance',
   'troubleshooting-opensource',
   'gis-spatial',
